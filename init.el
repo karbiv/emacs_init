@@ -9,9 +9,30 @@
 ;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (setq package-enable-at-startup nil)
 
-;;*******************************************************************************************
+(defvar k-packages-config
+  '((idomenu t)
+    ;;; helm deps
+    (helm-core t) (popup t) (async t) (helm t)
+    (web-mode t)
+    (js2-mode t)
+    (web-beautify t) 
+    (php-mode t)
+    (highlight-symbol t)
+    (auto-complete t)
+    (paredit t)
+    (epc t)
+    (ggtags t)
+    ;;; jedi deps
+    (python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)
+    (bash-completion t) ; for shell mode
+    ;;; ace-window dep
+    (avy t) (ace-window t)
+    (xah-css-mode t)
+    ;;; magit deps
+    (magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
+    (macrostep t))
+  "packages to load in (package-initialize)")
 
-;;; Explicit package mode
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
@@ -26,46 +47,11 @@
   (setq-default frame-title-format "%b (%f)")
 
   ;; disable toolbar
-  (tool-bar-mode -1)
+  (tool-bar-mode -1))
 
-  ;; packages to load
-  (setq package-load-list
-	'((idomenu t)
-	  ;; helm deps
-	  (helm-core t) (popup t) (async t) (helm t)	  	  
-	  (js2-mode t)
-	  (web-beautify t)
-	  (php-mode t)
-	  (highlight-symbol t)
-	  (auto-complete t)
-	  (paredit t)
-	  (epc t)
-	  ;; jedi deps
-	  (python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)	  
-	  (bash-completion t) ; for shell mode
-	  ;; ace-window dep
-	  (avy t) (ace-window t)
-	  (web-beautify t))))
+;;(when (not (display-graphic-p)))
 
-(when (not (display-graphic-p))
-  ;; packages to load
-  (setq package-load-list
-	'((idomenu t)
-	  ;; helm deps
-	  (helm-core t) (popup t) (async t) (helm t)	  
-	  (js2-mode t)
-	  (web-beautify t)
-	  (php-mode t)
-	  (highlight-symbol t)
-	  (auto-complete t)
-	  (paredit t)
-	  (epc t)
-	  ;; jedi deps
-	  (python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)
-	  ;; ace-window deps
-	  (avy t) (ace-window t)
-	  (web-beautify t))))
-
+(setq package-load-list k-packages-config)
 (package-initialize)
 
 ;;*******************************************************************************************
@@ -216,7 +202,6 @@
 			   (setq indent-tabs-mode nil
 				 tab-width 4
 				 c-basic-offset 4)
-			   (message wp/exists)
 			   ;;(setq-local imenu-create-index-function #'ggtags-build-imenu-index)
 			   ))
 (global-set-key (kbd "<f11>") 'php-mode)
@@ -224,8 +209,10 @@
 
 ;;----------------------------------------------------
 
-;;web-mode.el
-(add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
+;;; xah-css-mode
+(add-to-list 'auto-mode-alist '("\\.css$"  . xah-css-mode))
+
+;;; web-mode
 (add-to-list 'auto-mode-alist '("\\.scss$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.twig$" . web-mode))
@@ -255,9 +242,7 @@
 
 ;;; web-beautify.el
 ;; requires "beautifier" through npm
-(eval-after-load 'js2-mode  '(define-key js2-mode-map (kbd "C-c b") 'web-beautify-js))
-(eval-after-load 'js-mode  '(define-key js2-mode-map (kbd "C-c b") 'web-beautify-js))
-(eval-after-load 'css-mode  '(define-key cssm-mode-map (kbd "C-c b") 'web-beautify-css))
+(eval-after-load 'css-mode  '(define-key css-mode-map (kbd "C-c b") 'web-beautify-css))
 (eval-after-load 'json-mode '(define-key json-mode-map (kbd "C-c b") 'web-beautify-js))
 (eval-after-load 'sgml-mode '(define-key html-mode-map (kbd "C-c b") 'web-beautify-html))
 (eval-after-load 'web-mode  '(define-key web-mode-map (kbd "C-c b") 'web-beautify-html))
@@ -273,7 +258,7 @@
 (setq recentf-auto-cleanup 'never)
 (recentf-mode 1)
 (setq recentf-max-menu-items 25)
-(global-set-key "\C-x\ \C-r" 'recentf-open-files)
+(global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
 ;;; js-mode
 (add-hook 'js-mode-hook
@@ -281,7 +266,8 @@
 	      (setq tab-width 2)
 	      (abbrev-mode 1)
 	      (ggtags-mode 1)
-	      (setq imenu-create-index-function #'ggtags-build-imenu-index)
+	      ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
+	      (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
 	      (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
 	      (define-key ggtags-mode-map (kbd "M-n") 'idomenu)))
 
@@ -296,7 +282,8 @@
 	      (setq tab-width 2)
 	      (abbrev-mode 1)
 	      (ggtags-mode 1)
-	      (setq imenu-create-index-function #'ggtags-build-imenu-index)
+	      ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
+	      (define-key js2-mode-map (kbd "C-c b") 'web-beautify-js)
 	      (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
 	      (define-key ggtags-mode-map (kbd "M-n") 'idomenu)))
 
@@ -310,21 +297,20 @@
 (global-set-key (kbd "C-c C-r") 'revert-buffer)
 
 ;;; c mode
-(autoload 'prepaint-mode  "~/.emacs.d/prepaint.el")
-;;(require 'prepaint)
+;; prepaint for C multiline macros, git submodule
+(autoload 'prepaint-mode
+  (concat (file-name-directory load-file-name) "prepaint/prepaint"))
 
 (add-hook 'c-mode-common-hook
 	  (lambda ()
 	    (ggtags-mode)
-	    (prepaint-global-mode 1)
+	    (prepaint-mode 1)
 	    (setq c-macro-preprocessor "cpp -CC")
 	    ;;(setq-local imenu-create-index-function #'ggtags-build-imenu-index)
 	    ;;(flycheck-mode)
 	    (hs-minor-mode)
 	    (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
-            (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file) 
-	    ;;(rtags-enable-standard-keybindings nil "C-c r")
-	    ))
+            (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)))
 
 ;;****************************************************************
 
@@ -343,4 +329,3 @@
 ;;   (measure-time
 ;;    (semantic-fetch-tags)
 ;;    (message "Buffer reparsed.")))
-

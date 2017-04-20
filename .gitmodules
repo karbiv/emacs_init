@@ -1,0 +1,3 @@
+[submodule "prepaint"]
+	path = prepaint
+	url = https://github.com/Lindydancer/prepaint.git
