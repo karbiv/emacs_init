@@ -14,7 +14,6 @@
     ;;; helm deps
     (helm-core t) (popup t) (async t) (helm t)
     (web-mode t)
-    (js2-mode t)
     (web-beautify t) 
     (php-mode t)
     (highlight-symbol t)
@@ -54,12 +53,13 @@
 (setq package-load-list k-packages-config)
 (package-initialize)
 
-;;*******************************************************************************************
+;;******************************************************
 
 ;; github.com/karbiv/cython-semantic in development
 (add-to-list 'load-path "~/.emacs.d/cython-semantic")
 (require 'cython-semantic-mode)
-(semantic-mode 1)
+
+;;******************************************************
 
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
@@ -69,7 +69,6 @@
 (set-face-attribute 'default nil :height 132)
 (show-paren-mode 1)
 (column-number-mode)
-(set-default 'truncate-lines t)
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c s") 'delete-trailing-whitespace)
 (add-hook 'scheme-mode-hook #'enable-paredit-mode)
@@ -78,6 +77,8 @@
 ;; Disable menu and scrollbars
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
+;;(global-flycheck-mode)
+;;(set-default 'truncate-lines t)
 
 (put 'erase-buffer 'disabled nil)
 (put 'set-goal-column 'disabled nil)
@@ -101,6 +102,25 @@
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
 
 ;;; semantic
+(semantic-mode 1)
+;; disable semantic in some modes
+(setq semantic-new-buffer-setup-functions
+      '((c-mode . semantic-default-c-setup)
+	(c++-mode . semantic-default-c-setup)
+	(html-mode . semantic-default-html-setup)
+	(java-mode . wisent-java-default-setup)
+	;;(js-mode . wisent-javascript-setup-parser) ; js-mode imenu is better
+	(python-mode . wisent-python-default-setup)
+	(scheme-mode . semantic-default-scheme-setup)
+	(srecode-template-mode . srecode-template-setup-parser)
+	(texinfo-mode . semantic-default-texi-setup)
+	(makefile-automake-mode . semantic-default-make-setup)
+	(makefile-gmake-mode . semantic-default-make-setup)
+	(makefile-makepp-mode . semantic-default-make-setup)
+	(makefile-bsdmake-mode . semantic-default-make-setup)
+	(makefile-imake-mode . semantic-default-make-setup)
+	(makefile-mode . semantic-default-make-setup)))
+(add-hook 'semantic-inhibit-functions (lambda () (member major-mode '(js-mode))))
 (add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
 (add-to-list 'semantic-default-submodes 'global-semantic-decoration-mode)
 (add-to-list 'semantic-default-submodes 'global-semantic-highlight-func-mode)
@@ -109,8 +129,6 @@
 
 ;;; shell mode
 (add-hook 'shell-mode-hook #'bash-completion-setup)
-
-;;(global-flycheck-mode)
 
 ;;; ggtags
 (setenv "GTAGSCONF" "/home/alex/.globalrc")
@@ -261,29 +279,18 @@
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
 ;;; js-mode
+(eval-after-load 'js-mode
+  '(progn
+     (define-abbrev js-mode-abbrev-table  "cnl" "console.log(  );")))
+
 (add-hook 'js-mode-hook
 	  #'(lambda ()
-	      (setq tab-width 2)
+	      (setq tab-width 4)
 	      (abbrev-mode 1)
 	      (ggtags-mode 1)
 	      ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
+	      ;;(setq imenu-create-index-function #'js--imenu-create-index)
 	      (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
-	      (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
-	      (define-key ggtags-mode-map (kbd "M-n") 'idomenu)))
-
-;;; js2-mode
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-(eval-after-load 'js2-mode
-  '(progn
-     (define-abbrev js2-mode-abbrev-table  "cnl" "console.log(  );")))
-
-(add-hook 'js2-mode-hook
-	  #'(lambda ()
-	      (setq tab-width 2)
-	      (abbrev-mode 1)
-	      (ggtags-mode 1)
-	      ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
-	      (define-key js2-mode-map (kbd "C-c b") 'web-beautify-js)
 	      (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
 	      (define-key ggtags-mode-map (kbd "M-n") 'idomenu)))
 
