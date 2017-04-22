@@ -29,6 +29,7 @@
     (xah-css-mode t)
     ;;; magit deps
     (magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
+	(nginx-mode t)
     (macrostep t))
   "packages to load in (package-initialize)")
 
