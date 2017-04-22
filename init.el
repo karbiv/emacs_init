@@ -32,6 +32,15 @@
     (macrostep t))
   "packages to load in (package-initialize)")
 
+(setq package-load-list k-packages-config)
+(package-initialize)
+
+;;; ensure packages
+(dolist (pkg-cfg k-packages-config)
+  (let ((pkg (car pkg-cfg)))
+    (when (not (package-installed-p pkg))
+      (package-install pkg nil))))
+
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
@@ -50,16 +59,14 @@
 
 ;;(when (not (display-graphic-p)))
 
-(setq package-load-list k-packages-config)
-(package-initialize)
-
-;;******************************************************
+;;****************************************************************
 
 ;; github.com/karbiv/cython-semantic in development
 (add-to-list 'load-path "~/.emacs.d/cython-semantic")
 (require 'cython-semantic-mode)
+(add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
 
-;;******************************************************
+;;****************************************************************
 
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
@@ -109,7 +116,7 @@
 	(c++-mode . semantic-default-c-setup)
 	(html-mode . semantic-default-html-setup)
 	(java-mode . wisent-java-default-setup)
-	;;(js-mode . wisent-javascript-setup-parser) ; js-mode imenu is better
+	;;(js-mode . wisent-javascript-setup-parser) ; js-mode's imenu is better
 	(python-mode . wisent-python-default-setup)
 	(scheme-mode . semantic-default-scheme-setup)
 	(srecode-template-mode . srecode-template-setup-parser)
