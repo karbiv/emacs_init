@@ -104,7 +104,7 @@
 
 ;;; dired
 (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
-(setq dired-listing-switches "-hal")
+(setq dired-listing-switches "-hal --time-style=iso")
 
 ;; https://www.emacswiki.org/emacs/DiredGetFileSize
 (defun dired-get-size ()
