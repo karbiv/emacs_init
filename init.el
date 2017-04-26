@@ -22,7 +22,7 @@
     (epc t)
     (ggtags t)
 	;;; dired
-    (dired-toggle-sudo t) (dired+ t) (dired-atool)
+    (dired-toggle-sudo t) (dired+ t)
     ;;; jedi deps
     (python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)
     (bash-completion t) ; for shell mode
@@ -32,6 +32,7 @@
     ;;; magit deps
     (magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
 	(nginx-mode t)
+	(apache-mode t)
     (macrostep t))
   "packages to load in (package-initialize)")
 
@@ -103,6 +104,20 @@
 
 ;;; dired
 (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
+
+;; https://www.emacswiki.org/emacs/DiredGetFileSize
+(defun dired-get-size ()
+  (interactive)
+  (let ((files (dired-get-marked-files)))
+    (with-temp-buffer
+      (apply 'call-process "/usr/bin/du" nil t nil "-sch" files)
+      (message "Size of all marked files: %s"
+               (progn 
+                 (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
+				 (match-string 1))))))
+
+(define-key dired-mode-map (kbd "?") 'dired-get-size)
+
 ;; (eval-after-load 'tramp
 ;;  '(progn
 ;;     ;; Allow to use: /sudo:user@host:/path/to/file
