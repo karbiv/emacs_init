@@ -84,7 +84,7 @@
 (global-set-key (kbd "C-c s") 'delete-trailing-whitespace)
 (add-hook 'scheme-mode-hook #'enable-paredit-mode)
 ;; Path to Emacs C source, for functions help system
-(setq find-function-C-source-directory "/home/alex/workspace/emacs/emacs24-24.5+1/src/")
+(setq find-function-C-source-directory "/usr/src/debug/emacs-25.2/src")
 ;; Disable menu and scrollbars
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
