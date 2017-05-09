@@ -10,7 +10,7 @@
 (setq package-enable-at-startup nil)
 
 (defvar k-packages-config
-  '((idomenu t)
+  '(;;(idomenu t) ; or helm
     ;;; helm deps
     (helm-core t) (popup t) (async t) (helm t)
     (web-mode t)
@@ -79,6 +79,7 @@
 ;;(set-face-attribute 'default nil :font "M+ 1m")
 (set-face-attribute 'default nil :font "Ubuntu Mono")
 (set-face-attribute 'default nil :height 132)
+(setq ring-bell-function 'ignore) ; ignore sound notifications
 (show-paren-mode 1)
 (column-number-mode)
 (global-set-key (kbd "C-c c") 'comment-region)
@@ -231,8 +232,8 @@
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
 
-(ido-mode t)
-(global-set-key [(meta n )] 'idomenu)
+;;(ido-mode t)
+;;(global-set-key [(meta n )] 'idomenu)
 
 (add-to-list 'auto-mode-alist '("\\.glsl$"  . c-mode))
 
@@ -327,7 +328,8 @@
 			  ;;(setq imenu-create-index-function #'js--imenu-create-index)
 			  (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
 			  (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
-			  (define-key ggtags-mode-map (kbd "M-n") 'idomenu)))
+			  ;;(define-key ggtags-mode-map (kbd "M-n") 'idomenu)
+			  ))
 
 ;; flymake jslint
 ;;(add-hook 'js2-mode-hook 'flymake-jslint-load)
