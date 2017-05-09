@@ -7,44 +7,46 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 ;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
-(setq package-enable-at-startup nil)
 
-(defvar k-packages-config
-  '(;;(idomenu t) ; or helm
-    ;;; helm deps
-    (helm-core t) (popup t) (async t) (helm t)
-    (web-mode t)
-    (web-beautify t) ; requires "js-beautify" in npm 
-    (php-mode t)
-    (highlight-symbol t)
-    (auto-complete t)
-    (paredit t)
-    (epc t)
-    (ggtags t)
-	;;; dired
-    (dired-toggle-sudo t) (dired+ t)
-    ;;; jedi deps
-    (python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)
-    (bash-completion t) ; for shell mode
-    ;;; ace-window dep
-    (avy t) (ace-window t)
-    (xah-css-mode t)
-    ;;; magit deps
-    (magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
-	(nginx-mode t)
-	(apache-mode t)
-	(yaml-mode t)
-    (macrostep t))
-  "packages to load in (package-initialize)")
+;; packages to load in (package-initialize)
+;; must include all dependencies for use as `package-selected-packages source
+(setq package-load-list
+	  '(
+		;;(idomenu t) ; or helm
+		;;(goto-chg t) (undo-tree t) (evil t)
+        ;;; helm deps
+		(helm-core t) (popup t) (async t) (helm t)
+		(web-mode t)
+		(web-beautify t) ; requires "js-beautify" in npm 
+		(php-mode t)
+		(highlight-symbol t)
+		(auto-complete t)
+		(paredit t)
+		(epc t)
+		(ggtags t)
+        ;;; dired
+		(dired-toggle-sudo t) (dired+ t)
+        ;;; jedi deps
+		(python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)
+		(bash-completion t) ; for shell mode
+        ;;; ace-window dep
+		(avy t) (ace-window t)
+		(xah-css-mode t)
+        ;;; magit deps
+		(magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
+		(nginx-mode t)
+		(apache-mode t)
+		(yaml-mode t)
+		(macrostep t)))
 
-(setq package-load-list k-packages-config)
+(setq package-enable-at-startup nil) ; in manual control mode
+(package-initialize t) ; NO-ACTIVATE `t
+(unless package-archive-contents
+  (package-refresh-contents))
+(setq package-selected-packages (mapcar 'car package-load-list))
+;; 25.1+
+(package-install-selected-packages) ; ensure packages
 (package-initialize)
-
-;;; ensure packages
-(dolist (pkg-cfg k-packages-config)
-  (let ((pkg (car pkg-cfg)))
-    (when (not (package-installed-p pkg))
-      (package-install pkg nil))))
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
@@ -92,6 +94,7 @@
 (scroll-bar-mode -1)
 ;;(global-flycheck-mode)
 ;;(set-default 'truncate-lines t)
+(setq dired-listing-switches "-hal") ; dired format, options of 'ls' command
 
 (put 'erase-buffer 'disabled nil)
 (put 'set-goal-column 'disabled nil)
