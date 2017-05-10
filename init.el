@@ -11,9 +11,9 @@
 ;; packages to load in (package-initialize)
 ;; must include all dependencies for use as `package-selected-packages source
 (setq package-load-list
-	  '(
-		;;(idomenu t) ; or helm
-		;;(goto-chg t) (undo-tree t) (evil t)
+      '(
+		;;; extensible vi layer for Emacs deps
+		(cl-lib t) (undo-tree t) (goto-chg t) (evil t)
         ;;; helm deps
 		(helm-core t) (popup t) (async t) (helm t)
 		(web-mode t)
@@ -37,7 +37,10 @@
 		(nginx-mode t)
 		(apache-mode t)
 		(yaml-mode t)
-		(macrostep t)))
+		(macrostep t)
+		(help-fns+ t)
+		;;(geiser t)
+		))
 
 (setq package-enable-at-startup nil) ; in manual control mode
 (package-initialize t) ; NO-ACTIVATE `t
@@ -46,12 +49,12 @@
 (setq package-selected-packages (mapcar 'car package-load-list))
 ;; 25.1+
 (package-install-selected-packages) ; ensure packages
-(package-initialize)
+(package-initialize) ; activate
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
-  (add-to-list 'default-frame-alist '(background-color . "#f9fff9"))
+  (add-to-list 'default-frame-alist '(background-color . "#fafffa"))
   (setq make-backup-files nil)
 
   ;; desktop
@@ -81,7 +84,7 @@
 ;;(set-face-attribute 'default nil :font "M+ 1m")
 (set-face-attribute 'default nil :font "Ubuntu Mono")
 (set-face-attribute 'default nil :height 132)
-(setq ring-bell-function 'ignore) ; ignore sound notifications
+;;(setq ring-bell-function 'ignore) ; ignore sound notifications
 (show-paren-mode 1)
 (column-number-mode)
 (global-set-key (kbd "C-c c") 'comment-region)
@@ -101,10 +104,18 @@
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
 (add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
 
+(require 'help-fns+)
+
+;;; evil
+(require 'evil)
+(evil-mode 1)
+
 ;;; helm
 (require 'helm-config)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-c h") 'helm-mini)
+(global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
+(global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 (helm-mode 1)
 
 ;;; dired
