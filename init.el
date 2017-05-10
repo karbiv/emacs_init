@@ -12,8 +12,6 @@
 ;; must include all dependencies for use as `package-selected-packages source
 (setq package-load-list
       '(
-		;;; extensible vi layer for Emacs deps
-		(cl-lib t) (undo-tree t) (goto-chg t) (evil t)
         ;;; helm deps
 		(helm-core t) (popup t) (async t) (helm t)
 		(web-mode t)
@@ -21,7 +19,6 @@
 		(php-mode t)
 		(highlight-symbol t)
 		(auto-complete t)
-		(paredit t)
 		(epc t)
 		(ggtags t)
         ;;; dired
@@ -39,6 +36,7 @@
 		(yaml-mode t)
 		(macrostep t)
 		(help-fns+ t)
+        (paredit t)
 		;;(geiser t)
 		))
 
@@ -103,12 +101,9 @@
 (put 'set-goal-column 'disabled nil)
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
 (add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
+(setq-default indent-tabs-mode nil) ; use spaces
 
 (require 'help-fns+)
-
-;;; evil
-(require 'evil)
-(evil-mode 1)
 
 ;;; helm
 (require 'helm-config)
