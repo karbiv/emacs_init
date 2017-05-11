@@ -95,7 +95,7 @@
 (scroll-bar-mode -1)
 ;;(global-flycheck-mode)
 ;;(set-default 'truncate-lines t)
-(setq dired-listing-switches "-hal") ; dired format, options of 'ls' command
+(setq dired-listing-switches "-hal --group-directories-first") ; dired format, options of 'ls' command
 
 (put 'erase-buffer 'disabled nil)
 (put 'set-goal-column 'disabled nil)
