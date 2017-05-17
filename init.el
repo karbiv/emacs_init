@@ -130,6 +130,8 @@
 
 (define-key dired-mode-map (kbd "?") 'dired-get-size)
 
+;;; tramp
+
 ;; (eval-after-load 'tramp
 ;;  '(progn
 ;;     ;; Allow to use: /sudo:user@host:/path/to/file
@@ -139,6 +141,8 @@
 ;; something from stackoverflow
 (setq tramp-ssh-controlmaster-options
       "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
+;; customizable
+;;(setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
 
 ;;; ace-window
 (global-set-key (kbd "C-x o") 'ace-window)
@@ -283,6 +287,7 @@
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
+            (ggtags-mode 1)
             (define-abbrev web-mode-abbrev-table  "vdd" "var_dump(  );die();")
             (define-abbrev web-mode-abbrev-table  "cnl" "console.log();") ;
             (setq web-mode-enable-part-face t)
