@@ -37,7 +37,7 @@
         (macrostep t)
         (help-fns+ t)
         (paredit t)
-        ;;(geiser t)
+        (geiser t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -53,6 +53,8 @@
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
   (add-to-list 'default-frame-alist '(background-color . "#fafffa"))
+  ; selection color
+  (set-face-attribute 'region nil :background "#4AC0C9" :foreground "#ffffff")
   (setq make-backup-files nil)
 
   ;; desktop
@@ -160,7 +162,7 @@
         (java-mode . wisent-java-default-setup)
         ;;(js-mode . wisent-javascript-setup-parser) ; js-mode's imenu is better
         (python-mode . wisent-python-default-setup)
-        (scheme-mode . semantic-default-scheme-setup)
+        ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
         (srecode-template-mode . srecode-template-setup-parser)
         (texinfo-mode . semantic-default-texi-setup)
         (makefile-automake-mode . semantic-default-make-setup)
@@ -207,7 +209,7 @@
   (setq tab-width 4)
   (hs-minor-mode)
   (jedi:setup)
-  ;;(enable-paredit-mode)
+  ;;(enable-paredit-mode) ; some problems in python buffers
   (abbrev-mode 1)
   (define-abbrev python-mode-abbrev-table  "pdb" "import pdb;pdb.set_trace()")
   (define-abbrev python-mode-abbrev-table  "here" "raise Exception('here')")
