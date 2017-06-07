@@ -28,14 +28,12 @@
         (bash-completion t) ; for shell mode
         ;;; ace-window dep
         (avy t) (ace-window t)
-        (xah-css-mode t)
         ;;; magit deps
         (magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
         (nginx-mode t)
         (apache-mode t)
         (yaml-mode t)
         (macrostep t)
-        (help-fns+ t)
         (paredit t)
         (geiser t)
         ))
@@ -104,8 +102,6 @@
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
 (add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
 (setq-default indent-tabs-mode nil) ; use spaces
-
-(require 'help-fns+)
 
 ;;; helm
 (require 'helm-config)
@@ -271,17 +267,15 @@
                            (setq indent-tabs-mode nil
                                  tab-width 4
                                  c-basic-offset 4)
-                           ;;(setq-local imenu-create-index-function #'ggtags-build-imenu-index)
+                           (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
                            ))
 (global-set-key (kbd "<f11>") 'php-mode)
 (add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
 
 ;;----------------------------------------------------
 
-;;; xah-css-mode
-(add-to-list 'auto-mode-alist '("\\.css$"  . xah-css-mode))
-
 ;;; web-mode
+(add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.scss$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.twig$" . web-mode))
