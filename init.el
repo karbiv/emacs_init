@@ -197,6 +197,9 @@
   (setq ak-flycheck-toggle (not ak-flycheck-toggle)))
 
 (add-to-list 'auto-mode-alist '("\\.kv$"  . yaml-mode))
+(add-hook 'yaml-mode-hook
+          (lambda ()
+            (setq yaml-indent-offset 4)))
 ;;(add-hook 'python-mode-hook 'auto-complete-mode)
 ;;; to customize
 ;;(setq jedi:server-args '("--sys-path" "/home/...somepath.../venv/lib/python3.5/site-packages"))
