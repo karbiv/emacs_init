@@ -83,6 +83,7 @@
 (set-face-attribute 'default nil :font "Ubuntu Mono")
 (set-face-attribute 'default nil :height 132)
 ;;(setq ring-bell-function 'ignore) ; ignore sound notifications
+(setq visible-bell 1)
 (show-paren-mode 1)
 (column-number-mode)
 (global-set-key (kbd "C-c c") 'comment-region)
