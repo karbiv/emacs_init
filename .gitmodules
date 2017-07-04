@@ -3,4 +3,4 @@
 	url = https://github.com/Lindydancer/prepaint.git
 [submodule "rtags"]
 	path = rtags
-	url = ./rtags
+	url = https://github.com/Andersbakken/rtags.git
