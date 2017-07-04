@@ -360,8 +360,8 @@
 ;;; c mode
 
 ;; git submodule, prepaint for C multiline macros
-;; (autoload 'prepaint-mode
-;;   (concat (file-name-directory load-file-name) "prepaint/prepaint"))
+(autoload 'prepaint-mode
+  (concat (file-name-directory load-file-name) "prepaint/prepaint"))
 
 (add-to-list 'auto-mode-alist '("\\.glsl$"  . c-mode)) ; GL shaders
 
@@ -381,12 +381,10 @@
   (if use-rtags
       (progn
         (setq-local use-rtags nil)
-        (ggtags-mode 1)
-        (prepaint-mode 1)
+        (ggtags-mode 1) 
         (message "rtags disabled"))
     (setq-local use-rtags t)
     (ggtags-mode -1)
-    (prepaint-mode -1)
     (message "rtags enabled")))
 
 (add-hook 'c-mode-common-hook
@@ -405,6 +403,7 @@
             (require 'flycheck-rtags)
             (flycheck-mode 1)
             (my-flycheck-rtags-setup)
+            (prepaint-mode 1)
             ))
 
 (defun my-flycheck-rtags-setup ()
@@ -412,6 +411,11 @@
   (flycheck-select-checker 'rtags)
   (setq-local flycheck-check-syntax-automatically nil)
   (setq-local flycheck-highlighting-mode nil))
+
+(defface prepaint-face
+  '((((class color) (background light)) (:background "Grey91")))
+  "Face for prepaint."
+  :group 'prepaint)
 
 ;;----------------------------------------------------
 
