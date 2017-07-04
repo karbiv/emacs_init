@@ -36,6 +36,7 @@
         (macrostep t)
         (paredit t)
         (geiser t)
+        (buffer-move t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -103,6 +104,10 @@
 (add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
 (setq-default indent-tabs-mode nil) ; use spaces
 
+(require 'buffer-move) ; 'buf-move' functions
+
+;;----------------------------------------------------
+
 ;;; helm
 (require 'helm-config)
 (global-set-key (kbd "M-x") 'helm-M-x)
@@ -110,6 +115,8 @@
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 (helm-mode 1)
+
+;;----------------------------------------------------
 
 ;;; dired
 (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
@@ -249,13 +256,6 @@
 ;;(ido-mode t)
 ;;(global-set-key [(meta n )] 'idomenu)
 
-(add-to-list 'auto-mode-alist '("\\.glsl$"  . c-mode))
-
-;;; SQL mode
-;;----------------------------------------------------
-
-;;(load "~/.emacs.d/epsql/epsql.el")
-
 ;;----------------------------------------------------
 
 (eval-after-load "php-mode"
@@ -353,23 +353,58 @@
 
 (global-set-key (kbd "C-c C-r") 'revert-buffer)
 
+;;----------------------------------------------------
+
 ;;; c mode
-;; prepaint for C multiline macros, git submodule
-(autoload 'prepaint-mode
-  (concat (file-name-directory load-file-name) "prepaint/prepaint"))
+
+;; git submodule, prepaint for C multiline macros
+;; (autoload 'prepaint-mode
+;;   (concat (file-name-directory load-file-name) "prepaint/prepaint"))
+
+(add-to-list 'auto-mode-alist '("\\.glsl$"  . c-mode)) ; GL shaders
+
+;; for rtags-fallback.el
+(add-to-list 'load-path (file-name-directory load-file-name))
+
+;; rtags from git submodule
+(setq rtags-dir (concat (file-name-directory load-file-name) "rtags/"))
+(add-to-list 'load-path (concat rtags-dir "src"))
+
+;; load compile_commands.json in `pwd'
+(defun rtags-load-cmds ()
+  (interactive)
+  (shell-command (concat rtags-dir "bin/rc -J .") nil))
+
+(defun rtags-toggle ()
+  (interactive)
+  (if use-rtags
+      (progn
+        (setq-local use-rtags nil)
+        (ggtags-mode 1)
+        (message "rtags disabled"))
+    (setq-local use-rtags t)
+    (ggtags-mode -1)
+    (message "rtags enabled")))
 
 (add-hook 'c-mode-common-hook
           (lambda ()
-            (ggtags-mode)
-            (prepaint-mode 1)
+            ;;(ggtags-mode)
+            ;;(prepaint-mode 1)
             (setq c-macro-preprocessor "cpp -CC")
-            ;;(setq-local imenu-create-index-function #'ggtags-build-imenu-index)
             ;;(flycheck-mode)
             (hs-minor-mode)
             (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
-            (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)))
+            (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
+            (require 'rtags)
+            (setq rtags-path (concat rtags-dir "bin"))
+            (rtags-start-process-unless-running)
+            (setq rtags-display-result-backend 'helm) 
+            (require 'rtags-fallback)
+            (init-rtags-fallback-map)
+            (setq-local use-rtags nil) ; by default fallback to ggtags
+            ))
 
-;;****************************************************************
+;;----------------------------------------------------
 
 ;;; utility functions
 
