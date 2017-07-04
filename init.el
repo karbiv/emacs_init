@@ -37,6 +37,7 @@
         (paredit t)
         (geiser t)
         (buffer-move t)
+        (epl t) (pkg-info t) (flycheck t) (rtags t) (flycheck-rtags t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -369,7 +370,6 @@
 
 ;; rtags from git submodule
 (setq rtags-dir (concat (file-name-directory load-file-name) "rtags/"))
-(add-to-list 'load-path (concat rtags-dir "src"))
 
 ;; load compile_commands.json in `pwd'
 (defun rtags-load-cmds ()
@@ -382,17 +382,16 @@
       (progn
         (setq-local use-rtags nil)
         (ggtags-mode 1)
+        (prepaint-mode 1)
         (message "rtags disabled"))
     (setq-local use-rtags t)
     (ggtags-mode -1)
+    (prepaint-mode -1)
     (message "rtags enabled")))
 
 (add-hook 'c-mode-common-hook
           (lambda ()
-            ;;(ggtags-mode)
-            ;;(prepaint-mode 1)
             (setq c-macro-preprocessor "cpp -CC")
-            ;;(flycheck-mode)
             (hs-minor-mode)
             (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
             (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
@@ -403,7 +402,16 @@
             (require 'rtags-fallback)
             (init-rtags-fallback-map)
             (setq-local use-rtags nil) ; by default fallback to ggtags
+            (require 'flycheck-rtags)
+            (flycheck-mode 1)
+            (my-flycheck-rtags-setup)
             ))
+
+(defun my-flycheck-rtags-setup ()
+  "Configure flycheck-rtags for better experience."
+  (flycheck-select-checker 'rtags)
+  (setq-local flycheck-check-syntax-automatically nil)
+  (setq-local flycheck-highlighting-mode nil))
 
 ;;----------------------------------------------------
 
