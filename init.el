@@ -379,12 +379,12 @@
 
 (defun rtags-toggle ()
   (interactive)
-  (if (eq t use-rtags)
+  (if use-rtags
       (progn
         (setq-local use-rtags nil)
-        (message "rtags disabled"))
+        (message "use-rtags OFF"))
     (setq-local use-rtags t)
-    (message "rtags enabled")))
+    (message "use-rtags ON")))
 
 (defun c-cpp-init ()
   "Check if major mode is exactely C or C++,
