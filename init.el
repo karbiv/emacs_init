@@ -38,6 +38,7 @@
         (geiser t)
         (buffer-move t)
         (epl t) (pkg-info t) (flycheck t) (rtags t) (flycheck-rtags t)
+        (helm-rtags t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -378,33 +379,36 @@
 
 (defun rtags-toggle ()
   (interactive)
-  (if use-rtags
+  (if (eq t use-rtags)
       (progn
         (setq-local use-rtags nil)
-        (ggtags-mode 1) 
         (message "rtags disabled"))
     (setq-local use-rtags t)
-    (ggtags-mode -1)
     (message "rtags enabled")))
 
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (setq c-macro-preprocessor "cpp -CC")
-            (hs-minor-mode)
-            (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
-            (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-            (require 'rtags)
-            (setq rtags-path (concat rtags-dir "bin"))
-            (rtags-start-process-unless-running)
-            (setq rtags-display-result-backend 'helm) 
-            (require 'rtags-fallback)
-            (init-rtags-fallback-map)
-            (setq-local use-rtags nil) ; by default fallback to ggtags
-            (require 'flycheck-rtags)
-            (flycheck-mode 1)
-            (my-flycheck-rtags-setup)
-            (prepaint-mode 1)
-            ))
+(defun c-cpp-init ()
+  "Check if major mode is exactely C or C++,
+to avoid triggering in derived modes like php"
+  (when (or (eq major-mode 'c-mode)
+            (eq major-mode 'c++-mode))
+    (setq c-macro-preprocessor "cpp -CC")
+    (ggtags-mode 1)
+    (hs-minor-mode)
+    (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
+    (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
+    (require 'rtags)
+    (setq rtags-path (concat rtags-dir "bin"))
+    (rtags-start-process-unless-running)
+    (setq rtags-display-result-backend 'helm) 
+    (require 'rtags-fallback)
+    (init-rtags-fallback-map)
+    (setq-local use-rtags nil) ; by default fallback to ggtags
+    (require 'flycheck-rtags)
+    (flycheck-mode 1)
+    (my-flycheck-rtags-setup)
+    (prepaint-mode 1)))
+
+(add-hook 'c-mode-common-hook 'c-cpp-init)
 
 (defun my-flycheck-rtags-setup ()
   "Configure flycheck-rtags for better experience."
@@ -413,7 +417,7 @@
   (setq-local flycheck-highlighting-mode nil))
 
 (defface prepaint-face
-  '((((class color) (background light)) (:background "Grey91")))
+  '((((class color) (background light)) (:background "azure")))
   "Face for prepaint."
   :group 'prepaint)
 
