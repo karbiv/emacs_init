@@ -37,8 +37,8 @@
         (paredit t)
         (geiser t)
         (buffer-move t)
-        (epl t) (pkg-info t) (flycheck t) (rtags t) (flycheck-rtags t)
-        (helm-rtags t)
+        ;;(epl t) (pkg-info t) (flycheck t) (rtags t) (flycheck-rtags t)
+        ;;(helm-rtags t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -113,11 +113,11 @@
 
 ;;; helm
 (require 'helm-config)
+(helm-mode 1)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-c h") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
-(helm-mode 1)
 
 ;;----------------------------------------------------
 
@@ -158,8 +158,9 @@
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
 
+;;----------------------------------------------------
+
 ;;; semantic
-(semantic-mode 1)
 ;; disable semantic in some modes
 (setq semantic-new-buffer-setup-functions
       '((c-mode . semantic-default-c-setup)
@@ -177,12 +178,22 @@
         (makefile-bsdmake-mode . semantic-default-make-setup)
         (makefile-imake-mode . semantic-default-make-setup)
         (makefile-mode . semantic-default-make-setup)))
-(add-hook 'semantic-inhibit-functions (lambda () (member major-mode '(js-mode))))
-(add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
-(add-to-list 'semantic-default-submodes 'global-semantic-decoration-mode)
-(add-to-list 'semantic-default-submodes 'global-semantic-highlight-func-mode)
-;;(add-to-list 'semantic-default-submodes 'global-semanticdb-minor-mode)
-;;(add-to-list 'semantic-default-submodes 'global-semantic-idle-completions-mode)
+
+(add-hook 'semantic-inhibit-functions
+          (lambda ()
+            (when (member major-mode '(js-mode php-mode)) 
+              t)))
+
+(setq semantic-default-submodes '(
+                                  global-semantic-idle-scheduler-mode
+                                  global-semantic-decoration-mode
+                                  global-semantic-stickyfunc-mode 
+                                  global-semantic-highlight-func-mode
+                                  global-semantic-idle-completions-mode
+                                  ;;global-semanticdb-minor-mode
+                                  ))
+
+;;----------------------------------------------------
 
 ;;; shell mode
 (add-hook 'shell-mode-hook #'bash-completion-setup)
@@ -223,6 +234,7 @@
   (define-abbrev python-mode-abbrev-table  "pdb" "import pdb;pdb.set_trace()")
   (define-abbrev python-mode-abbrev-table  "here" "raise Exception('here')")
   (define-abbrev python-mode-abbrev-table  "pp" "import pprint; pp=pprint.PrettyPrinter(); pp.pprint()")
+  (define-key python-mode-map (kbd "C-c C-r") 'revert-buffer) ; orig is send region to python shell
   (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
   ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
 
@@ -266,40 +278,53 @@
      (define-abbrev php-mode-abbrev-table  "vdd" "var_dump(  );die();")
      (define-abbrev php-mode-abbrev-table  "vdb" "var_dump( debug_backtrace() );die();")
      ))
-(add-hook 'php-mode-hook (lambda ()
-                           (ggtags-mode 1)
-                           (local-unset-key "C-M-\\")
-                           (local-unset-key "C")
-                           (setq indent-tabs-mode nil
-                                 tab-width 4
-                                 c-basic-offset 4)
-                           (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
-                           ))
+(add-hook 'php-mode-hook
+          (lambda () 
+            (ggtags-mode 1)
+            (local-unset-key "C-M-\\")
+            (local-unset-key "C")
+            (setq indent-tabs-mode nil
+                  tab-width 4
+                  c-basic-offset 4)
+            (define-key php-mode-map (kbd "M-n") 'imenu)
+            ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
+            ;; timer because semantic rewrites it as a c-mode(mode-local.el)
+            (run-with-timer 1 3
+                            #'(lambda ()
+                                (setq-local imenu-create-index-function
+                                            #'imenu-default-create-index-function)))
+            (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
+            ))
 (global-set-key (kbd "<f11>") 'php-mode)
 (add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
 
 ;;----------------------------------------------------
 
 ;;; web-mode
+;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.scss$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.twig$" . web-mode))
+
 (setq web-mode-engines-alist
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
-            (ggtags-mode 1)
-            (define-abbrev web-mode-abbrev-table  "vdd" "var_dump(  );die();")
-            (define-abbrev web-mode-abbrev-table  "cnl" "console.log();") ;
+            (ggtags-mode 1) 
             (setq web-mode-enable-part-face t)
             (abbrev-mode 1)
+            (define-mode-abbrev "vdd" "var_dump(  );die();")
+            (define-mode-abbrev "cnl" "console.log();")
+            (define-mode-abbrev "vdb" "var_dump( debug_backtrace() );die();")
             (setq web-mode-enable-current-element-highlight t)
             (set-face-attribute 'web-mode-current-element-highlight-face nil :background "#CCCCCC")
             (set-face-attribute 'web-mode-html-tag-face nil :foreground "#0000CD")
             (set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#007700")
             (setq web-mode-enable-block-face t)
-            (set-face-attribute 'web-mode-block-face nil :background "#E3F2E1")
+            (set-face-attribute 'web-mode-block-face nil :background "#EBFAE8")
+            (setq imenu-create-index-function #'ggtags-build-imenu-index)
+            
             ))
 (setq web-mode-extra-snippets
       '((nil . (("div" . ("<div class=\"\">" . "</div>"))
@@ -371,6 +396,7 @@
 
 ;; rtags from git submodule
 (setq rtags-dir (concat (file-name-directory load-file-name) "rtags/"))
+(add-to-list 'load-path (concat rtags-dir "src")) ; for rtags.el
 
 ;; load compile_commands.json in `pwd'
 (defun rtags-load-cmds ()
@@ -393,10 +419,11 @@ to avoid triggering in derived modes like php"
             (eq major-mode 'c++-mode))
     (setq c-macro-preprocessor "cpp -CC")
     (ggtags-mode 1)
-    (hs-minor-mode)
+    (semantic-mode 1)
+    (hs-minor-mode) ; hide/show blocks
     (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
     (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-    (require 'rtags)
+    (require 'rtags) ; rtags.el must be from git submodule
     (setq rtags-path (concat rtags-dir "bin"))
     (rtags-start-process-unless-running)
     (setq rtags-display-result-backend 'helm) 
@@ -406,7 +433,8 @@ to avoid triggering in derived modes like php"
     (require 'flycheck-rtags)
     (flycheck-mode 1)
     (my-flycheck-rtags-setup)
-    (prepaint-mode 1)))
+    (prepaint-mode 1)
+    ))
 
 (add-hook 'c-mode-common-hook 'c-cpp-init)
 
