@@ -37,8 +37,7 @@
         (paredit t)
         (geiser t)
         (buffer-move t)
-        ;;(epl t) (pkg-info t) (flycheck t) (rtags t) (flycheck-rtags t)
-        ;;(helm-rtags t)
+        (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -53,9 +52,9 @@
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
-  (add-to-list 'default-frame-alist '(background-color . "#fafffa"))
-  ; selection color
-  (set-face-attribute 'region nil :background "#4AC0C9" :foreground "#ffffff")
+  ;;(add-to-list 'default-frame-alist '(background-color . "#fafffa"))
+  ;; selection color
+  ;;(set-face-attribute 'region nil :background "#4AC0C9" :foreground "#ffffff")
   (setq make-backup-files nil)
 
   ;; desktop
@@ -86,7 +85,7 @@
 (set-face-attribute 'default nil :font "Ubuntu Mono")
 (set-face-attribute 'default nil :height 132)
 ;;(setq ring-bell-function 'ignore) ; ignore sound notifications
-(setq visible-bell 1)
+;;(setq visible-bell 1)
 (show-paren-mode 1)
 (column-number-mode)
 (global-set-key (kbd "C-c c") 'comment-region)
@@ -190,7 +189,7 @@
                                   global-semantic-stickyfunc-mode 
                                   global-semantic-highlight-func-mode
                                   global-semantic-idle-completions-mode
-                                  ;;global-semanticdb-minor-mode
+                                  global-semanticdb-minor-mode
                                   ))
 
 ;;----------------------------------------------------
@@ -288,11 +287,6 @@
                   c-basic-offset 4)
             (define-key php-mode-map (kbd "M-n") 'imenu)
             ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
-            ;; timer because semantic rewrites it as a c-mode(mode-local.el)
-            (run-with-timer 1 3
-                            #'(lambda ()
-                                (setq-local imenu-create-index-function
-                                            #'imenu-default-create-index-function)))
             (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
             ))
 (global-set-key (kbd "<f11>") 'php-mode)
@@ -413,28 +407,24 @@
     (message "use-rtags ON")))
 
 (defun c-cpp-init ()
-  "Check if major mode is exactely C or C++,
-to avoid triggering in derived modes like php"
-  (when (or (eq major-mode 'c-mode)
-            (eq major-mode 'c++-mode))
-    (setq c-macro-preprocessor "cpp -CC")
-    (ggtags-mode 1)
-    (semantic-mode 1)
-    (hs-minor-mode) ; hide/show blocks
-    (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
-    (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-    (require 'rtags) ; rtags.el must be from git submodule
-    (setq rtags-path (concat rtags-dir "bin"))
-    (rtags-start-process-unless-running)
-    (setq rtags-display-result-backend 'helm) 
-    (require 'rtags-fallback)
-    (init-rtags-fallback-map)
-    (setq-local use-rtags nil) ; by default fallback to ggtags
-    (require 'flycheck-rtags)
-    (flycheck-mode 1)
-    (my-flycheck-rtags-setup)
-    (prepaint-mode 1)
-    ))
+  (setq c-macro-preprocessor "cpp -CC")
+  (ggtags-mode 1)
+  (semantic-mode 1)
+  (hs-minor-mode) ; hide/show blocks
+  (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
+  (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
+  (flycheck-mode 1)
+  (require 'rtags) ; rtags.el must be from git submodule
+  (setq rtags-path (concat rtags-dir "bin"))
+  (rtags-start-process-unless-running)
+  (setq rtags-display-result-backend 'helm) 
+  (require 'rtags-fallback)
+  (init-rtags-fallback-map)
+  (setq-local use-rtags nil) ; by default fallback to ggtags
+  ;;(require 'flycheck-rtags)
+  ;;(my-flycheck-rtags-setup)
+  (prepaint-mode 1)
+  )
 
 (add-hook 'c-mode-common-hook 'c-cpp-init)
 
