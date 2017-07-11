@@ -397,15 +397,6 @@
   (interactive)
   (shell-command (concat rtags-dir "bin/rc -J .") nil))
 
-(defun rtags-toggle ()
-  (interactive)
-  (if use-rtags
-      (progn
-        (setq-local use-rtags nil)
-        (message "use-rtags OFF"))
-    (setq-local use-rtags t)
-    (message "use-rtags ON")))
-
 (defun c-cpp-init ()
   (setq c-macro-preprocessor "cpp -CC")
   (ggtags-mode 1)
@@ -420,7 +411,6 @@
   (setq rtags-display-result-backend 'helm) 
   (require 'rtags-fallback)
   (init-rtags-fallback-map)
-  (setq-local use-rtags nil) ; by default fallback to ggtags
   ;;(require 'flycheck-rtags)
   ;;(my-flycheck-rtags-setup)
   (prepaint-mode 1)
@@ -438,6 +428,14 @@
   '((((class color) (background light)) (:background "azure")))
   "Face for prepaint."
   :group 'prepaint)
+
+;;----------------------------------------------------
+
+;;; Free Pascal
+;; (add-to-list 'load-path "~/.emacs.d/fpc-mode")
+;; (autoload 'fpc-mode "fpc-mode")
+;; (add-to-list 'auto-mode-alist '("\\.pas$" . fpc-mode))
+;; (add-to-list 'auto-mode-alist '("\\.pp$" . fpc-mode))
 
 ;;----------------------------------------------------
 

@@ -8,13 +8,13 @@
 
 (defun tags-find-symbol-at-point (&optional prefix)
   (interactive "P")
-  (if use-rtags
+  (if (use-rtags-p)
       (rtags-find-symbol-at-point prefix)
     (call-interactively 'ggtags-find-tag-dwim)))
 
 (defun tags-find-references-at-point (&optional prefix)
   (interactive "P")
-  (if use-rtags
+  (if (use-rtags-p)
       (rtags-find-references-at-point prefix)
     (call-interactively 'ggtags-find-reference)))
 
