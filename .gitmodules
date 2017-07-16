@@ -4,3 +4,4 @@
 [submodule "rtags"]
 	path = rtags
 	url = https://github.com/Andersbakken/rtags.git
+

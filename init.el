@@ -35,8 +35,8 @@
         (yaml-mode t)
         (macrostep t)
         (paredit t)
-        (geiser t)
         (buffer-move t)
+        (slime t)
         (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
         ))
 
@@ -431,11 +431,9 @@
 
 ;;----------------------------------------------------
 
-;;; Free Pascal
-;; (add-to-list 'load-path "~/.emacs.d/fpc-mode")
-;; (autoload 'fpc-mode "fpc-mode")
-;; (add-to-list 'auto-mode-alist '("\\.pas$" . fpc-mode))
-;; (add-to-list 'auto-mode-alist '("\\.pp$" . fpc-mode))
+;; Slime
+(setq inferior-lisp-program "/usr/bin/sbcl")
+(setq slime-contribs '(slime-fancy))
 
 ;;----------------------------------------------------
 
