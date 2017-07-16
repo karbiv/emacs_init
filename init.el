@@ -434,6 +434,13 @@
 ;; Slime
 (setq inferior-lisp-program "/usr/bin/sbcl")
 (setq slime-contribs '(slime-fancy))
+(add-hook
+ 'slime-mode-hook
+ (lambda ()
+   (define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)   
+   (define-key slime-mode-map (kbd "C-c M-n") 'slime-next-note)
+   (define-key slime-mode-map (kbd "C-c M-p") 'slime-previous-note)
+   ))
 
 ;;----------------------------------------------------
 
