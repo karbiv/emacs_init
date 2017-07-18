@@ -405,14 +405,16 @@
   (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
   (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
   (flycheck-mode 1)
-  (require 'rtags) ; rtags.el must be from git submodule
-  (setq rtags-path (concat rtags-dir "bin"))
-  (rtags-start-process-unless-running)
-  (setq rtags-display-result-backend 'helm) 
-  (require 'rtags-fallback)
-  (init-rtags-fallback-map)
-  ;;(require 'flycheck-rtags)
-  ;;(my-flycheck-rtags-setup)
+  (when (member major-mode '(c-mode c++-mode))
+    (require 'rtags) ; rtags.el must be from git submodule
+    (setq rtags-path (concat rtags-dir "bin"))
+    (rtags-start-process-unless-running)
+    (setq rtags-display-result-backend 'helm) 
+    (require 'rtags-fallback)
+    (init-rtags-fallback-map)
+    ;;(require 'flycheck-rtags)
+    ;;(my-flycheck-rtags-setup)
+    )  
   (prepaint-mode 1)
   )
 
@@ -440,6 +442,7 @@
    (define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)   
    (define-key slime-mode-map (kbd "C-c M-n") 'slime-next-note)
    (define-key slime-mode-map (kbd "C-c M-p") 'slime-previous-note)
+   (enable-paredit-mode)
    ))
 
 ;;----------------------------------------------------
