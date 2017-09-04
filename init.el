@@ -15,7 +15,7 @@
         ;;; helm deps
         (helm-core t) (popup t) (async t) (helm t)
         (web-mode t)
-        (web-beautify t) ; requires "js-beautify" in npm 
+        (web-beautify t) ; requires "js-beautify" in npm
         (php-mode t)
         (highlight-symbol t)
         (auto-complete t)
@@ -71,13 +71,6 @@
 
 ;;****************************************************************
 
-;; github.com/karbiv/cython-semantic in development
-(add-to-list 'load-path "~/.emacs.d/cython-semantic")
-(require 'cython-semantic-mode)
-(add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
-
-;;****************************************************************
-
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "DejaVu Sans Mono")
@@ -108,6 +101,9 @@
 
 (require 'buffer-move) ; 'buf-move' functions
 
+(global-set-key (kbd "C-c C-r") 'revert-buffer)
+(global-set-key (kbd "C-x s") 'save-buffer) ;; was `save-some-buffers with prompt
+
 ;;----------------------------------------------------
 
 ;;; helm
@@ -131,7 +127,7 @@
     (with-temp-buffer
       (apply 'call-process "/usr/bin/du" nil t nil "-sch" files)
       (message "Size of all marked files: %s"
-               (progn 
+               (progn
                  (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
                  (match-string 1))))))
 
@@ -176,17 +172,18 @@
         (makefile-makepp-mode . semantic-default-make-setup)
         (makefile-bsdmake-mode . semantic-default-make-setup)
         (makefile-imake-mode . semantic-default-make-setup)
-        (makefile-mode . semantic-default-make-setup)))
+        (makefile-mode . semantic-default-make-setup)
+        (hs-minor-mode 1)))
 
 (add-hook 'semantic-inhibit-functions
           (lambda ()
-            (when (member major-mode '(js-mode php-mode)) 
+            (when (member major-mode '(js-mode php-mode))
               t)))
 
 (setq semantic-default-submodes '(
                                   global-semantic-idle-scheduler-mode
                                   global-semantic-decoration-mode
-                                  global-semantic-stickyfunc-mode 
+                                  global-semantic-stickyfunc-mode
                                   global-semantic-highlight-func-mode
                                   global-semantic-idle-completions-mode
                                   global-semanticdb-minor-mode
@@ -228,7 +225,6 @@
   (setq tab-width 4)
   (hs-minor-mode)
   (jedi:setup)
-  ;;(enable-paredit-mode) ; some problems in python buffers
   (abbrev-mode 1)
   (define-abbrev python-mode-abbrev-table  "pdb" "import pdb;pdb.set_trace()")
   (define-abbrev python-mode-abbrev-table  "here" "raise Exception('here')")
@@ -240,9 +236,9 @@
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
   (local-unset-key (kbd "C-c .")) ; unhide ecb
   (local-set-key (kbd "C-c f") 'ak-flycheck-mode)
-  ;;(define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide Semantic
-  (define-key jedi-mode-map (kbd "M-.") 'jedi:goto-definition)
-  (define-key jedi-mode-map (kbd "C-c p") 'jedi:goto-definition-pop-marker))
+  (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide Semantic
+  (define-key jedi-mode-map (kbd "C-c p") 'jedi:goto-definition-pop-marker)
+  (define-key jedi-mode-map (kbd "M-.") 'jedi:goto-definition))
 (add-hook 'python-mode-hook 'python-mode-func)
 
 ;;----------------------------------------------------
@@ -278,7 +274,8 @@
      (define-abbrev php-mode-abbrev-table  "vdb" "var_dump( debug_backtrace() );die();")
      ))
 (add-hook 'php-mode-hook
-          (lambda () 
+          (lambda ()
+            (hs-minor-mode 1)
             (ggtags-mode 1)
             (local-unset-key "C-M-\\")
             (local-unset-key "C")
@@ -305,7 +302,7 @@
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
-            (ggtags-mode 1) 
+            (ggtags-mode 1)
             (setq web-mode-enable-part-face t)
             (abbrev-mode 1)
             (define-mode-abbrev "vdd" "var_dump(  );die();")
@@ -318,7 +315,7 @@
             (setq web-mode-enable-block-face t)
             (set-face-attribute 'web-mode-block-face nil :background "#EBFAE8")
             (setq imenu-create-index-function #'ggtags-build-imenu-index)
-            
+
             ))
 (setq web-mode-extra-snippets
       '((nil . (("div" . ("<div class=\"\">" . "</div>"))
@@ -350,9 +347,10 @@
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
 ;;; js-mode
-(eval-after-load 'js-mode
-  '(progn
-     (define-abbrev js-mode-abbrev-table  "cnl" "console.log(  );")))
+
+(defun abbrev-console-log ()
+  (backward-char 2) t)
+(put 'abbrev-console-log 'no-self-insert t)
 
 (add-hook 'js-mode-hook
           #'(lambda ()
@@ -364,16 +362,11 @@
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
               (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
               ;;(define-key ggtags-mode-map (kbd "M-n") 'idomenu)
+              (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
+                'abbrev-console-log)
+              (setq js-indent-level 2)
+              ;;(flymake-jslint-load)
               ))
-
-;; flymake jslint
-;;(add-hook 'js2-mode-hook 'flymake-jslint-load)
-
-(add-hook 'js-mode-hook
-          #'(lambda ()
-              (setq js-indent-level 2)))
-
-(global-set-key (kbd "C-c C-r") 'revert-buffer)
 
 ;;----------------------------------------------------
 
@@ -399,6 +392,7 @@
 
 (defun c-cpp-init ()
   (setq c-macro-preprocessor "cpp -CC")
+  (hs-minor-mode 1)
   (ggtags-mode 1)
   (semantic-mode 1)
   (hs-minor-mode) ; hide/show blocks
@@ -409,12 +403,12 @@
     (require 'rtags) ; rtags.el must be from git submodule
     (setq rtags-path (concat rtags-dir "bin"))
     (rtags-start-process-unless-running)
-    (setq rtags-display-result-backend 'helm) 
+    (setq rtags-display-result-backend 'helm)
     (require 'rtags-fallback)
     (init-rtags-fallback-map)
     ;;(require 'flycheck-rtags)
     ;;(my-flycheck-rtags-setup)
-    )  
+    )
   (prepaint-mode 1)
   )
 
@@ -435,15 +429,20 @@
 
 ;; Slime
 (setq inferior-lisp-program "/usr/bin/sbcl")
+;;(setq inferior-lisp-program "~/")
 (setq slime-contribs '(slime-fancy))
 (add-hook
  'slime-mode-hook
  (lambda ()
-   (define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)   
+   (define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)
    (define-key slime-mode-map (kbd "C-c M-n") 'slime-next-note)
    (define-key slime-mode-map (kbd "C-c M-p") 'slime-previous-note)
    (enable-paredit-mode)
+   (load "slime-asdf")
+   (setq common-lisp-hyperspec-root
+         (expand-file-name "~/Documents/CommonLisp/HyperSpec-7-0/HyperSpec/"))
    ))
+
 
 ;;----------------------------------------------------
 
@@ -462,3 +461,10 @@
 ;;   (measure-time
 ;;    (semantic-fetch-tags)
 ;;    (message "Buffer reparsed.")))
+
+;; dev
+
+;; github.com/karbiv/cython-semantic in development
+;; (add-to-list 'load-path "~/.emacs.d/cython-semantic")
+;; (require 'cython-semantic-mode)
+;; (add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
