@@ -23,8 +23,9 @@
         (ggtags t)
         ;;; dired
         (dired-toggle-sudo t) (dired+ t)
+        ;;(anaconda-mode t)
         ;;; jedi deps
-        (python-environment t) (ctable t) (deferred t) (concurrent t) (jedi-core t) (jedi t)
+        (concurrent t) (deferred t) (ctable t) (python-environment t) (jedi-core t) (jedi t)
         (bash-completion t) ; for shell mode
         ;;; ace-window dep
         (avy t) (ace-window t)
@@ -117,8 +118,6 @@
 ;;----------------------------------------------------
 
 ;;; dired
-(define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
-(setq dired-listing-switches "-hal --time-style=iso")
 
 ;; https://www.emacswiki.org/emacs/DiredGetFileSize
 (defun dired-get-size ()
@@ -131,7 +130,11 @@
                  (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
                  (match-string 1))))))
 
-(define-key dired-mode-map (kbd "?") 'dired-get-size)
+(add-hook 'dired-mode-hook
+          (lambda ()
+            (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
+            (setq dired-listing-switches "-hal --time-style=iso")
+            (define-key dired-mode-map (kbd "?") 'dired-get-size)))
 
 ;;; tramp
 
@@ -238,7 +241,8 @@
   (local-set-key (kbd "C-c f") 'ak-flycheck-mode)
   (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide Semantic
   (define-key jedi-mode-map (kbd "C-c p") 'jedi:goto-definition-pop-marker)
-  (define-key jedi-mode-map (kbd "M-.") 'jedi:goto-definition))
+  (define-key jedi-mode-map (kbd "M-.") 'jedi:goto-definition)
+  )
 (add-hook 'python-mode-hook 'python-mode-func)
 
 ;;----------------------------------------------------
@@ -382,13 +386,13 @@
 (add-to-list 'load-path (file-name-directory load-file-name))
 
 ;; rtags from git submodule
-(setq rtags-dir (concat (file-name-directory load-file-name) "rtags/"))
-(add-to-list 'load-path (concat rtags-dir "src")) ; for rtags.el
+;;(setq rtags-dir (concat (file-name-directory load-file-name) "rtags/"))
+;;(add-to-list 'load-path (concat rtags-dir "src")) ; for rtags.el
 
 ;; load compile_commands.json in `pwd'
-(defun rtags-load-cmds ()
-  (interactive)
-  (shell-command (concat rtags-dir "bin/rc -J .") nil))
+;; (defun rtags-load-cmds ()
+;;   (interactive)
+;;   (shell-command (concat rtags-dir "bin/rc -J .") nil))
 
 (defun c-cpp-init ()
   (setq c-macro-preprocessor "cpp -CC")
@@ -400,12 +404,12 @@
   (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
   (flycheck-mode 1)
   (when (member major-mode '(c-mode c++-mode))
-    (require 'rtags) ; rtags.el must be from git submodule
-    (setq rtags-path (concat rtags-dir "bin"))
-    (rtags-start-process-unless-running)
-    (setq rtags-display-result-backend 'helm)
-    (require 'rtags-fallback)
-    (init-rtags-fallback-map)
+    ;;(require 'rtags) ; rtags.el must be from git submodule
+    ;;(setq rtags-path (concat rtags-dir "bin"))
+    ;;(rtags-start-process-unless-running)
+    ;;(setq rtags-display-result-backend 'helm)
+    ;;(require 'rtags-fallback)
+    ;;(init-rtags-fallback-map)
     ;;(require 'flycheck-rtags)
     ;;(my-flycheck-rtags-setup)
     )
@@ -465,6 +469,6 @@
 ;; dev
 
 ;; github.com/karbiv/cython-semantic in development
-;; (add-to-list 'load-path "~/.emacs.d/cython-semantic")
-;; (require 'cython-semantic-mode)
-;; (add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
+(add-to-list 'load-path "~/.emacs.d/cython-semantic")
+(require 'cython-semantic-mode)
+(add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
