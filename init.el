@@ -75,9 +75,8 @@
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "DejaVu Sans Mono")
-;;(set-face-attribute 'default nil :font "M+ 1m")
-(set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 132)
+;;(set-face-attribute 'default nil :font "Ubuntu Mono")
+;;(set-face-attribute 'default nil :height 132)
 ;;(setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
