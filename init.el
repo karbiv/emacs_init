@@ -23,7 +23,6 @@
         (ggtags t)
         ;;; dired
         (dired-toggle-sudo t) (dired+ t)
-        ;;(anaconda-mode t)
         ;;; jedi deps
         (concurrent t) (deferred t) (ctable t) (python-environment t) (jedi-core t) (jedi t)
         (bash-completion t) ; for shell mode
@@ -150,7 +149,8 @@
 ;;(setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
 
 ;;; ace-window
-(global-set-key (kbd "C-x o") 'ace-window)
+;;(global-set-key (kbd "C-x o") 'ace-window)
+(global-set-key (kbd "<f8>") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -341,7 +341,7 @@
 
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
-(global-set-key [f1] 'speedbar-get-focus)
+;;(global-set-key [f1] 'speedbar-get-focus)
 (add-hook 'speedbar-load-hook (lambda () (require 'semantic/sb)))
 
 (setq recentf-auto-cleanup 'never)
@@ -468,6 +468,6 @@
 ;; dev
 
 ;; github.com/karbiv/cython-semantic in development
-(add-to-list 'load-path "~/.emacs.d/cython-semantic")
+(add-to-list 'load-path "~/cython-semantic")
 (require 'cython-semantic-mode)
 (add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
