@@ -19,6 +19,7 @@
         (php-mode t)
         (highlight-symbol t)
         (auto-complete t)
+        (ini-mode t) ; systemd, PKGBUILD
         (epc t)
         (ggtags t)
         ;;; dired
@@ -270,6 +271,13 @@
 ;;(global-set-key [(meta n )] 'idomenu)
 
 ;;----------------------------------------------------
+;; ini-mode
+
+(add-to-list 'auto-mode-alist '("\\.ini$"  . ini-mode))
+(add-to-list 'auto-mode-alist '("\\.service\\|\\.target$"  . ini-mode)) ; Systemd
+(add-to-list 'auto-mode-alist '("^PKGBUILD$"  . ini-mode)) ; Arch package file
+
+;;----------------------------------------------------
 
 (eval-after-load "php-mode"
   '(progn
@@ -468,6 +476,6 @@
 ;; dev
 
 ;; github.com/karbiv/cython-semantic in development
-(add-to-list 'load-path "~/cython-semantic")
+(add-to-list 'load-path "~/my/cython-semantic")
 (require 'cython-semantic-mode)
 (add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
