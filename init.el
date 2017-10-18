@@ -151,7 +151,7 @@
 
 ;;; ace-window
 ;;(global-set-key (kbd "C-x o") 'ace-window)
-(global-set-key (kbd "<f8>") 'ace-window)
+(global-set-key (kbd "M-p") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -275,7 +275,7 @@
 
 (add-to-list 'auto-mode-alist '("\\.ini$"  . ini-mode))
 (add-to-list 'auto-mode-alist '("\\.service\\|\\.target$"  . ini-mode)) ; Systemd
-(add-to-list 'auto-mode-alist '("^PKGBUILD$"  . ini-mode)) ; Arch package file
+(add-to-list 'auto-mode-alist '("PKGBUILD$"  . ini-mode)) ; Arch package file
 
 ;;----------------------------------------------------
 
