@@ -53,9 +53,9 @@
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
-  ;;(add-to-list 'default-frame-alist '(background-color . "#fafffa"))
+  ;;(add-to-list 'default-frame-alist '(background-color . "#EEFFCC"))
   ;; selection color
-  ;;(set-face-attribute 'region nil :background "#4AC0C9" :foreground "#ffffff")
+  ;;(set-face-attribute 'region nil :background "#4AB0C9" :foreground "#ffffff")
   (setq make-backup-files nil)
 
   ;; desktop
@@ -74,9 +74,9 @@
 
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
-;;(set-face-attribute 'default nil :font "DejaVu Sans Mono")
-;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-;;(set-face-attribute 'default nil :height 132)
+;;(set-face-attribute 'default nil :font "Hack")
+(set-face-attribute 'default nil :font "Ubuntu Mono")
+(set-face-attribute 'default nil :height 132)
 ;;(setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -151,7 +151,7 @@
 
 ;;; ace-window
 ;;(global-set-key (kbd "C-x o") 'ace-window)
-(global-set-key (kbd "M-p") 'ace-window)
+;;(global-set-key (kbd "M-p") 'ace-window) ; M-p used in shell
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -198,9 +198,11 @@
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
 ;;; ggtags
-(setenv "GTAGSCONF" "/home/alex/.globalrc")
+;; TODO
+(setq ggtags-highlight-tag nil)
+;;(setenv "GTAGSCONF" "~/.globalrc")
 ;; github.com/universal-ctags/ctags
-(setenv "GTAGSLABEL" "new-ctags") ; use Universal ctags
+;;(setenv "GTAGSLABEL" "new-ctags") ; use Universal ctags
 ;;(setenv "GTAGSLABEL" "ctags") ; use Exuberant ctags, probably not maintained
 
 ;;----------------------------------------------------
