@@ -12,8 +12,10 @@
 ;; must include all dependencies for use as `package-selected-packages source
 (setq package-load-list
       '(
-        ;;; helm deps
+        (ascii t)
+        ;;; helm deps 
         (helm-core t) (popup t) (async t) (helm t)
+        (helm-swoop t) (helm-go-package t) (helm-gtags t) 
         (web-mode t)
         (web-beautify t) ; requires "js-beautify" in npm
         (php-mode t)
@@ -39,6 +41,7 @@
         (buffer-move t)
         (slime t)
         (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
+        (go-mode t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -105,17 +108,35 @@
 (global-set-key (kbd "C-x s") 'save-buffer) ;; was `save-some-buffers with prompt
 
 ;;----------------------------------------------------
-
 ;;; helm
-(require 'helm-config)
+
+;; (require 'helm-config)
 (helm-mode 1)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-c h") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 
-;;----------------------------------------------------
+;;; helm-swoop
 
+(global-set-key (kbd "M-i") 'helm-swoop)
+(global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+
+;;; helm-gtags
+
+(eval-after-load "helm-gtags"
+  '(progn
+     (define-key helm-gtags-mode-map (kbd "M-t") 'helm-gtags-find-tag)
+     (define-key helm-gtags-mode-map (kbd "M-r") 'helm-gtags-find-rtag)
+     (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
+     (define-key helm-gtags-mode-map (kbd "M-g M-p") 'helm-gtags-parse-file)
+     (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
+     (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
+     (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)))
+
+;;----------------------------------------------------
 ;;; dired
 
 ;; https://www.emacswiki.org/emacs/DiredGetFileSize
@@ -137,21 +158,14 @@
 
 ;;; tramp
 
-;; (eval-after-load 'tramp
-;;  '(progn
-;;     ;; Allow to use: /sudo:user@host:/path/to/file
-;;     (add-to-list 'tramp-default-proxies-alist
-;;        '(".*" "\\`.+\\'" "/ssh:%h:"))))
-
 ;; something from stackoverflow
-(setq tramp-ssh-controlmaster-options
-      "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
-;; customizable
-;;(setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
+;; (setq tramp-ssh-controlmaster-options
+;;       "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
+(setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
 
 ;;; ace-window
 ;;(global-set-key (kbd "C-x o") 'ace-window)
-;;(global-set-key (kbd "M-p") 'ace-window) ; M-p used in shell
+(global-set-key (kbd "<F8>") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -198,12 +212,24 @@
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
 ;;; ggtags
-;; TODO
-(setq ggtags-highlight-tag nil)
-;;(setenv "GTAGSCONF" "~/.globalrc")
+;;(setq ggtags-highlight-tag nil)
+(setenv "GTAGSCONF" "/usr/share/gtags/gtags.conf")
 ;; github.com/universal-ctags/ctags
-;;(setenv "GTAGSLABEL" "new-ctags") ; use Universal ctags
-;;(setenv "GTAGSLABEL" "ctags") ; use Exuberant ctags, probably not maintained
+;; use Universal ctags installed as /usr/bin/ctags,
+;; instead of /usr/bin/universal-ctags
+(setenv "GTAGSLABEL" "ctags")
+
+;;----------------------------------------------------
+;; go-mode
+
+(add-hook 'go-mode-hook
+          (lambda ()
+            (setq tab-width 4)
+            (helm-gtags-mode 1)
+            (setq go-packages-function 'go-packages-go-list)
+            ;; helm-go-package
+            (define-key go-mode-map (kbd "M-g p") 'helm-go-package)
+            ))
 
 ;;----------------------------------------------------
 
@@ -316,17 +342,16 @@
 (add-hook 'web-mode-hook
           (lambda ()
             (ggtags-mode 1)
-            (setq web-mode-enable-part-face t)
+            ;;(setq web-mode-enable-part-face t)
             (abbrev-mode 1)
             (define-mode-abbrev "vdd" "var_dump(  );die();")
             (define-mode-abbrev "cnl" "console.log();")
             (define-mode-abbrev "vdb" "var_dump( debug_backtrace() );die();")
-            (setq web-mode-enable-current-element-highlight t)
-            (set-face-attribute 'web-mode-current-element-highlight-face nil :background "#CCCCCC")
-            (set-face-attribute 'web-mode-html-tag-face nil :foreground "#0000CD")
-            (set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#007700")
-            (setq web-mode-enable-block-face t)
-            (set-face-attribute 'web-mode-block-face nil :background "#EBFAE8")
+            ;;(set-face-attribute 'web-mode-html-tag-face nil :foreground "#0000CD")
+            ;;(set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#007700")
+            ;;(setq web-mode-enable-block-face t)
+            ;;(set-face-attribute 'web-mode-block-face nil :background "#EBFAE8")
+            ;;(set-face-attribute 'web-mode-block-face nil :background "#8fbc8f")
             (setq imenu-create-index-function #'ggtags-build-imenu-index)
 
             ))
@@ -386,8 +411,8 @@
 ;;; c mode
 
 ;; git submodule, prepaint for C multiline macros
-(autoload 'prepaint-mode
-  (concat (file-name-directory load-file-name) "prepaint/prepaint"))
+;; (autoload 'prepaint-mode
+;;   (concat (file-name-directory load-file-name) "prepaint/prepaint"))
 
 (add-to-list 'auto-mode-alist '("\\.glsl$"  . c-mode)) ; GL shaders
 
@@ -422,7 +447,7 @@
     ;;(require 'flycheck-rtags)
     ;;(my-flycheck-rtags-setup)
     )
-  (prepaint-mode 1)
+  ;;(prepaint-mode 1)
   )
 
 (add-hook 'c-mode-common-hook 'c-cpp-init)
@@ -433,10 +458,10 @@
   (setq-local flycheck-check-syntax-automatically nil)
   (setq-local flycheck-highlighting-mode nil))
 
-(defface prepaint-face
-  '((((class color) (background light)) (:background "azure")))
-  "Face for prepaint."
-  :group 'prepaint)
+;; (defface prepaint-face
+;;   '((((class color) (background light)) (:background "azure")))
+;;   "Face for prepaint."
+;;   :group 'prepaint)
 
 ;;----------------------------------------------------
 
@@ -447,7 +472,7 @@
 (add-hook
  'slime-mode-hook
  (lambda ()
-   (define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)
+   ;;(define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)
    (define-key slime-mode-map (kbd "C-c M-n") 'slime-next-note)
    (define-key slime-mode-map (kbd "C-c M-p") 'slime-previous-note)
    (enable-paredit-mode)
