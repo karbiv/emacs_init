@@ -13,21 +13,24 @@
 (setq package-load-list
       '(
         (ascii t)
-        ;;; helm deps 
+        (fuzzy t) ; opt. dep. for fuzzy autocomplete
+        ;;; helm deps
         (helm-core t) (popup t) (async t) (helm t)
-        (helm-swoop t) (helm-go-package t) (helm-gtags t) 
+        (helm-swoop t) ; better than highlight-symbol
+        (helm-systemd t)
+        ;;; jedi deps
+        (concurrent t) (deferred t) (ctable t) (python-environment t) (jedi-core t) (jedi t)
+        (go-mode t)
+	(auto-complete t) ; required by jedi
+        (go-autocomplete t)
+        (go-gopath t) ; set GOPATH in Emacs, gb build tool
         (web-mode t)
         (web-beautify t) ; requires "js-beautify" in npm
-        (php-mode t)
-        (highlight-symbol t)
-        (auto-complete t)
         (ini-mode t) ; systemd, PKGBUILD
         (epc t)
         (ggtags t)
         ;;; dired
         (dired-toggle-sudo t) (dired+ t)
-        ;;; jedi deps
-        (concurrent t) (deferred t) (ctable t) (python-environment t) (jedi-core t) (jedi t)
         (bash-completion t) ; for shell mode
         ;;; ace-window dep
         (avy t) (ace-window t)
@@ -39,9 +42,8 @@
         (macrostep t)
         (paredit t)
         (buffer-move t)
-        (slime t)
         (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
-        (go-mode t)
+        (php-mode t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -80,7 +82,7 @@
 ;;(set-face-attribute 'default nil :font "Hack")
 (set-face-attribute 'default nil :font "Ubuntu Mono")
 (set-face-attribute 'default nil :height 132)
-;;(setq ring-bell-function 'ignore) ; ignore sound notifications
+(setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
 (column-number-mode)
@@ -95,17 +97,19 @@
 ;;(global-flycheck-mode)
 ;;(set-default 'truncate-lines t)
 (setq dired-listing-switches "-hal --group-directories-first") ; dired format, options of 'ls' command
-
 (put 'erase-buffer 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
 (add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
 (setq-default indent-tabs-mode nil) ; use spaces
 
-(require 'buffer-move) ; 'buf-move' functions
+(global-set-key (kbd "<f8>") #'buf-move)
+(global-set-key (kbd "<f9>") #'revert-buffer)
+(global-set-key (kbd "C-x s") #'save-buffer) ; redefine from `save-some-buffers with prompt
 
-(global-set-key (kbd "C-c C-r") 'revert-buffer)
-(global-set-key (kbd "C-x s") 'save-buffer) ;; was `save-some-buffers with prompt
+;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
+(setq tab-always-indent 'complete)
+(add-to-list 'completion-styles 'initials t)
 
 ;;----------------------------------------------------
 ;;; helm
@@ -123,18 +127,6 @@
 (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
 (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
 (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-
-;;; helm-gtags
-
-(eval-after-load "helm-gtags"
-  '(progn
-     (define-key helm-gtags-mode-map (kbd "M-t") 'helm-gtags-find-tag)
-     (define-key helm-gtags-mode-map (kbd "M-r") 'helm-gtags-find-rtag)
-     (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
-     (define-key helm-gtags-mode-map (kbd "M-g M-p") 'helm-gtags-parse-file)
-     (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
-     (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history)
-     (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)))
 
 ;;----------------------------------------------------
 ;;; dired
@@ -163,9 +155,9 @@
 ;;       "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
 (setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
 
+;;----------------------------------------------------
 ;;; ace-window
-;;(global-set-key (kbd "C-x o") 'ace-window)
-(global-set-key (kbd "<F8>") 'ace-window)
+(global-set-key (kbd "C-x o") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -225,11 +217,29 @@
 (add-hook 'go-mode-hook
           (lambda ()
             (setq tab-width 4)
-            (helm-gtags-mode 1)
             (setq go-packages-function 'go-packages-go-list)
-            ;; helm-go-package
-            (define-key go-mode-map (kbd "M-g p") 'helm-go-package)
+            (define-key go-mode-map (kbd "M-.") #'godef-jump)
+            (define-key go-mode-map (kbd "C-u M-.") #'godef-jump-other-window)
+            (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
+            (auto-complete-mode 1)
+            ;;; Existing bindings, here as a reminder
+            ;; (define-key m (kbd "C-c C-a") #'go-import-add)
+            ;; (define-key m (kbd "C-c C-j") #'godef-jump)
+            ;; (define-key m (kbd "C-x 4 C-c C-j") #'godef-jump-other-window)
+            ;; (define-key m (kbd "C-c C-d") #'godef-describe)
+            ;; (define-key m (kbd "C-c C-f") 'go-goto-map)
+            ;;; Keys after go-goto-map
+            ;; (define-key m "a" #'go-goto-arguments)
+            ;; (define-key m "d" #'go-goto-docstring)
+            ;; (define-key m "f" #'go-goto-function)
+            ;; (define-key m "i" #'go-goto-imports)
+            ;; (define-key m "m" #'go-goto-method-receiver)
+            ;; (define-key m "n" #'go-goto-function-name)
+            ;; (define-key m "r" #'go-goto-return-values))
             ))
+;; requires github.com/nsf/gocode
+(eval-after-load "go-mode" '(require 'go-autocomplete))
+;; `go-gopath-set-gopath'
 
 ;;----------------------------------------------------
 
@@ -275,25 +285,10 @@
 
 ;;----------------------------------------------------
 
-;; highlight-symbol
-(global-set-key [(control f9)] 'highlight-symbol-at-point)
-(global-set-key [f9] 'highlight-symbol-next)
-(global-set-key [(shift f9)] 'highlight-symbol-prev)
-(global-set-key [(meta f9)] 'highlight-symbol-query-replace)
-
-(add-hook 'prog-mode-hook #'highlight-symbol-mode)
-;;(setq highlight-symbol-on-navigation-p nil)
-
-;;----------------------------------------------------
-
 ;;; magit
 (global-set-key (kbd "C-c m") 'magit-status)
 
 ;;----------------------------------------------------
-
-;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
-(setq tab-always-indent 'complete)
-(add-to-list 'completion-styles 'initials t)
 
 ;;(ido-mode t)
 ;;(global-set-key [(meta n )] 'idomenu)
