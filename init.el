@@ -16,8 +16,9 @@
         (fuzzy t) ; opt. dep. for fuzzy autocomplete
         ;;; helm deps
         (helm-core t) (popup t) (async t) (helm t)
-        (helm-swoop t) ; better than highlight-symbol
+        (helm-swoop t) ; advanced search results presentation
         (helm-systemd t)
+        (highlight-symbol t)
         ;;; jedi deps
         (concurrent t) (deferred t) (ctable t) (python-environment t) (jedi-core t) (jedi t)
         (go-mode t)
@@ -26,6 +27,7 @@
         (go-gopath t) ; set GOPATH in Emacs, gb build tool
         (web-mode t)
         (web-beautify t) ; requires "js-beautify" in npm
+        (typescript-mode t)
         (ini-mode t) ; systemd, PKGBUILD
         (epc t)
         (ggtags t)
@@ -104,7 +106,7 @@
 (setq-default indent-tabs-mode nil) ; use spaces
 
 (global-set-key (kbd "<f8>") #'buf-move)
-(global-set-key (kbd "<f9>") #'revert-buffer)
+;;(global-set-key (kbd "<f9>") #'revert-buffer)
 (global-set-key (kbd "C-x s") #'save-buffer) ; redefine from `save-some-buffers with prompt
 
 ;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
@@ -127,6 +129,18 @@
 (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
 (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
 (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+
+;;----------------------------------------------------
+
+;; highlight-symbol
+(global-set-key [(control f9)] 'highlight-symbol-at-point)
+(global-set-key [f9] 'highlight-symbol-next)
+(global-set-key [(shift f9)] 'highlight-symbol-prev)
+(global-set-key [(meta f9)] 'highlight-symbol-query-replace)
+
+(add-hook 'prog-mode-hook #'highlight-symbol-mode)
+;;(setq highlight-symbol-on-navigation-p nil)
+
 
 ;;----------------------------------------------------
 ;;; dired
@@ -210,6 +224,13 @@
 ;; use Universal ctags installed as /usr/bin/ctags,
 ;; instead of /usr/bin/universal-ctags
 (setenv "GTAGSLABEL" "ctags")
+
+;;----------------------------------------------------
+;; makefile-mode
+
+(add-hook 'makefile-mode-hook
+          (lambda ()
+            (setq tab-width 4)))
 
 ;;----------------------------------------------------
 ;; go-mode
