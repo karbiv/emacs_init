@@ -347,6 +347,7 @@
 ;;----------------------------------------------------
 
 ;;; web-mode
+(add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.scss$"  . web-mode))
