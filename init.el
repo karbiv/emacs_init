@@ -239,16 +239,15 @@
           (lambda ()
             (setq tab-width 4)
             (setq go-packages-function 'go-packages-go-list)
-            (define-key go-mode-map (kbd "M-.") #'godef-jump)
-            (define-key go-mode-map (kbd "C-u M-.") #'godef-jump-other-window)
+            (define-key go-mode-map (kbd "M-.") #'godef-jump) ; or `#'godef-jump-other-window'
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (auto-complete-mode 1)
-            ;;; Existing bindings, here as a reminder
-            ;; (define-key m (kbd "C-c C-a") #'go-import-add)
-            ;; (define-key m (kbd "C-c C-j") #'godef-jump)
-            ;; (define-key m (kbd "C-x 4 C-c C-j") #'godef-jump-other-window)
-            ;; (define-key m (kbd "C-c C-d") #'godef-describe)
-            ;; (define-key m (kbd "C-c C-f") 'go-goto-map)
+            ;; Free "C-c" prefix to `comment-region'
+            (define-key m (kbd "C-c C-a") nil) ; #'go-import-add
+            (define-key m (kbd "C-c C-j") nil) ; #'godef-jump
+            (define-key m (kbd "C-x 4 C-c C-j") #'godef-jump-other-window)
+            (define-key m (kbd "C-c C-d") nil) ; #'godef-describe
+            (define-key m (kbd "C-c C-f") nil) ; 'go-goto-map
             ;;; Keys after go-goto-map
             ;; (define-key m "a" #'go-goto-arguments)
             ;; (define-key m "d" #'go-goto-docstring)
@@ -380,15 +379,21 @@
 (global-set-key (kbd "<f12>") 'web-mode)
 
 ;;----------------------------------------------------
-
 ;;; web-beautify.el
 ;; requires "beautifier" through npm
 (eval-after-load 'css-mode  '(define-key css-mode-map (kbd "C-c b") 'web-beautify-css))
 (eval-after-load 'json-mode '(define-key json-mode-map (kbd "C-c b") 'web-beautify-js))
 (eval-after-load 'sgml-mode '(define-key html-mode-map (kbd "C-c b") 'web-beautify-html))
 (eval-after-load 'web-mode  '(define-key web-mode-map (kbd "C-c b") 'web-beautify-html))
+;; npm config set prefix ~/.npm
+(eval-after-load "web-beautify"
+  #'(lambda ()
+      (setq web-beautify-html-program "~/.npm/bin/html-beautify")
+      (setq web-beautify-css-program "~/.npm/bin/css-beautify")
+      (setq web-beautify-js-program "~/.npm/bin/js-beautify")))
 
-;; linum-mode
+;;----------------------------------------------------
+;;; linum-mode
 (global-set-key (kbd "C-c l") 'linum-mode)
 
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
