@@ -351,12 +351,14 @@
 (add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.scss$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.twig$" . web-mode))
 
 (setq web-mode-engines-alist
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
+            (setq web-mode-script-padding 4) ; indent in script tag
             (ggtags-mode 1)
             ;;(setq web-mode-enable-part-face t)
             (abbrev-mode 1)
