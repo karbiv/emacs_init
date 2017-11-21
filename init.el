@@ -344,12 +344,10 @@
 (add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
 
 ;;----------------------------------------------------
-
 ;;; web-mode
 (add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
-(add-to-list 'auto-mode-alist '("\\.scss$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.twig$" . web-mode))
@@ -358,8 +356,18 @@
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
-            (setq web-mode-script-padding 4) ; indent in script tag
-            (ggtags-mode 1)
+            (setq web-mode-script-padding 2) ; indent in script tag
+            (setq web-mode-markup-indent-offset 2)
+            (setq web-mode-css-indent-offset 2)
+            (setq web-mode-code-indent-offset 2)
+            (setq web-mode-enable-current-element-highlight t)
+            (setq web-mode-enable-current-column-highlight t)
+            (face-spec-set 'web-mode-current-element-highlight-face
+                           '((t :foreground "DimGray" :background "Aquamarine"))
+                           'face-defface-spec)
+            (face-spec-set 'web-mode-current-column-highlight-face
+                           '((t :background "Gainsboro"))
+                           'face-defface-spec) 
             ;;(setq web-mode-enable-part-face t)
             (abbrev-mode 1)
             (define-mode-abbrev "vdd" "var_dump(  );die();")
@@ -379,6 +387,12 @@
                 ))
         ))
 (global-set-key (kbd "<f12>") 'web-mode)
+
+;;----------------------------------------------------
+;;;scss-mode
+(add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
+(add-to-list 'auto-mode-alist '("\\.sass$" . scss-mode))
+(eval-after-load 'scss-mode '(define-key scss-mode-map (kbd "C-c b") 'web-beautify-css))
 
 ;;----------------------------------------------------
 ;;; web-beautify.el
