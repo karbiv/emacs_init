@@ -25,9 +25,8 @@
 	(auto-complete t) ; required by jedi
         (go-autocomplete t)
         (go-gopath t) ; set GOPATH in Emacs, gb build tool
-        (web-mode t)
-        (web-beautify t) ; requires "js-beautify" in npm
-        (typescript-mode t)
+        (web-mode t) (web-mode-edit-element t)
+        (web-beautify t) ; requires "js-beautify" in npm 
         (ini-mode t) ; systemd, PKGBUILD
         (epc t)
         (ggtags t)
@@ -221,9 +220,12 @@
 ;;(setq ggtags-highlight-tag nil)
 (setenv "GTAGSCONF" "/usr/share/gtags/gtags.conf")
 ;; github.com/universal-ctags/ctags
-;; use Universal ctags installed as /usr/bin/ctags,
-;; instead of /usr/bin/universal-ctags
+;; for Universal Ctags installed as ctags
 (setenv "GTAGSLABEL" "ctags")
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+              (ggtags-mode 1))))
 
 ;;----------------------------------------------------
 ;; makefile-mode
@@ -329,8 +331,7 @@
      ))
 (add-hook 'php-mode-hook
           (lambda ()
-            (hs-minor-mode 1)
-            (ggtags-mode 1)
+            (hs-minor-mode 1) 
             (local-unset-key "C-M-\\")
             (local-unset-key "C")
             (setq indent-tabs-mode nil
@@ -346,16 +347,17 @@
 ;;----------------------------------------------------
 ;;; web-mode
 (add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
-;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.twig$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.js$" . web-mode))
 
 (setq web-mode-engines-alist
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
+            (setq tab-width 2)
+            (ggtags-mode 1) ; php templates
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
             (setq web-mode-css-indent-offset 2)
@@ -379,7 +381,6 @@
             ;;(set-face-attribute 'web-mode-block-face nil :background "#EBFAE8")
             ;;(set-face-attribute 'web-mode-block-face nil :background "#8fbc8f")
             (setq imenu-create-index-function #'ggtags-build-imenu-index)
-
             ))
 (setq web-mode-extra-snippets
       '((nil . (("div" . ("<div class=\"\">" . "</div>"))
@@ -432,7 +433,6 @@
           #'(lambda ()
               (setq tab-width 4)
               (abbrev-mode 1)
-              (ggtags-mode 1)
               ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
               ;;(setq imenu-create-index-function #'js--imenu-create-index)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
@@ -469,7 +469,6 @@
 (defun c-cpp-init ()
   (setq c-macro-preprocessor "cpp -CC")
   (hs-minor-mode 1)
-  (ggtags-mode 1)
   (semantic-mode 1)
   (hs-minor-mode) ; hide/show blocks
   (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
