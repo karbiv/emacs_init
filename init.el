@@ -218,10 +218,10 @@
 
 ;;; ggtags
 ;;(setq ggtags-highlight-tag nil)
-(setenv "GTAGSCONF" "/usr/share/gtags/gtags.conf")
+;;;;;;;;;; cp /usr/share/gtags/gtags.conf ~/.globalrc
 ;; github.com/universal-ctags/ctags
 ;; for Universal Ctags installed as ctags
-(setenv "GTAGSLABEL" "ctags")
+(setenv "GTAGSLABEL" "new-ctags")
 (add-hook 'c-mode-common-hook
           (lambda ()
             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
@@ -357,7 +357,7 @@
 (add-hook 'web-mode-hook
           (lambda ()
             (setq tab-width 2)
-            (ggtags-mode 1) ; php templates
+            ;;(ggtags-mode 1) ; php templates
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
             (setq web-mode-css-indent-offset 2)
