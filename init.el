@@ -357,7 +357,7 @@
 (add-hook 'web-mode-hook
           (lambda ()
             (setq tab-width 2)
-            ;;(ggtags-mode 1) ; php templates
+            (ggtags-mode 1) ; php templates
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
             (setq web-mode-css-indent-offset 2)
