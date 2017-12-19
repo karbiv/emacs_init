@@ -45,6 +45,7 @@
         (buffer-move t)
         (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
         (php-mode t)
+        (auto-complete-nxml t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -106,7 +107,11 @@
 (setq-default indent-tabs-mode nil) ; use spaces
 
 (global-set-key (kbd "<f8>") #'buf-move)
-;;(global-set-key (kbd "<f9>") #'revert-buffer)
+(global-set-key (kbd "C-c C-r")
+                (lambda () ; `rever-buffer', noconfirm, preserve-modes
+                  (interactive)
+                  (revert-buffer t t t)
+                  ))
 (global-set-key (kbd "C-x s") #'save-buffer) ; redefine from `save-some-buffers with prompt
 
 ;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
@@ -393,8 +398,8 @@
 ;;----------------------------------------------------
 ;;; xml
 
-;;(add-to-list 'auto-mode-alist '("\\.ui$"  . nxml-mode))
-(add-to-list 'auto-mode-alist '("\\.ui$"  . web-mode))
+(add-to-list 'auto-mode-alist '("\\.xml$"  . nxml-mode))
+;;(add-to-list 'auto-mode-alist '("\\.xml$"  . web-mode))
 
 ;;----------------------------------------------------
 ;;; scss-mode
