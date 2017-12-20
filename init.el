@@ -45,7 +45,6 @@
         (buffer-move t)
         (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
         (php-mode t)
-        (auto-complete-nxml t)
         ))
 
 (setq package-enable-at-startup nil) ; in manual control mode
@@ -358,18 +357,25 @@
 (add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.js$" . web-mode))
 
+(eval-after-load 'web-mode
+  '(progn
+     (define-key web-mode-map (kbd "C-M-n") 'web-mode-element-next)
+     (define-key web-mode-map (kbd "C-M-p") 'web-mode-element-previous)
+     ))
+
 (setq web-mode-engines-alist
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
             (setq tab-width 2)
             (ggtags-mode 1) ; php templates
+            ;;(hs-minor-mode)
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
             (setq web-mode-css-indent-offset 2)
             (setq web-mode-code-indent-offset 2)
             (setq web-mode-enable-current-element-highlight t)
-            (setq web-mode-enable-current-column-highlight t)
+            ;;(setq web-mode-enable-current-column-highlight t)
             (face-spec-set 'web-mode-current-element-highlight-face
                            '((t :foreground "DimGray" :background "Aquamarine"))
                            'face-defface-spec)
@@ -398,8 +404,8 @@
 ;;----------------------------------------------------
 ;;; xml
 
-(add-to-list 'auto-mode-alist '("\\.xml$"  . nxml-mode))
-;;(add-to-list 'auto-mode-alist '("\\.xml$"  . web-mode))
+;;(add-to-list 'auto-mode-alist '("\\.xml$"  . nxml-mode))
+(add-to-list 'auto-mode-alist '("\\.xml$"  . web-mode))
 
 ;;----------------------------------------------------
 ;;; scss-mode
