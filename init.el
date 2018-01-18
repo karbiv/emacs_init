@@ -26,7 +26,7 @@
         (go-autocomplete t)
         (go-gopath t) ; set GOPATH in Emacs, gb build tool
         (web-mode t) (web-mode-edit-element t)
-        (web-beautify t) ; requires "js-beautify" in npm 
+        (web-beautify t) ; requires "js-beautify" in npm
         (ini-mode t) ; systemd, PKGBUILD
         (epc t)
         (ggtags t)
@@ -44,6 +44,13 @@
         (paredit t)
         (buffer-move t)
         (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
+
+        ;; Rust
+        (seq t) (rust-mode t) (cargo t) (flycheck-rust t)
+        (lsp-mode t) (lsp-rust t)
+        (company t)
+        (s t) (f t) (pos-tip t) (racer t)
+
         (php-mode t)
         ))
 
@@ -222,7 +229,7 @@
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
 ;;; ggtags
-;;(setq ggtags-highlight-tag nil)
+(setq ggtags-highlight-tag nil)
 ;;;;;;;;;; cp /usr/share/gtags/gtags.conf ~/.globalrc
 ;; github.com/universal-ctags/ctags
 ;; for Universal Ctags installed as ctags
@@ -238,6 +245,29 @@
 (add-hook 'makefile-mode-hook
           (lambda ()
             (setq tab-width 4)))
+
+;;----------------------------------------------------
+;; rust-mode
+
+;; rustup component add rls-preview rust-analysis rust-src
+;; cargo install racer
+;; cargo install rustfmt
+(require 'lsp-rust)
+(setq rust-format-on-save t)
+(add-hook 'rust-mode-hook
+          (lambda ()
+            (racer-mode 1)
+            (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+            (setq company-tooltip-align-annotations t)
+            (lsp-mode 1)
+            (lsp-rust-enable)
+            (setq lsp-rust-rls-command '("rustup" "run" "stable" "rls"))
+            (flycheck-mode 1)
+            (flycheck-rust-setup)
+            (lsp-flycheck 1)))
+(add-hook 'racer-mode-hook #'eldoc-mode)
+(add-hook 'racer-mode-hook #'company-mode)
+;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
 
 ;;----------------------------------------------------
 ;; go-mode
@@ -326,6 +356,7 @@
 (add-to-list 'auto-mode-alist '("\\.ini$"  . ini-mode))
 (add-to-list 'auto-mode-alist '("\\.service\\|\\.target$"  . ini-mode)) ; Systemd
 (add-to-list 'auto-mode-alist '("PKGBUILD$"  . ini-mode)) ; Arch package file
+(add-to-list 'auto-mode-alist '("\\.toml$"  . ini-mode)) ; Cargo.toml
 
 ;;----------------------------------------------------
 
@@ -336,7 +367,7 @@
      ))
 (add-hook 'php-mode-hook
           (lambda ()
-            (hs-minor-mode 1) 
+            (hs-minor-mode 1)
             (local-unset-key "C-M-\\")
             (local-unset-key "C")
             (setq indent-tabs-mode nil
@@ -381,7 +412,7 @@
                            'face-defface-spec)
             (face-spec-set 'web-mode-current-column-highlight-face
                            '((t :background "Gainsboro"))
-                           'face-defface-spec) 
+                           'face-defface-spec)
             ;;(setq web-mode-enable-part-face t)
             (abbrev-mode 1)
             (define-mode-abbrev "vdd" "var_dump(  );die();")
