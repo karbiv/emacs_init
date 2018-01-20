@@ -8,66 +8,50 @@
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 ;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 
-;; packages to load in (package-initialize)
-;; must include all dependencies for use as `package-selected-packages source
-(setq package-load-list
+(setq my-package-list
       '(
-        (ascii t)
-        (fuzzy t) ; opt. dep. for fuzzy autocomplete
-        ;;; helm deps
-        (helm-core t) (popup t) (async t) (helm t)
-        (helm-swoop t) ; advanced search results presentation
-        (helm-systemd t)
-        (highlight-symbol t)
-        ;;; jedi deps
-        (concurrent t) (deferred t) (ctable t) (python-environment t) (jedi-core t) (jedi t)
-        (go-mode t)
-	(auto-complete t) ; required by jedi
-        (go-autocomplete t)
-        (go-gopath t) ; set GOPATH in Emacs, gb build tool
-        (web-mode t) (web-mode-edit-element t)
-        (web-beautify t) ; requires "js-beautify" in npm
-        (ini-mode t) ; systemd, PKGBUILD
-        (epc t)
-        (ggtags t)
-        ;;; dired
-        (dired-toggle-sudo t) (dired+ t)
-        (bash-completion t) ; for shell mode
-        ;;; ace-window dep
-        (avy t) (ace-window t)
-        ;;; magit deps
-        (magit-popup t) (git-commit t) (with-editor t) (dash t) (magit t)
-        (nginx-mode t)
-        (apache-mode t)
-        (yaml-mode t)
-        (macrostep t)
-        (paredit t)
-        (buffer-move t)
-        (epl t) (pkg-info t) (flycheck t) (flycheck-cython t)
+        ascii
+        rainbow-mode
+        helm
+	helm-swoop ; advanced search results presentation
+        helm-systemd
+        highlight-symbol
+	jedi
+        go-mode
+        go-autocomplete
+        go-gopath ; set GOPATH in Emacs, gb build tool
+        web-mode
+	web-mode-edit-element
+        ini-mode ; systemd, PKGBUILD
+        ggtags
+        dired-toggle-sudo dired+
+        bash-completion
+        ace-window
+	magit
+        nginx-mode
+        apache-mode
+        yaml-mode
+        macrostep
+        paredit
+        buffer-move
+	flycheck
+        company
+	rust-mode cargo flycheck-rust racer 
+        php-mode
 
-        ;; Rust
-        (seq t) (rust-mode t) (cargo t) (flycheck-rust t)
-        (lsp-mode t) (lsp-rust t)
-        (company t)
-        (s t) (f t) (pos-tip t) (racer t)
-
-        (php-mode t)
+        ;; Themes
+        ;;ample-theme
         ))
 
-(setq package-enable-at-startup nil) ; in manual control mode
-(package-initialize t) ; NO-ACTIVATE `t
+(package-initialize) ; activate
 (unless package-archive-contents
   (package-refresh-contents))
-(setq package-selected-packages (mapcar 'car package-load-list))
-;; 25.1+
-(package-install-selected-packages) ; ensure packages
-(package-initialize) ; activate
+(mapc #'package-install my-package-list)
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
   ;;(add-to-list 'default-frame-alist '(background-color . "#EEFFCC"))
-  ;;(add-to-list 'default-frame-alist '(background-color . "#FFFFFF"))
   ;; selection color
   ;;(set-face-attribute 'region nil :background "#4AB0C9" :foreground "#ffffff")
   (setq make-backup-files nil)
@@ -89,8 +73,8 @@
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "Hack")
-(set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 132) ; for Ubuntu Mono
+;;(set-face-attribute 'default nil :font "Ubuntu Mono")
+(set-face-attribute 'default nil :height 132)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -230,7 +214,7 @@
 
 ;;; ggtags
 (setq ggtags-highlight-tag nil)
-;;;;;;;;;; cp /usr/share/gtags/gtags.conf ~/.globalrc
+;; cp /usr/share/gtags/gtags.conf ~/.globalrc
 ;; github.com/universal-ctags/ctags
 ;; for Universal Ctags installed as ctags
 (setenv "GTAGSLABEL" "new-ctags")
@@ -240,34 +224,32 @@
               (ggtags-mode 1))))
 
 ;;----------------------------------------------------
-;; makefile-mode
-
-(add-hook 'makefile-mode-hook
-          (lambda ()
-            (setq tab-width 4)))
-
-;;----------------------------------------------------
 ;; rust-mode
 
 ;; rustup component add rls-preview rust-analysis rust-src
 ;; cargo install racer
-;; cargo install rustfmt
-(require 'lsp-rust)
+;; cargo install --force rustfmt-nightly
 (setq rust-format-on-save t)
 (add-hook 'rust-mode-hook
           (lambda ()
             (racer-mode 1)
             (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
             (setq company-tooltip-align-annotations t)
-            (lsp-mode 1)
-            (lsp-rust-enable)
-            (setq lsp-rust-rls-command '("rustup" "run" "stable" "rls"))
             (flycheck-mode 1)
             (flycheck-rust-setup)
-            (lsp-flycheck 1)))
+            ;; "M-{" is already used for `backward-paragraph'
+            (define-key rust-mode-map (kbd "C-{") #'insert-pair)))
 (add-hook 'racer-mode-hook #'eldoc-mode)
 (add-hook 'racer-mode-hook #'company-mode)
 ;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
+
+;;----------------------------------------------------
+;; makefile-mode
+
+(add-hook 'makefile-mode-hook
+          (lambda ()
+            (setq tab-width 4)))
+
 
 ;;----------------------------------------------------
 ;; go-mode
