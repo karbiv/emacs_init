@@ -34,19 +34,22 @@
         macrostep
         paredit
         buffer-move
+        php-mode
 	flycheck
         company
+        lsp-mode
 	rust-mode cargo flycheck-rust racer 
-        php-mode
 
         ;; Themes
         ;;ample-theme
         ))
 
 (package-initialize) ; activate
-(unless package-archive-contents
-  (package-refresh-contents))
-(mapc #'package-install my-package-list)
+(defun install-packages ()
+  "Install packages listed in `my-package-list'"
+  (interactive)
+  (package-refresh-contents)
+  (mapc #'package-install my-package-list))
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
