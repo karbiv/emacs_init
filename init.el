@@ -37,8 +37,7 @@
         php-mode
 	flycheck
         company
-        lsp-mode
-	rust-mode cargo flycheck-rust racer 
+	rust-mode cargo flycheck-rust racer
 
         ;; Themes
         ;;ample-theme
@@ -77,7 +76,7 @@
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "Hack")
 ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 132)
+;;(set-face-attribute 'default nil :height 132)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -175,43 +174,6 @@
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
 
 ;;----------------------------------------------------
-
-;;; semantic
-;; disable semantic in some modes
-(setq semantic-new-buffer-setup-functions
-      '((c-mode . semantic-default-c-setup)
-        (c++-mode . semantic-default-c-setup)
-        (html-mode . semantic-default-html-setup)
-        (java-mode . wisent-java-default-setup)
-        ;;(js-mode . wisent-javascript-setup-parser) ; js-mode's imenu is better
-        (python-mode . wisent-python-default-setup)
-        ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
-        (srecode-template-mode . srecode-template-setup-parser)
-        (texinfo-mode . semantic-default-texi-setup)
-        (makefile-automake-mode . semantic-default-make-setup)
-        (makefile-gmake-mode . semantic-default-make-setup)
-        (makefile-makepp-mode . semantic-default-make-setup)
-        (makefile-bsdmake-mode . semantic-default-make-setup)
-        (makefile-imake-mode . semantic-default-make-setup)
-        (makefile-mode . semantic-default-make-setup)
-        (hs-minor-mode 1)))
-
-(add-hook 'semantic-inhibit-functions
-          (lambda ()
-            (when (member major-mode '(js-mode php-mode))
-              t)))
-
-(setq semantic-default-submodes '(
-                                  global-semantic-idle-scheduler-mode
-                                  global-semantic-decoration-mode
-                                  global-semantic-stickyfunc-mode
-                                  global-semantic-highlight-func-mode
-                                  global-semantic-idle-completions-mode
-                                  global-semanticdb-minor-mode
-                                  ))
-
-;;----------------------------------------------------
-
 ;;; shell mode
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
@@ -241,7 +203,8 @@
             (flycheck-mode 1)
             (flycheck-rust-setup)
             ;; "M-{" is already used for `backward-paragraph'
-            (define-key rust-mode-map (kbd "C-{") #'insert-pair)))
+            (define-key rust-mode-map (kbd "C-{") #'insert-pair)
+            ))
 (add-hook 'racer-mode-hook #'eldoc-mode)
 (add-hook 'racer-mode-hook #'company-mode)
 ;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
@@ -319,7 +282,6 @@
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
   (local-unset-key (kbd "C-c .")) ; unhide ecb
   (local-set-key (kbd "C-c f") 'ak-flycheck-mode)
-  (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide Semantic
   (define-key jedi-mode-map (kbd "C-c p") 'jedi:goto-definition-pop-marker)
   (define-key jedi-mode-map (kbd "M-.") 'jedi:goto-definition)
   )
@@ -450,7 +412,6 @@
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
 ;;(global-set-key [f1] 'speedbar-get-focus)
-(add-hook 'speedbar-load-hook (lambda () (require 'semantic/sb)))
 
 (setq recentf-auto-cleanup 'never)
 (recentf-mode 1)
@@ -503,7 +464,6 @@
 (defun c-cpp-init ()
   (setq c-macro-preprocessor "cpp -CC")
   (hs-minor-mode 1)
-  (semantic-mode 1)
   (hs-minor-mode) ; hide/show blocks
   (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
   (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
@@ -543,7 +503,6 @@
 (add-hook
  'slime-mode-hook
  (lambda ()
-   ;;(define-key slime-mode-map (kbd "M-n") 'helm-semantic-or-imenu)
    (define-key slime-mode-map (kbd "C-c M-n") 'slime-next-note)
    (define-key slime-mode-map (kbd "C-c M-p") 'slime-previous-note)
    (enable-paredit-mode)
@@ -562,18 +521,3 @@
 ;;   `(let ((time (current-time)))
 ;;      ,@body
 ;;      (message "%.06f" (float-time (time-since time)))))
-
-;; (defun my-refresh ()
-;;   "Force a full refresh of the current buffer's tags.
-;; Throw away all the old tags, and recreate the tag database."
-;;   (interactive)
-;;   (measure-time
-;;    (semantic-fetch-tags)
-;;    (message "Buffer reparsed.")))
-
-;; dev
-
-;; github.com/karbiv/cython-semantic in development
-(add-to-list 'load-path "~/my/cython-semantic")
-(require 'cython-semantic-mode)
-(add-to-list 'auto-mode-alist '("\\.py$" . cython-semantic-mode))
