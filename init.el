@@ -10,11 +10,13 @@
 
 (setq my-package-list
       '(
+        ;;grep-a-lot
         ascii
         rainbow-mode
         helm
 	helm-swoop ; advanced search results presentation
         helm-systemd
+        helm-ag ; alternative to grep
         highlight-symbol
 	jedi
         go-mode
@@ -38,9 +40,9 @@
 	flycheck
         company
 	rust-mode cargo flycheck-rust racer
+        smartparens ;; exact matching for Semantic lexer
+        ssass-mode
 
-        ;; Themes
-        ;;ample-theme
         ))
 
 (package-initialize) ; activate
@@ -81,11 +83,13 @@
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
 (column-number-mode)
+;; https://stackoverflow.com/questions/5738170/why-does-emacs-create-temporary-symbolic-links-for-modified-files
+(setq create-lockfiles nil)
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c s") 'delete-trailing-whitespace)
 (add-hook 'scheme-mode-hook #'enable-paredit-mode)
 ;; Path to Emacs C source, for functions help system
-(setq find-function-C-source-directory "/usr/src/debug/emacs-25.2/src")
+(setq find-function-C-source-directory "~/soft/emacs/src")
 ;; Disable menu and scrollbars
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
@@ -119,6 +123,9 @@
 (global-set-key (kbd "C-c h") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
+
+;;; helm-ag
+(setq-default helm-ag-insert-at-point 'symbol)
 
 ;;; helm-swoop
 
@@ -174,6 +181,41 @@
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
 
 ;;----------------------------------------------------
+;;; semantic
+;; disable semantic in some modes
+(setq semantic-new-buffer-setup-functions
+      '((c-mode . semantic-default-c-setup)
+        (c++-mode . semantic-default-c-setup)
+        (html-mode . semantic-default-html-setup)
+        (java-mode . wisent-java-default-setup)
+        ;;(js-mode . wisent-javascript-setup-parser) ; js-mode's imenu is better
+        (python-mode . wisent-python-default-setup)
+        ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
+        (srecode-template-mode . srecode-template-setup-parser)
+        (texinfo-mode . semantic-default-texi-setup)
+        (makefile-automake-mode . semantic-default-make-setup)
+        (makefile-gmake-mode . semantic-default-make-setup)
+        (makefile-makepp-mode . semantic-default-make-setup)
+        (makefile-bsdmake-mode . semantic-default-make-setup)
+        (makefile-imake-mode . semantic-default-make-setup)
+        (makefile-mode . semantic-default-make-setup)
+        (hs-minor-mode 1)))
+
+(add-hook 'semantic-inhibit-functions
+          (lambda ()
+            (when (member major-mode '(js-mode php-mode))
+              t)))
+
+;; (setq semantic-default-submodes '(
+;;                                   global-semantic-idle-scheduler-mode
+;;                                   global-semantic-decoration-mode
+;;                                   global-semantic-stickyfunc-mode
+;;                                   global-semantic-highlight-func-mode
+;;                                   global-semantic-idle-completions-mode
+;;                                   global-semanticdb-minor-mode
+;;                                   ))
+
+;;----------------------------------------------------
 ;;; shell mode
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
@@ -191,20 +233,26 @@
 ;;----------------------------------------------------
 ;; rust-mode
 
+;; dev
+;; (add-to-list 'load-path "~/rust-semantic")
+;; (require 'rust-semantic-mode)
+
 ;; rustup component add rls-preview rust-analysis rust-src
 ;; cargo install racer
 ;; cargo install --force rustfmt-nightly
-(setq rust-format-on-save t)
+
+;;(setq rust-format-on-save t)
 (add-hook 'rust-mode-hook
           (lambda ()
             (racer-mode 1)
             (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+            (define-key rust-mode-map (kbd "C-c C-c") #'rust-compile)
             (setq company-tooltip-align-annotations t)
             (flycheck-mode 1)
             (flycheck-rust-setup)
             ;; "M-{" is already used for `backward-paragraph'
             (define-key rust-mode-map (kbd "C-{") #'insert-pair)
-            ))
+            (rust-semantic-mode 1)))
 (add-hook 'racer-mode-hook #'eldoc-mode)
 (add-hook 'racer-mode-hook #'company-mode)
 ;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
@@ -216,8 +264,8 @@
           (lambda ()
             (setq tab-width 4)))
 
-
 ;;----------------------------------------------------
+
 ;; go-mode
 
 (add-hook 'go-mode-hook
@@ -227,24 +275,30 @@
             (define-key go-mode-map (kbd "M-.") #'godef-jump) ; or `#'godef-jump-other-window'
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (auto-complete-mode 1)
-            ;; Free "C-c" prefix to `comment-region'
-            (define-key m (kbd "C-c C-a") nil) ; #'go-import-add
-            (define-key m (kbd "C-c C-j") nil) ; #'godef-jump
-            (define-key m (kbd "C-x 4 C-c C-j") #'godef-jump-other-window)
-            (define-key m (kbd "C-c C-d") nil) ; #'godef-describe
-            (define-key m (kbd "C-c C-f") nil) ; 'go-goto-map
-            ;;; Keys after go-goto-map
+            (abbrev-mode 1)
+            ;; print all methods that item implements
+            (define-abbrev go-mode-abbrev-table  "impls"
+              "foo := reflect.TypeOf();
+    for i:=0; i<foo.NumMethod();i++ {method:=foo.Method(i);Println(method.Name)}")
+            
+            ;;; Bindings in  go-goto-map
             ;; (define-key m "a" #'go-goto-arguments)
             ;; (define-key m "d" #'go-goto-docstring)
             ;; (define-key m "f" #'go-goto-function)
             ;; (define-key m "i" #'go-goto-imports)
             ;; (define-key m "m" #'go-goto-method-receiver)
             ;; (define-key m "n" #'go-goto-function-name)
-            ;; (define-key m "r" #'go-goto-return-values))
+            ;; (define-key m "r" #'go-goto-return-values)
             ))
 ;; requires github.com/nsf/gocode
-(eval-after-load "go-mode" '(require 'go-autocomplete))
 ;; `go-gopath-set-gopath'
+(eval-after-load "go-mode" '(require 'go-autocomplete))
+
+(defun ak-go-goto-imports ()
+  "Uses xref mark ring to return back from imports section, when quick (un)comment of import is done."
+  (interactive)
+  (xref-push-marker-stack)
+  (go-goto-imports))
 
 ;;----------------------------------------------------
 
@@ -325,15 +379,15 @@
             (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
             ))
 (global-set-key (kbd "<f11>") 'php-mode)
-(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
+;;(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
+(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 
 ;;----------------------------------------------------
 ;;; web-mode
 (add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.css$"  . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.js$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.js$" . js-mode))
 
 (eval-after-load 'web-mode
   '(progn
@@ -346,7 +400,7 @@
 (add-hook 'web-mode-hook
           (lambda ()
             (setq tab-width 2)
-            (ggtags-mode 1) ; php templates
+            (ggtags-mode 1)
             ;;(hs-minor-mode)
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
@@ -386,9 +440,16 @@
 (add-to-list 'auto-mode-alist '("\\.xml$"  . web-mode))
 
 ;;----------------------------------------------------
-;;; scss-mode
+;;; css
+
+(add-hook 'css-mode-hook
+          #'(lambda ()
+              (define-key css-mode-map (kbd "M-.") 'helm-ag)))
+
+;;----------------------------------------------------
+;;; sass|scss-mode
 (add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
-(add-to-list 'auto-mode-alist '("\\.sass$" . scss-mode))
+(add-to-list 'auto-mode-alist '("\\.sass$" . ssass-mode))
 (eval-after-load 'scss-mode '(define-key scss-mode-map (kbd "C-c b") 'web-beautify-css))
 
 ;;----------------------------------------------------
@@ -409,7 +470,7 @@
 ;;; linum-mode
 (global-set-key (kbd "C-c l") 'linum-mode)
 
-(global-set-key (kbd "C-c C-h") 'hl-line-mode)
+;;(global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
 ;;(global-set-key [f1] 'speedbar-get-focus)
 
@@ -418,6 +479,7 @@
 (setq recentf-max-menu-items 25)
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
+;;----------------------------------------------------
 ;;; js-mode
 
 (defun abbrev-console-log ()
@@ -428,19 +490,15 @@
           #'(lambda ()
               (setq tab-width 4)
               (abbrev-mode 1)
-              ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
-              ;;(setq imenu-create-index-function #'js--imenu-create-index)
+              (setq imenu-create-index-function #'js--imenu-create-index)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
-              (define-key ggtags-mode-map (kbd "M-.") 'ggtags-find-definition)
-              ;;(define-key ggtags-mode-map (kbd "M-n") 'idomenu)
-              (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
+              ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
+              (define-abbrev js-mode-abbrev-table  "conl" "console.log();"
                 'abbrev-console-log)
               (setq js-indent-level 2)
-              ;;(flymake-jslint-load)
               ))
 
 ;;----------------------------------------------------
-
 ;;; c mode
 
 ;; git submodule, prepaint for C multiline macros
@@ -521,3 +579,4 @@
 ;;   `(let ((time (current-time)))
 ;;      ,@body
 ;;      (message "%.06f" (float-time (time-since time)))))
+
