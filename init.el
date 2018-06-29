@@ -62,9 +62,8 @@
   (setq make-backup-files nil)
 
   ;; desktop
-  (global-set-key (kbd "C-c d s") 'desktop-save)
-  ;;(global-set-key (kbd "C-c d r") 'desktop-read)
-  
+  (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
+  ;;(global-set-key (kbd "C-c d r") 'desktop-read)  
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
 
   ;; Show file path in frame title
