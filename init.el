@@ -10,6 +10,7 @@
 
 (setq my-package-list
       '(
+        desktop-registry
         ;;grep-a-lot
         ascii
         rainbow-mode
@@ -61,8 +62,10 @@
   (setq make-backup-files nil)
 
   ;; desktop
-  (global-set-key (kbd "C-c d r") 'desktop-read)
   (global-set-key (kbd "C-c d s") 'desktop-save)
+  ;;(global-set-key (kbd "C-c d r") 'desktop-read)
+  
+  (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
 
   ;; Show file path in frame title
   (setq-default frame-title-format "%b (%f)")
@@ -317,7 +320,7 @@
 (add-to-list 'auto-mode-alist '("\\.kv$"  . yaml-mode))
 (add-hook 'yaml-mode-hook
           (lambda ()
-            (setq yaml-indent-offset 4)))
+            (setq yaml-indent-offset 2)))
 ;;(add-hook 'python-mode-hook 'auto-complete-mode)
 ;;; to customize
 ;;(setq jedi:server-args '("--sys-path" "/home/...somepath.../venv/lib/python3.5/site-packages"))
@@ -372,9 +375,10 @@
             (hs-minor-mode 1)
             (local-unset-key "C-M-\\")
             (local-unset-key "C")
-            (setq indent-tabs-mode nil
+            (c-set-style "symfony2")
+            (setq indent-tabs-mode t
                   tab-width 4
-                  c-basic-offset 4)
+                  c-basic-offset 4) 
             (define-key php-mode-map (kbd "M-n") 'imenu)
             ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
             (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
