@@ -43,6 +43,7 @@
 	rust-mode cargo flycheck-rust racer
         smartparens ;; exact matching for Semantic lexer
         ssass-mode
+        cmake-mode
 
         ))
 
@@ -254,8 +255,11 @@
             (flycheck-rust-setup)
             ;; "M-{" is already used for `backward-paragraph'
             (define-key rust-mode-map (kbd "C-{") #'insert-pair)
-            (rust-semantic-mode 1)))
-(add-hook 'racer-mode-hook #'eldoc-mode)
+            ;;(rust-semantic-mode 1)
+            (abbrev-mode 1)
+            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
+            (eldoc-mode -1) ;; disable, slow
+            ))
 (add-hook 'racer-mode-hook #'company-mode)
 ;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
 
@@ -270,11 +274,14 @@
 
 ;; go-mode
 
+(add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
+
 (add-hook 'go-mode-hook
           (lambda ()
             (setq tab-width 4)
             (setq go-packages-function 'go-packages-go-list)
             (define-key go-mode-map (kbd "M-.") #'godef-jump) ; or `#'godef-jump-other-window'
+            (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim) ; for CGO
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (auto-complete-mode 1)
             (abbrev-mode 1)
@@ -584,3 +591,7 @@
 ;;      ,@body
 ;;      (message "%.06f" (float-time (time-since time)))))
 
+;; dev
+
+(add-to-list 'load-path "~/worksp/emacs_earley")
+(load "earley")
