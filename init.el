@@ -536,6 +536,8 @@
   (hs-minor-mode) ; hide/show blocks
   (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
   (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
+  (define-key c-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+  (define-key c++-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
   (flycheck-mode 1)
   (when (member major-mode '(c-mode c++-mode))
     ;;(require 'rtags) ; rtags.el must be from git submodule
