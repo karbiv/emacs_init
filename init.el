@@ -10,6 +10,7 @@
 
 (setq my-package-list
       '(
+        iedit
         desktop-registry
         ;;grep-a-lot
         ascii
@@ -283,6 +284,7 @@
             (define-key go-mode-map (kbd "M-.") #'godef-jump) ; or `#'godef-jump-other-window'
             (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim) ; for CGO
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
+            (iedit-mode 1)
             (auto-complete-mode 1)
             (abbrev-mode 1)
             ;; print all methods that item implements
