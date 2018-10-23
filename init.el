@@ -47,11 +47,13 @@
         ))
 
 (package-initialize) ; activate
-(defun install-packages ()
+(defun my-packages-install ()
   "Install packages listed in `my-package-list'"
   (interactive)
   (package-refresh-contents)
-  (mapc #'package-install my-package-list))
+  (dolist (package my-package-list)
+    (when (not (package-installed-p package))
+      (package-install package))))
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
