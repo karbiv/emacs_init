@@ -12,8 +12,6 @@
       '(
         iedit
         desktop-registry
-        ;;grep-a-lot
-        ascii
         rainbow-mode
         helm
 	helm-swoop ; advanced search results presentation
@@ -28,7 +26,7 @@
 	web-mode-edit-element
         ini-mode ; systemd, PKGBUILD
         ggtags
-        dired-toggle-sudo dired+
+        dired-toggle-sudo
         bash-completion
         ace-window
 	magit
