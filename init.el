@@ -25,7 +25,7 @@
         web-mode
 	web-mode-edit-element
         ini-mode ; systemd, PKGBUILD
-        ggtags
+        xcscope ; C
         dired-toggle-sudo
         bash-completion
         ace-window
@@ -172,9 +172,6 @@
 
 ;;; tramp
 
-;; something from stackoverflow
-;; (setq tramp-ssh-controlmaster-options
-;;       "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
 (setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
 
 ;;----------------------------------------------------
@@ -210,36 +207,12 @@
             (when (member major-mode '(js-mode php-mode))
               t)))
 
-;; (setq semantic-default-submodes '(
-;;                                   global-semantic-idle-scheduler-mode
-;;                                   global-semantic-decoration-mode
-;;                                   global-semantic-stickyfunc-mode
-;;                                   global-semantic-highlight-func-mode
-;;                                   global-semantic-idle-completions-mode
-;;                                   global-semanticdb-minor-mode
-;;                                   ))
-
 ;;----------------------------------------------------
 ;;; shell mode
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
-;;; ggtags
-(setq ggtags-highlight-tag nil)
-;; cp /usr/share/gtags/gtags.conf ~/.globalrc
-;; github.com/universal-ctags/ctags
-;; for Universal Ctags installed as ctags
-(setenv "GTAGSLABEL" "new-ctags")
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
-              (ggtags-mode 1))))
-
 ;;----------------------------------------------------
 ;; rust-mode
-
-;; dev
-;; (add-to-list 'load-path "~/rust-semantic")
-;; (require 'rust-semantic-mode)
 
 ;; rustup component add rls-preview rust-analysis rust-src
 ;; cargo install racer
@@ -281,8 +254,14 @@
           (lambda ()
             (setq tab-width 4)
             (setq go-packages-function 'go-packages-go-list)
-            (define-key go-mode-map (kbd "M-.") #'godef-jump) ; or `#'godef-jump-other-window'
-            (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim) ; for CGO
+            ;;or `#'godef-jump-other-window'
+            (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
+
+            ;; for CGO
+            (cscope-setup)
+            (define-key c-mode-map (kbd "C-.") #'cscope-find-this-symbol)
+            (define-key c-mode-map (kbd "C-,") #'cscope-pop-mark)
+            
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (iedit-mode 1)
             (auto-complete-mode 1)
@@ -388,12 +367,11 @@
                   tab-width 4
                   c-basic-offset 4) 
             (define-key php-mode-map (kbd "M-n") 'imenu)
-            ;;(setq imenu-create-index-function #'ggtags-build-imenu-index)
             (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
             ))
 (global-set-key (kbd "<f11>") 'php-mode)
-;;(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
-(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
+(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
+;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 
 ;;----------------------------------------------------
 ;;; web-mode
@@ -413,7 +391,6 @@
 (add-hook 'web-mode-hook
           (lambda ()
             (setq tab-width 2)
-            (ggtags-mode 1)
             ;;(hs-minor-mode)
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
@@ -437,7 +414,6 @@
             ;;(setq web-mode-enable-block-face t)
             ;;(set-face-attribute 'web-mode-block-face nil :background "#EBFAE8")
             ;;(set-face-attribute 'web-mode-block-face nil :background "#8fbc8f")
-            (setq imenu-create-index-function #'ggtags-build-imenu-index)
             ))
 (setq web-mode-extra-snippets
       '((nil . (("div" . ("<div class=\"\">" . "</div>"))
@@ -484,7 +460,6 @@
 (global-set-key (kbd "C-c l") 'linum-mode)
 
 ;;(global-set-key (kbd "C-c C-h") 'hl-line-mode)
-
 ;;(global-set-key [f1] 'speedbar-get-focus)
 
 (setq recentf-auto-cleanup 'never)
@@ -514,76 +489,27 @@
 ;;----------------------------------------------------
 ;;; c mode
 
-;; git submodule, prepaint for C multiline macros
-;; (autoload 'prepaint-mode
-;;   (concat (file-name-directory load-file-name) "prepaint/prepaint"))
-
-(add-to-list 'auto-mode-alist '("\\.glsl$"  . c-mode)) ; GL shaders
-
-;; for rtags-fallback.el
-(add-to-list 'load-path (file-name-directory load-file-name))
-
-;; rtags from git submodule
-;;(setq rtags-dir (concat (file-name-directory load-file-name) "rtags/"))
-;;(add-to-list 'load-path (concat rtags-dir "src")) ; for rtags.el
-
-;; load compile_commands.json in `pwd'
-;; (defun rtags-load-cmds ()
-;;   (interactive)
-;;   (shell-command (concat rtags-dir "bin/rc -J .") nil))
-
-(defun c-cpp-init ()
-  (setq c-macro-preprocessor "cpp -CC")
-  (hs-minor-mode 1)
-  (hs-minor-mode) ; hide/show blocks
-  (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
-  (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-  (define-key c-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-  (define-key c++-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-  (flycheck-mode 1)
-  (when (member major-mode '(c-mode c++-mode))
-    ;;(require 'rtags) ; rtags.el must be from git submodule
-    ;;(setq rtags-path (concat rtags-dir "bin"))
-    ;;(rtags-start-process-unless-running)
-    ;;(setq rtags-display-result-backend 'helm)
-    ;;(require 'rtags-fallback)
-    ;;(init-rtags-fallback-map)
-    ;;(require 'flycheck-rtags)
-    ;;(my-flycheck-rtags-setup)
-    )
-  ;;(prepaint-mode 1)
-  )
-
-(add-hook 'c-mode-common-hook 'c-cpp-init)
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+              (setq c-macro-preprocessor "cpp -CC")
+              (hs-minor-mode 1)
+              (hs-minor-mode) ; hide/show blocks
+              (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
+              (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
+              (flycheck-mode 1)
+              (cscope-setup)
+              (define-key c-mode-map (kbd "M-.") #'cscope-find-this-symbol)
+              (define-key c-mode-map (kbd "M-,") #'cscope-pop-mark)
+              (semantic-mode 1)
+              (semantic-decoration-mode 1)
+              )))
 
 (defun my-flycheck-rtags-setup ()
   "Configure flycheck-rtags for better experience."
   (flycheck-select-checker 'rtags)
   (setq-local flycheck-check-syntax-automatically nil)
   (setq-local flycheck-highlighting-mode nil))
-
-;; (defface prepaint-face
-;;   '((((class color) (background light)) (:background "azure")))
-;;   "Face for prepaint."
-;;   :group 'prepaint)
-
-;;----------------------------------------------------
-
-;; Slime
-(setq inferior-lisp-program "/usr/bin/sbcl")
-;;(setq inferior-lisp-program "~/")
-(setq slime-contribs '(slime-fancy))
-(add-hook
- 'slime-mode-hook
- (lambda ()
-   (define-key slime-mode-map (kbd "C-c M-n") 'slime-next-note)
-   (define-key slime-mode-map (kbd "C-c M-p") 'slime-previous-note)
-   (enable-paredit-mode)
-   (load "slime-asdf")
-   (setq common-lisp-hyperspec-root
-         (expand-file-name "~/Documents/CommonLisp/HyperSpec-7-0/HyperSpec/"))
-   ))
-
 
 ;;----------------------------------------------------
 
@@ -594,8 +520,3 @@
 ;;   `(let ((time (current-time)))
 ;;      ,@body
 ;;      (message "%.06f" (float-time (time-since time)))))
-
-;; dev
-
-(add-to-list 'load-path "~/worksp/emacs_earley")
-(load "earley")
