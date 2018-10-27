@@ -25,7 +25,7 @@
         web-mode
 	web-mode-edit-element
         ini-mode ; systemd, PKGBUILD
-        xcscope ; C
+        ggtags
         dired-toggle-sudo
         bash-completion
         ace-window
@@ -149,6 +149,8 @@
 (add-hook 'prog-mode-hook #'highlight-symbol-mode)
 ;;(setq highlight-symbol-on-navigation-p nil)
 
+(global-set-key (kbd "C-`") 'kill-buffer)
+
 
 ;;----------------------------------------------------
 ;;; dired
@@ -177,6 +179,7 @@
 ;;----------------------------------------------------
 ;;; ace-window
 (global-set-key (kbd "C-x o") 'ace-window)
+(global-set-key (kbd "C-o") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -258,9 +261,9 @@
             (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
 
             ;; for CGO
-            (cscope-setup)
-            (define-key c-mode-map (kbd "C-.") #'cscope-find-this-symbol)
-            (define-key c-mode-map (kbd "C-,") #'cscope-pop-mark)
+            (ggtags-mode 1)
+            (define-key c-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+            (define-key c-mode-map (kbd "C-,") #'ggtags-prev-mark)
             
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (iedit-mode 1)
@@ -498,11 +501,14 @@
               (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
               (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
               (flycheck-mode 1)
-              (cscope-setup)
-              (define-key c-mode-map (kbd "M-.") #'cscope-find-this-symbol)
-              (define-key c-mode-map (kbd "M-,") #'cscope-pop-mark)
+              (ggtags-mode 1)
+              (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
+              (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
+              ;; (cscope-setup)
+              ;; (define-key c-mode-map (kbd "M-.") #'cscope-find-this-symbol)
+              ;; (define-key c-mode-map (kbd "M-,") #'cscope-pop-mark)
               (semantic-mode 1)
-              (semantic-decoration-mode 1)
+              ;;(semantic-decoration-mode 1)
               )))
 
 (defun my-flycheck-rtags-setup ()
