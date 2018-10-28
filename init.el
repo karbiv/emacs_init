@@ -62,19 +62,17 @@
   ;; selection color
   ;;(set-face-attribute 'region nil :background "#4AB0C9" :foreground "#ffffff")
   (setq make-backup-files nil)
-
   ;; desktop
   (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
   ;;(global-set-key (kbd "C-c d r") 'desktop-read)  
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
-
   ;; Show file path in frame title
-  (setq-default frame-title-format "%b (%f)")
+  (setq-default frame-title-format "%b (%f)"))
 
-  ;; disable toolbar
-  (tool-bar-mode -1))
+(global-set-key (kbd "C-`") 'kill-current-buffer)
 
-;;(when (not (display-graphic-p)))
+;; disable toolbar
+(tool-bar-mode -1)
 
 ;;****************************************************************
 
@@ -148,8 +146,6 @@
 
 (add-hook 'prog-mode-hook #'highlight-symbol-mode)
 ;;(setq highlight-symbol-on-navigation-p nil)
-
-(global-set-key (kbd "C-`") 'kill-buffer)
 
 
 ;;----------------------------------------------------
