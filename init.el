@@ -43,6 +43,7 @@
         smartparens ;; exact matching for Semantic lexer
         ssass-mode
         cmake-mode
+        cython-mode
 
         ))
 
@@ -111,6 +112,9 @@
                   (revert-buffer t t t)
                   ))
 (global-set-key (kbd "C-x s") #'save-buffer) ; redefine from `save-some-buffers with prompt
+(global-set-key (kbd "M-p") (lambda ()
+                              (interactive)
+                              (set-window-buffer (selected-window) (other-buffer))))
 
 ;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
 (setq tab-always-indent 'complete)
@@ -253,6 +257,8 @@
           (lambda ()
             (setq tab-width 4)
             (setq go-packages-function 'go-packages-go-list)
+
+            (define-key ggtags-mode-map (kbd "M-.") nil) ; unmask
             ;;or `#'godef-jump-other-window'
             (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
 
