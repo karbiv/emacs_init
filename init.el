@@ -10,26 +10,27 @@
 
 (setq my-package-list
       '(
+        evil
         iedit
         desktop-registry
         rainbow-mode
         helm
-	helm-swoop ; advanced search results presentation
+        helm-swoop ; advanced search results presentation
         helm-systemd
         helm-ag ; alternative to grep
         highlight-symbol
-	jedi
+        jedi
         go-mode
         go-autocomplete
         go-gopath ; set GOPATH in Emacs, gb build tool
         web-mode
-	web-mode-edit-element
+        web-mode-edit-element
         ini-mode ; systemd, PKGBUILD
         ggtags
         dired-toggle-sudo
         bash-completion
         ace-window
-	magit
+        magit
         nginx-mode
         apache-mode
         yaml-mode
@@ -37,9 +38,9 @@
         paredit
         buffer-move
         php-mode
-	flycheck
+        flycheck
         company
-	rust-mode cargo flycheck-rust racer
+        rust-mode cargo flycheck-rust racer
         smartparens ;; exact matching for Semantic lexer
         ssass-mode
         cmake-mode
@@ -75,13 +76,16 @@
 ;; disable toolbar
 (tool-bar-mode -1)
 
+(evil-mode 1)
+(evilem-default-keybindings "SPC")
+
 ;;****************************************************************
 
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "Hack")
-;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-;;(set-face-attribute 'default nil :height 132)
+(set-face-attribute 'default nil :font "Ubuntu Mono")
+(set-face-attribute 'default nil :height 124)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -179,7 +183,7 @@
 ;;----------------------------------------------------
 ;;; ace-window
 (global-set-key (kbd "C-x o") 'ace-window)
-(global-set-key (kbd "C-o") 'ace-window)
+(global-set-key (kbd "<menu>") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -330,10 +334,10 @@
   ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
 
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
-  (local-unset-key (kbd "C-c .")) ; unhide ecb
-  (local-set-key (kbd "C-c f") 'ak-flycheck-mode)
-  (define-key jedi-mode-map (kbd "C-c p") 'jedi:goto-definition-pop-marker)
-  (define-key jedi-mode-map (kbd "M-.") 'jedi:goto-definition)
+  (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
+  (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
+  (define-key jedi-mode-map (kbd "M-.") #'jedi:goto-definition)
+  (define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
   )
 (add-hook 'python-mode-hook 'python-mode-func)
 
@@ -506,9 +510,6 @@
               (ggtags-mode 1)
               (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
-              ;; (cscope-setup)
-              ;; (define-key c-mode-map (kbd "M-.") #'cscope-find-this-symbol)
-              ;; (define-key c-mode-map (kbd "M-,") #'cscope-pop-mark)
               (semantic-mode 1)
               ;;(semantic-decoration-mode 1)
               )))
