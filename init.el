@@ -11,6 +11,9 @@
 (setq my-package-list
       '(
         evil
+        evil-easymotion
+        evil-leader
+        which-key
         iedit
         desktop-registry
         rainbow-mode
@@ -71,13 +74,26 @@
   ;; Show file path in frame title
   (setq-default frame-title-format "%b (%f)"))
 
-(global-set-key (kbd "C-`") 'kill-current-buffer)
-
 ;; disable toolbar
 (tool-bar-mode -1)
 
+;; evil modes
+(global-evil-leader-mode)
+(evil-leader/set-leader "SPC")
+(evil-leader/set-key
+  "SPC" 'helm-M-x
+  "k" 'kill-current-buffer
+  "b" 'helm-mini
+  "o" 'ace-window
+  "s" 'save-buffer
+  "u" 'evil-scroll-up
+)
+
 (evil-mode 1)
-(evilem-default-keybindings "SPC")
+(define-key evil-normal-state-map (kbd "M-.") nil)
+(define-key evil-normal-state-map (kbd "C-e") 'end-of-line)
+(define-key evil-visual-state-map (kbd "C-e") 'end-of-line)
+(define-key evil-motion-state-map (kbd "C-e") 'end-of-line)
 
 ;;****************************************************************
 
@@ -134,6 +150,8 @@
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 
+
+
 ;;; helm-ag
 (setq-default helm-ag-insert-at-point 'symbol)
 
@@ -179,11 +197,6 @@
 ;;; tramp
 
 (setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
-
-;;----------------------------------------------------
-;;; ace-window
-(global-set-key (kbd "C-x o") 'ace-window)
-(global-set-key (kbd "<menu>") 'ace-window)
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
