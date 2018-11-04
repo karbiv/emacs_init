@@ -10,10 +10,8 @@
 
 (setq my-package-list
       '(
-        evil
-        evil-easymotion
-        evil-leader
         which-key
+        undo-tree
         iedit
         desktop-registry
         rainbow-mode
@@ -77,25 +75,8 @@
 ;; disable toolbar
 (tool-bar-mode -1)
 
-;; evil modes
-(global-evil-leader-mode)
-(evil-leader/set-leader "SPC")
-(evil-leader/set-key
-  "SPC" 'helm-M-x
-  "k" 'kill-current-buffer
-  "b" 'helm-mini
-  "o" 'ace-window
-  "s" 'save-buffer
-  "u" 'evil-scroll-up
-)
-
-(evil-mode 1)
-(define-key evil-normal-state-map (kbd "M-.") nil)
-(define-key evil-normal-state-map (kbd "C-e") 'end-of-line)
-(define-key evil-visual-state-map (kbd "C-e") 'end-of-line)
-(define-key evil-motion-state-map (kbd "C-e") 'end-of-line)
-
 ;;****************************************************************
+;;; Init
 
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
@@ -125,13 +106,8 @@
 (add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
 (setq-default indent-tabs-mode nil) ; use spaces
 
-(global-set-key (kbd "<f8>") #'buf-move)
-(global-set-key (kbd "C-c C-r")
-                (lambda () ; `rever-buffer', noconfirm, preserve-modes
-                  (interactive)
-                  (revert-buffer t t t)
-                  ))
-(global-set-key (kbd "C-x s") #'save-buffer) ; redefine from `save-some-buffers with prompt
+;;(global-set-key (kbd "<f8>") #'buf-move)
+(global-set-key (kbd "C-o") #'ace-window)
 (global-set-key (kbd "M-p") (lambda ()
                               (interactive)
                               (set-window-buffer (selected-window) (other-buffer))))
@@ -139,6 +115,8 @@
 ;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
+
+(global-set-key (kbd "C-`") 'kill-current-buffer)
 
 ;;----------------------------------------------------
 ;;; helm
@@ -149,8 +127,6 @@
 (global-set-key (kbd "C-c h") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
-
-
 
 ;;; helm-ag
 (setq-default helm-ag-insert-at-point 'symbol)
