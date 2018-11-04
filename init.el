@@ -87,7 +87,7 @@
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
 (column-number-mode)
-;; https://stackoverflow.com/questions/5738170/why-does-emacs-create-temporary-symbolic-links-for-modified-files
+;; https://stackoverflow.com/questions/5738170/why-doeppps-emacs-create-temporary-symbolic-links-for-modified-files
 (setq create-lockfiles nil)
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c s") 'delete-trailing-whitespace)
@@ -251,17 +251,17 @@
             (setq tab-width 4)
             (setq go-packages-function 'go-packages-go-list)
 
-            (define-key ggtags-mode-map (kbd "M-.") nil) ; unmask
+            (define-key go-mode-map (kbd "M-.") nil) ; unmask
             ;;or `#'godef-jump-other-window'
             (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
 
             ;; for CGO
             (ggtags-mode 1)
-            (define-key c-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-            (define-key c-mode-map (kbd "C-,") #'ggtags-prev-mark)
+            (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+            (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
             
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
-            (iedit-mode 1)
+            (customize-set-variable 'ggtags-highlight-tag nil) ; conflicts with iedit, disabled
             (auto-complete-mode 1)
             (abbrev-mode 1)
             ;; print all methods that item implements
