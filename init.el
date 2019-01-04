@@ -20,6 +20,7 @@
         helm-systemd
         helm-ag ; alternative to grep
         highlight-symbol
+        preproc-font-lock
         jedi
         go-mode
         go-autocomplete
@@ -43,6 +44,8 @@
         company
         rust-mode cargo flycheck-rust racer
         smartparens ;; exact matching for Semantic lexer
+        geiser
+        ac-geiser
         ssass-mode
         cmake-mode
         cython-mode
@@ -99,7 +102,6 @@
 (scroll-bar-mode -1)
 ;;(global-flycheck-mode)
 ;;(set-default 'truncate-lines t)
-(setq dired-listing-switches "-hal --group-directories-first") ; dired format, options of 'ls' command
 (put 'erase-buffer 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
@@ -116,7 +118,10 @@
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
 
+(global-set-key (kbd "C-x s") 'save-buffer) ; replace `save-some-buffers'
+
 (global-set-key (kbd "C-`") 'kill-current-buffer)
+(global-set-key (kbd "C-;") 'iedit-mode)
 
 ;;----------------------------------------------------
 ;;; helm
@@ -167,7 +172,8 @@
 (add-hook 'dired-mode-hook
           (lambda ()
             (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
-            (setq dired-listing-switches "-hal --time-style=iso")
+            ;;(setq dired-listing-switches "-hal --time-style=iso")
+            (setq dired-listing-switches "-hal")
             (define-key dired-mode-map (kbd "?") 'dired-get-size)))
 
 ;;; tramp
@@ -246,28 +252,37 @@
 
 (add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
 
+(defun abbrev-iferr ()
+  (indent-for-tab-command)
+  (forward-line -1)
+  (delete-trailing-whitespace))
+
 (add-hook 'go-mode-hook
           (lambda ()
             (setq tab-width 4)
             (setq go-packages-function 'go-packages-go-list)
-
-            (define-key go-mode-map (kbd "M-.") nil) ; unmask
-            ;;or `#'godef-jump-other-window'
-            (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
 
             ;; for CGO
             (ggtags-mode 1)
             (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
             (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
             
+            ;;(local-unset-key (kbd "M-.")) ; unmask ggtags
+            (define-key ggtags-mode-map (kbd "M-.") nil)
+            (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
+            
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (customize-set-variable 'ggtags-highlight-tag nil) ; conflicts with iedit, disabled
             (auto-complete-mode 1)
             (abbrev-mode 1)
             ;; print all methods that item implements
-            (define-abbrev go-mode-abbrev-table  "impls"
+            (define-abbrev go-mode-abbrev-table "impls"
               "foo := reflect.TypeOf();
     for i:=0; i<foo.NumMethod();i++ {method:=foo.Method(i);Println(method.Name)}")
+            (define-abbrev go-mode-abbrev-table "ifer"
+              "if err != nil {
+
+}" 'abbrev-iferr)
             
             ;;; Bindings in  go-goto-map
             ;; (define-key m "a" #'go-goto-arguments)
@@ -325,7 +340,10 @@
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
   (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
   (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
-  (define-key jedi-mode-map (kbd "M-.") #'jedi:goto-definition)
+  (define-key jedi-mode-map (kbd "M-.") (lambda ()
+                                          (interactive)
+                                          (xref-push-marker-stack)
+                                          (jedi:goto-definition)))
   (define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
   )
 (add-hook 'python-mode-hook 'python-mode-func)
@@ -363,13 +381,13 @@
             (c-set-style "symfony2")
             (setq indent-tabs-mode t
                   tab-width 4
-                  c-basic-offset 4) 
+                  c-basic-offset 4)
             (define-key php-mode-map (kbd "M-n") 'imenu)
             (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
             ))
 (global-set-key (kbd "<f11>") 'php-mode)
-(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
-;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
+;;(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
+(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 
 ;;----------------------------------------------------
 ;;; web-mode
@@ -391,9 +409,9 @@
             (setq tab-width 2)
             ;;(hs-minor-mode)
             (setq web-mode-script-padding 2) ; indent in script tag
-            (setq web-mode-markup-indent-offset 2)
-            (setq web-mode-css-indent-offset 2)
-            (setq web-mode-code-indent-offset 2)
+            (setq web-mode-markup-indent-offset 4)
+            (setq web-mode-css-indent-offset 4)
+            (setq web-mode-code-indent-offset 4)
             (setq web-mode-enable-current-element-highlight t)
             ;;(setq web-mode-enable-current-column-highlight t)
             (face-spec-set 'web-mode-current-element-highlight-face
@@ -407,6 +425,9 @@
             (define-mode-abbrev "vdd" "var_dump(  );die();")
             (define-mode-abbrev "cnl" "console.log();")
             (define-mode-abbrev "vdb" "var_dump( debug_backtrace() );die();")
+            (ggtags-mode 1)
+            (define-key web-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
+            (define-key web-mode-map (kbd "M-,") #'ggtags-prev-mark)
             ;;(set-face-attribute 'web-mode-html-tag-face nil :foreground "#0000CD")
             ;;(set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#007700")
             ;;(setq web-mode-enable-block-face t)
@@ -476,13 +497,23 @@
           #'(lambda ()
               (setq tab-width 4)
               (abbrev-mode 1)
+              (rainbow-mode 1)
               (setq imenu-create-index-function #'js--imenu-create-index)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
               ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
-              (define-abbrev js-mode-abbrev-table  "conl" "console.log();"
+              (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
                 'abbrev-console-log)
               (setq js-indent-level 2)
               ))
+
+;;----------------------------------------------------
+;;; Scheme mode
+
+(add-hook 'scheme-mode-hook
+          #'(lambda ()
+              (abbrev-mode 1)
+              (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
+              (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")))
 
 ;;----------------------------------------------------
 ;;; c mode
@@ -491,11 +522,12 @@
           (lambda ()
             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
               (setq c-macro-preprocessor "cpp -CC")
+              (preproc-font-lock-mode 1)
               (hs-minor-mode 1)
               (hs-minor-mode) ; hide/show blocks
               (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
               (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-              (flycheck-mode 1)
+              ;;(flycheck-mode 1)
               (ggtags-mode 1)
               (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
