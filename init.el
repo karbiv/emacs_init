@@ -533,6 +533,12 @@
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
               (semantic-mode 1)
               ;;(semantic-decoration-mode 1)
+              (abbrev-mode 1)
+              (define-abbrev c-mode-abbrev-table "def"
+                "#define XSTR(x) STR(x)
+#define STR(x) #x
+#pragma message \"The value: \" XSTR()
+#error \"stop here\"")
               )))
 
 (defun my-flycheck-rtags-setup ()
