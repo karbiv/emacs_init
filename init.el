@@ -534,6 +534,7 @@
               (semantic-mode 1)
               ;;(semantic-decoration-mode 1)
               (abbrev-mode 1)
+              (define-abbrev c-mode-abbrev-table "def" "#error \"stop here\"")
               (define-abbrev c-mode-abbrev-table "def"
                 "#define XSTR(x) STR(x)
 #define STR(x) #x
