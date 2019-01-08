@@ -533,6 +533,12 @@
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
               (semantic-mode 1)
               ;;(semantic-decoration-mode 1)
+              (c-add-style "python-new"
+                           '("python"
+                             (c-basic-offset . 4))
+                           t)
+              ;; disable auto-align of endline backslashes in multiline macros
+              (setq c-auto-align-backslashes nil)
               (abbrev-mode 1)
               (define-abbrev c-mode-abbrev-table "err" "#error \"stop here\"")
               (define-abbrev c-mode-abbrev-table "def"
