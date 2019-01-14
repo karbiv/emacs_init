@@ -4,62 +4,84 @@
 
 ;;; Code:
 
+(setq custom-file "~/.emacs.d/customize.el")
+(load custom-file)
+
 (require 'package)
+
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 ;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 
-(setq my-package-list
+(setq package-selected-packages
       '(
-        which-key
         undo-tree
-        iedit
-        desktop-registry
-        rainbow-mode
-        helm
-        helm-swoop ; advanced search results presentation
-        helm-systemd
-        helm-ag ; alternative to grep
-        highlight-symbol
+        org-super-agenda
+        realgud
         preproc-font-lock
-        jedi
-        go-mode
-        go-autocomplete
-        go-gopath ; set GOPATH in Emacs, gb build tool
+        ac-geiser
+        geiser
+        undo-tree
+        which-key
+        cython-mode
+        imenu
+        iedit
+        cmake-mode
+        desktop-registry
+        helm
+        helm-systemd
+        helm-swoop
+        helm-ag
+        helm-gtags
+        ssass-mode
+        smartparens
+        rainbow-mode
+        rust-mode
+        cargo
+        flycheck
         web-mode
+        yaml-mode
         web-mode-edit-element
-        ini-mode ; systemd, PKGBUILD
+        racer
+        php-mode
+        paredit
+        nginx-mode
+        magit
+        macrostep
+        jedi
+        ini-mode
+        highlight-symbol
+        go-mode
+        go-gopath
+        go-autocomplete
         ggtags
         dired-toggle-sudo
-        bash-completion
-        ace-window
-        magit
-        nginx-mode
-        apache-mode
-        yaml-mode
-        macrostep
-        paredit
-        buffer-move
-        php-mode
-        flycheck
         company
-        rust-mode cargo flycheck-rust racer
-        smartparens ;; exact matching for Semantic lexer
-        geiser
-        ac-geiser
-        ssass-mode
-        cmake-mode
-        cython-mode
+        buffer-move
+        bash-completion
+        ascii
+        apache-mode
+        ace-window
 
         ))
 
-(package-initialize) ; activate
-(defun my-packages-install ()
-  "Install packages listed in `my-package-list'"
-  (interactive)
-  (package-refresh-contents)
-  (dolist (package my-package-list)
-    (when (not (package-installed-p package))
-      (package-install package))))
+(if (getenv "DEV")
+    (progn
+      ;; disable activation of some installed packages
+      (setq package-load-list
+            (append '((helm nil))
+                    '((helm-core nil))
+                    package-load-list))
+
+      ;; add dev repository of disable packages to `load-path'
+      (add-to-list 'load-path "~/worksp/emacs_package_dev/helm")
+
+      (package-initialize)
+
+      ;; now load package from dev repository as its docs recommend
+      (load "helm-config.el"))
+  ;; else
+  (package-initialize))
+
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
@@ -67,13 +89,9 @@
   ;;(add-to-list 'default-frame-alist '(background-color . "#EEFFCC"))
   ;; selection color
   ;;(set-face-attribute 'region nil :background "#4AB0C9" :foreground "#ffffff")
-  (setq make-backup-files nil)
-  ;; desktop
-  (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
-  ;;(global-set-key (kbd "C-c d r") 'desktop-read)  
-  (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
   ;; Show file path in frame title
-  (setq-default frame-title-format "%b (%f)"))
+  (setq-default frame-title-format "%b (%f)")
+  )
 
 ;; disable toolbar
 (tool-bar-mode -1)
@@ -81,11 +99,15 @@
 ;;****************************************************************
 ;;; Init
 
+(setq make-backup-files nil)
+;; desktop
+(global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
+;;(global-set-key (kbd "C-c d r") 'desktop-read)
+(global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
-;;(set-face-attribute 'default nil :font "Hack")
-(set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 124)
+;;(set-face-attribute 'default nil :font "Ubuntu Mono")
+;;(set-face-attribute 'default nil :height 124)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -129,7 +151,8 @@
 ;; (require 'helm-config)
 (helm-mode 1)
 (global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "C-c h") 'helm-mini)
+(global-set-key (kbd "C-c j") 'helm-mini)
+(global-set-key (kbd "C-c C-j") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
 (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 
@@ -266,11 +289,11 @@
             (ggtags-mode 1)
             (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
             (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
-            
+
             ;;(local-unset-key (kbd "M-.")) ; unmask ggtags
             (define-key ggtags-mode-map (kbd "M-.") nil)
             (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
-            
+
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
             (customize-set-variable 'ggtags-highlight-tag nil) ; conflicts with iedit, disabled
             (auto-complete-mode 1)
@@ -283,7 +306,7 @@
               "if err != nil {
 
 }" 'abbrev-iferr)
-            
+
             ;;; Bindings in  go-goto-map
             ;; (define-key m "a" #'go-goto-arguments)
             ;; (define-key m "d" #'go-goto-docstring)
@@ -325,13 +348,26 @@
 ;;; to customize
 ;;(setq jedi:server-args '("--sys-path" "/home/...somepath.../venv/lib/python3.5/site-packages"))
 
+(defun python-mode-abbrev-debug-handler ()
+  (forward-line -1)
+  (funcall indent-line-function)
+  (move-end-of-line 1)
+  (save-buffer 0))
+
 (defun python-mode-func ()
   (setq tab-width 4)
   (hs-minor-mode)
   (jedi:setup)
   (abbrev-mode 1)
-  (define-abbrev python-mode-abbrev-table  "pdb" "import pdb;pdb.set_trace()")
-  (define-abbrev python-mode-abbrev-table  "here" "raise Exception('here')")
+  (define-abbrev python-mode-abbrev-table  "pd" "import os
+if os.getenv('AKDEBUG'):import pdb;pdb.set_trace()
+" #'python-mode-abbrev-debug-handler)
+  (define-abbrev python-mode-abbrev-table  "tr" "import os
+if os.getenv('AKDEBUG'):from trepan.api import debug;debug()
+" #'python-mode-abbrev-debug-handler)
+  (define-abbrev python-mode-abbrev-table  "ipd" "import os
+if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
+" #'python-mode-abbrev-debug-handler)
   (define-abbrev python-mode-abbrev-table  "pp" "import pprint; pp=pprint.PrettyPrinter(); pp.pprint()")
   (define-key python-mode-map (kbd "C-c C-r") 'revert-buffer) ; orig is send region to python shell
   (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
@@ -481,11 +517,6 @@
 ;;(global-set-key (kbd "C-c C-h") 'hl-line-mode)
 ;;(global-set-key [f1] 'speedbar-get-focus)
 
-(setq recentf-auto-cleanup 'never)
-(recentf-mode 1)
-(setq recentf-max-menu-items 25)
-(global-set-key (kbd "C-x C-r") 'recentf-open-files)
-
 ;;----------------------------------------------------
 ;;; js-mode
 
@@ -541,6 +572,7 @@
               (setq c-auto-align-backslashes nil)
               (abbrev-mode 1)
               (define-abbrev c-mode-abbrev-table "err" "#error \"stop here\"")
+              ;; expand and print macros for diagnostic
               (define-abbrev c-mode-abbrev-table "def"
                 "#define XSTR(x) STR(x)
 #define STR(x) #x
@@ -548,11 +580,12 @@
 #error \"stop here\"")
               )))
 
-(defun my-flycheck-rtags-setup ()
-  "Configure flycheck-rtags for better experience."
-  (flycheck-select-checker 'rtags)
-  (setq-local flycheck-check-syntax-automatically nil)
-  (setq-local flycheck-highlighting-mode nil))
+;;----------------------------------------------------
+;;; org mode
+
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c c") 'org-capture)
 
 ;;----------------------------------------------------
 
