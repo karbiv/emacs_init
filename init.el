@@ -23,6 +23,10 @@
         undo-tree
         which-key
         cython-mode
+        js2-mode
+        tern ; js code analysis
+        company
+        company-tern
         imenu
         iedit
         cmake-mode
@@ -55,7 +59,6 @@
         go-autocomplete
         ggtags
         dired-toggle-sudo
-        company
         buffer-move
         bash-completion
         ascii
@@ -95,9 +98,6 @@
 
 ;; disable toolbar
 (tool-bar-mode -1)
-
-;;****************************************************************
-;;; Init
 
 (setq make-backup-files nil)
 ;; desktop
@@ -144,6 +144,8 @@
 
 (global-set-key (kbd "C-`") 'kill-current-buffer)
 (global-set-key (kbd "C-;") 'iedit-mode)
+
+(global-company-mode 1)
 
 ;;----------------------------------------------------
 ;;; helm
@@ -430,7 +432,6 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 (add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.js$" . js-mode))
 
 (eval-after-load 'web-mode
   '(progn
@@ -513,29 +514,34 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 ;;----------------------------------------------------
 ;;; linum-mode
 (global-set-key (kbd "C-c l") 'linum-mode)
-
 ;;(global-set-key (kbd "C-c C-h") 'hl-line-mode)
-;;(global-set-key [f1] 'speedbar-get-focus)
 
 ;;----------------------------------------------------
-;;; js-mode
+;;; js2-mode
+
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+(add-to-list 'company-backends 'company-tern)
+;; npm install tern
+(setq tern-command (list (expand-file-name "~/soft/tern/bin/tern")))
 
 (defun abbrev-console-log ()
   (backward-char 2) t)
 (put 'abbrev-console-log 'no-self-insert t)
 
-(add-hook 'js-mode-hook
-          #'(lambda ()
-              (setq tab-width 4)
-              (abbrev-mode 1)
-              (rainbow-mode 1)
-              (setq imenu-create-index-function #'js--imenu-create-index)
-              (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
-              ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
-              (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
-                'abbrev-console-log)
-              (setq js-indent-level 2)
-              ))
+(add-hook 'js2-mode-hook
+          (lambda ()
+            (setq tab-width 4)
+            (abbrev-mode 1)
+            (rainbow-mode 1)
+            (tern-mode 1)
+            (company-mode 1)
+            (setq imenu-create-index-function #'js--imenu-create-index)
+            (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
+            ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
+            (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
+              'abbrev-console-log)
+            (setq js-indent-level 2)
+            ))
 
 ;;----------------------------------------------------
 ;;; Scheme mode
@@ -583,9 +589,8 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 ;;----------------------------------------------------
 ;;; org mode
 
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c c") 'org-capture)
+;;(global-set-key (kbd "C-c a") 'org-agenda)
+;;(global-set-key (kbd "C-c c") 'org-capture)
 
 ;;----------------------------------------------------
 
