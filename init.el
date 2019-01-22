@@ -14,6 +14,8 @@
 
 (setq package-selected-packages
       '(
+        slime
+        slime-company
         undo-tree
         org-super-agenda
         realgud
@@ -27,6 +29,7 @@
         tern ; js code analysis
         company
         company-tern
+        web-beautify
         imenu
         iedit
         cmake-mode
@@ -63,9 +66,7 @@
         bash-completion
         ascii
         apache-mode
-        ace-window
-
-        ))
+        ace-window))
 
 (if (getenv "DEV")
     (progn
@@ -179,6 +180,16 @@
 (add-hook 'prog-mode-hook #'highlight-symbol-mode)
 ;;(setq highlight-symbol-on-navigation-p nil)
 
+
+;;----------------------------------------------------
+;;; slime
+
+(setq inferior-lisp-program "/usr/bin/sbcl")
+(setq slime-contribs '(slime-fancy))
+(add-hook 'slime-load-hook
+          (lambda ()
+            (define-key slime-prefix-map (kbd "M-h") 'slime-documentation-lookup))
+          )
 
 ;;----------------------------------------------------
 ;;; dired
@@ -486,16 +497,21 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;;; css
-
 (add-hook 'css-mode-hook
-          #'(lambda ()
-              (define-key css-mode-map (kbd "M-.") 'helm-ag)))
+          (lambda ()
+            (rainbow-mode t)
+            (define-key css-mode-map (kbd "M-.") 'helm-ag)))
 
 ;;----------------------------------------------------
 ;;; sass|scss-mode
 (add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
 (add-to-list 'auto-mode-alist '("\\.sass$" . ssass-mode))
 (eval-after-load 'scss-mode '(define-key scss-mode-map (kbd "C-c b") 'web-beautify-css))
+
+(add-hook 'ssass-mode-hook
+          (lambda ()
+            (rainbow-mode t)
+            (define-key css-mode-map (kbd "M-.") 'helm-ag)))
 
 ;;----------------------------------------------------
 ;;; web-beautify.el
