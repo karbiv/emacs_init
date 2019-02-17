@@ -27,6 +27,7 @@
         cython-mode
         js2-mode
         tern ; js code analysis
+        json-mode
         company
         company-tern
         web-beautify
@@ -145,6 +146,8 @@
 
 (global-set-key (kbd "C-`") 'kill-current-buffer)
 (global-set-key (kbd "C-;") 'iedit-mode)
+
+(global-set-key (kbd "C-c C-r") 'revert-buffer)
 
 (global-company-mode 1)
 
@@ -457,8 +460,8 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (setq tab-width 2)
             ;;(hs-minor-mode)
             (setq web-mode-script-padding 2) ; indent in script tag
-            (setq web-mode-markup-indent-offset 4)
-            (setq web-mode-css-indent-offset 4)
+            (setq web-mode-markup-indent-offset 2)
+            (setq web-mode-css-indent-offset 2)
             (setq web-mode-code-indent-offset 4)
             (setq web-mode-enable-current-element-highlight t)
             ;;(setq web-mode-enable-current-column-highlight t)
@@ -558,6 +561,10 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
               'abbrev-console-log)
             (setq js-indent-level 2)
             ))
+
+;;----------------------------------------------------
+;; JSON
+(add-to-list 'auto-mode-alist '("\\.tern-project$" . json-mode))
 
 ;;----------------------------------------------------
 ;;; Scheme mode
