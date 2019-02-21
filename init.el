@@ -101,6 +101,8 @@
 ;; disable toolbar
 (tool-bar-mode -1)
 
+(line-number-mode t)
+
 (setq make-backup-files nil)
 ;; desktop
 (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
@@ -230,7 +232,7 @@
         (c++-mode . semantic-default-c-setup)
         (html-mode . semantic-default-html-setup)
         (java-mode . wisent-java-default-setup)
-        ;;(js-mode . wisent-javascript-setup-parser) ; js-mode's imenu is better
+        ;;(js-mode . wisent-javascript-setup-parser) ;
         (python-mode . wisent-python-default-setup)
         ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
         (srecode-template-mode . srecode-template-setup-parser)
