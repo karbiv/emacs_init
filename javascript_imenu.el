@@ -15,29 +15,30 @@
               js2-bounce-indent-p t)
 
 (setq javascript-common-imenu-regex-list
-      '(("Attribute" " \\([a-z][a-zA-Z0-9-_]+\\) *= *\{[a-zA-Z0-9_.(), ]+\}\\( \\|$\\)" 1)
-        ("Controller" "[. \t]controller([ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Controller" "[. \t]controllerAs:[ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Filter" "[. \t]filter([ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("State" "[. \t]state[(:][ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Factory" "[. \t]factory([ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Service" "[. \t]service([ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Module" "[. \t]module( *['\"]\\([a-zA-Z0-9_.]+\\)['\"], *\\[" 1)
-        ("ngRoute" "[. \t]when(\\(['\"][a-zA-Z0-9_\/]+['\"]\\)" 1)
-        ("Directive" "[. \t]directive([ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Event" "[. \t]\$on([ \t]*['\"]\\([^'\"]+\\)" 1)
-        ("Config" "[. \t]config([ \t]*function *( *\\([^\)]+\\)" 1)
-        ("Config" "[. \t]config([ \t]*\\[ *['\"]\\([^'\"]+\\)" 1)
-        ("OnChange" "[ \t]*\$(['\"]\\([^'\"]*\\)['\"]).*\.change *( *function" 1)
-        ("OnClick" "[ \t]*\$([ \t]*['\"]\\([^'\"]*\\)['\"]).*\.click *( *function" 1)
-        ("Watch" "[. \t]\$watch( *['\"]\\([^'\"]+\\)" 1)
+      '(
+        ;; ("Attribute" " \\([a-z][a-zA-Z0-9-_]+\\) *= *\{[a-zA-Z0-9_.(), ]+\}\\( \\|$\\)" 1)
+        ;; ("Controller" "[. \t]controller([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Controller" "[. \t]controllerAs:[ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Filter" "[. \t]filter([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("State" "[. \t]state[(:][ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Factory" "[. \t]factory([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Service" "[. \t]service([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Module" "[. \t]module( *['\"]\\([a-zA-Z0-9_.]+\\)['\"], *\\[" 1)
+        ;; ("ngRoute" "[. \t]when(\\(['\"][a-zA-Z0-9_\/]+['\"]\\)" 1)
+        ;; ("Directive" "[. \t]directive([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Event" "[. \t]\$on([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;; ("Config" "[. \t]config([ \t]*function *( *\\([^\)]+\\)" 1)
+        ;; ("Config" "[. \t]config([ \t]*\\[ *['\"]\\([^'\"]+\\)" 1)
+        ;; ("OnChange" "[ \t]*\$(['\"]\\([^'\"]*\\)['\"]).*\.change *( *function" 1)
+        ;; ("OnClick" "[ \t]*\$([ \t]*['\"]\\([^'\"]*\\)['\"]).*\.click *( *function" 1)
+        ;; ("Watch" "[. \t]\$watch( *['\"]\\([^'\"]+\\)" 1)
         ("Function" "function[ \t]+\\([a-zA-Z0-9_$.]+\\)[ \t]*(" 1)
-        ("Function" "^[ \t]*\\([a-zA-Z0-9_$.]+\\)[ \t]*=[ \t]*function[ \t]*(" 1)
+        ;;("Function" "^[ \t]*\\([a-zA-Z0-9_$.]+\\)[ \t]*=[ \t]*function[ \t]*(" 1)
         ;; {{ es6 beginning
-        ("Function" "^[ \t]*\\([A-Za-z_$][A-Za-z0-9_$]+\\)[ \t]*([a-zA-Z0-9, ]*) *\{ *$" 1) ;; es6 fn1 () { }
-        ("Function" "^[ \t]*\\([A-Za-z_$][A-Za-z0-9_$]+\\)[ \t]*=[ \t]*(?[a-zA-Z0-9, ]*)?[ \t]*=>" 1) ;; es6 fn1 = (e) =>
+        ;;("Function" "^[ \t]*\\([A-Za-z_$][A-Za-z0-9_$]+\\)[ \t]*([a-zA-Z0-9, ]*) *\{ *$" 1) ;; es6 fn1 () { }
+        ;;("Function" "^[ \t]*\\([A-Za-z_$][A-Za-z0-9_$]+\\)[ \t]*=[ \t]*(?[a-zA-Z0-9, ]*)?[ \t]*=>" 1) ;; es6 fn1 = (e) =>
         ;; }}
-        ("Task" "[. \t]task([ \t]*['\"]\\([^'\"]+\\)" 1)
+        ;;("Task" "[. \t]task([ \t]*['\"]\\([^'\"]+\\)" 1)
         ))
 
 ;; js-mode imenu enhancement
@@ -46,14 +47,44 @@
   (save-excursion
     (imenu--generic-function javascript-common-imenu-regex-list)))
 
-(defun my-common-js-setup ()
-  (local-require 'js-comint))
+;; (defun my-common-js-setup ()
+;;   (local-require 'js-comint))
+
+;; (defun is-buffer-file-temp ()
+;;   (interactive)
+;;   "If (buffer-file-name) is nil or a temp file or HTML file converted from org file"
+;;   (let* ((f (buffer-file-name)) org (rlt t))
+;;     (cond
+;;      ((not load-user-customized-major-mode-hook)
+;;       (setq rlt t))
+;;      ((not f)
+;;       ;; file does not exist at all
+;;       ;; org-babel edit inline code block need calling hook
+;;       (setq rlt nil))
+;;      ((string= f cached-normal-file-full-path)
+;;       (setq rlt nil))
+;;      ((string-match (concat "^" temporary-file-directory) f)
+;;       ;; file is create from temp directory
+;;       (setq rlt t))
+;;      ((and (string-match "\.html$" f)
+;;            (file-exists-p (setq org (replace-regexp-in-string "\.html$" ".org" f))))
+;;       ;; file is a html file exported from org-mode
+;;       (setq rlt t))
+;;      (force-buffer-file-temp-p
+;;       (setq rlt t))
+;;      (t
+;;       (setq cached-normal-file-full-path f)
+;;       (setq rlt nil)))
+;;     rlt))
 
 (defun mo-js-mode-hook ()
-  (when (and (not (is-buffer-file-temp)) (not (derived-mode-p 'js2-mode)))
-    (my-common-js-setup)
-    (setq imenu-create-index-function 'mo-js-imenu-make-index)
-    (flymake-mode 1)))
+  (setq imenu-create-index-function 'mo-js-imenu-make-index)
+  (flymake-mode 1)
+  ;; (when (and (not (is-buffer-file-temp)) (not (derived-mode-p 'js2-mode)))
+  ;;   (my-common-js-setup)
+  ;;   (setq imenu-create-index-function 'mo-js-imenu-make-index)
+  ;;   (flymake-mode 1))
+  )
 
 (add-hook 'js-mode-hook 'mo-js-mode-hook)
 (eval-after-load 'js-mode
@@ -157,59 +188,6 @@ The line numbers of items will be extracted."
           (setq r nil))))
   r)
 
-(defun my-validate-json-or-js-expression (&optional not-json-p)
-  "Validate buffer or select region as JSON.
-If NOT-JSON-P is not nil, validate as Javascript expression instead of JSON."
-  (interactive "P")
-  (let* ((json-exp (if (region-active-p) (my-selected-str)
-                     (my-buffer-str)))
-         (jsbuf-offet (if not-json-p 0 (length "var a=")))
-         errs
-         first-err
-         (first-err-pos (if (region-active-p) (region-beginning) 0)))
-    (unless not-json-p
-      (setq json-exp (format "var a=%s;"  json-exp)))
-    (with-temp-buffer
-      (insert json-exp)
-      (unless (featurep 'js2-mode)
-        (require 'js2-mode))
-      (js2-parse)
-      (setq errs (js2-errors))
-      (cond
-       ((not errs)
-        (message "NO error found. Good job!"))
-       (t
-        ;; yes, first error in buffer is the last element in errs
-        (setq first-err (car (last errs)))
-        (setq first-err-pos (+ first-err-pos (- (cadr first-err) jsbuf-offet)))
-        (message "%d error(s), first at buffer position %d: %s"
-                 (length errs)
-                 first-err-pos
-                 (js2-get-msg (caar first-err))))))
-    (if first-err (goto-char first-err-pos))))
-
-(defun my-print-json-path (&optional hardcoded-array-index)
-  "Print the path to the JSON value under point, and save it in the kill ring.
-If HARDCODED-ARRAY-INDEX provided, array index in JSON path is replaced with it."
-  (interactive "P")
-  (cond
-   ((memq major-mode '(js2-mode))
-    (js2-print-json-path hardcoded-array-index))
-   (t
-    (let* ((cur-pos (point))
-           (str (my-buffer-str)))
-      (when (string= "json" (file-name-extension buffer-file-name))
-        (setq str (format "var a=%s;" str))
-        (setq cur-pos (+ cur-pos (length "var a="))))
-      (unless (featurep 'js2-mode)
-        (require 'js2-mode))
-      (with-temp-buffer
-        (insert str)
-        (js2-init-scanner)
-        (js2-do-parse)
-        (goto-char cur-pos)
-        (js2-print-json-path))))))
-
 (defun js2-imenu--remove-duplicate-items (extra-rlt)
   (delq nil (mapcar 'js2-imenu--check-single-item extra-rlt)))
 
@@ -247,31 +225,42 @@ Merge RLT and EXTRA-RLT, items in RLT has *higher* priority."
     (format "[%s]" rlt)))
 ;; }}
 
+;; (eval-after-load 'js2-mode
+;;   '(progn
+;;      (defadvice js2-mode-create-imenu-index (around my-js2-mode-create-imenu-index activate)
+;;        (let (rlt extra-rlt)
+;;          ad-do-it
+;;          (setq extra-rlt
+;;                (save-excursion
+;;                  (imenu--generic-function js2-imenu-extra-generic-expression)))
+;;          (setq ad-return-value (js2-imenu--merge-imenu-items ad-return-value extra-rlt))
+;;          ad-return-value))))
+
+(defun js2-imenu-around (origfun &rest args)
+  (message "HERE_")
+  (let ((js2-alist (apply origfun args)))
+    (js2-imenu--merge-imenu-items
+     js2-alist
+     (save-excursion
+       (imenu--generic-function js2-imenu-extra-generic-expression)))
+    js2-alist))
+
 (eval-after-load 'js2-mode
   '(progn
-     (defadvice js2-mode-create-imenu-index (around my-js2-mode-create-imenu-index activate)
-       (let (rlt extra-rlt)
-         ad-do-it
-         (setq extra-rlt
-               (save-excursion
-                 (imenu--generic-function js2-imenu-extra-generic-expression)))
-         (setq ad-return-value (js2-imenu--merge-imenu-items ad-return-value extra-rlt))
-         ad-return-value))))
-;; }}
+     (advice-add #'js2-mode-create-imenu-index
+                 :around #'js2-imenu-around)))
 
 (defun my-js2-mode-setup()
-  (unless (is-buffer-file-temp)
-    (my-common-js-setup)
-    ;; if use node.js we need nice output
-    (js2-imenu-extras-mode)
-    (setq mode-name "JS2")
-    (js2-refactor-mode 1)
-    ;; js2-mode has its own syntax linter
-    (flymake-mode -1)
-    ;; call js-doc commands through `counsel-M-x'!
+  ;; if use node.js we need nice output
+  (js2-imenu-extras-mode)
+  ;;(setq mode-name "JS2")
+  ;;(js2-refactor-mode 1)
+  ;; js2-mode has its own syntax linter
+  (flymake-mode -1)
+  ;; call js-doc commands through `counsel-M-x'!
 
-    ;; @see https://github.com/mooz/js2-mode/issues/350
-    (setq forward-sexp-function nil)))
+  ;; @see https://github.com/mooz/js2-mode/issues/350
+  (setq forward-sexp-function nil))
 
 (add-hook 'js2-mode-hook 'my-js2-mode-setup)
 
@@ -279,62 +268,16 @@ Merge RLT and EXTRA-RLT, items in RLT has *higher* priority."
 (setq auto-mode-alist (cons '("\\.jason$" . js-mode) auto-mode-alist))
 (setq auto-mode-alist (cons '("\\.jshintrc$" . js-mode) auto-mode-alist))
 
-(cond
- ((not *no-memory*)
-  (setq auto-mode-alist (cons '("\\.ts\\'" . js2-mode) auto-mode-alist))
-  (setq auto-mode-alist (cons '("\\.js\\(\\.erb\\)?\\'" . js2-mode) auto-mode-alist))
-  ;; facebook ReactJS, use Emacs25 to fix component indentation problem
-  ;; @see https://github.com/mooz/js2-mode/issues/291
-  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode))
-  (add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
-  (add-to-list 'auto-mode-alist '("\\.mock.js\\'" . js-mode))
-  (add-to-list 'interpreter-mode-alist (cons "node" 'js2-mode)))
- (t
-  (setq auto-mode-alist (cons '("\\.js\\(\\.erb\\)?\\'" . js-mode) auto-mode-alist))
-  (setq auto-mode-alist (cons '("\\.ts\\'" . js-mode) auto-mode-alist))))
+(setq auto-mode-alist (cons '("\\.ts\\'" . js2-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.js\\(\\.erb\\)?\\'" . js2-mode) auto-mode-alist))
+;; facebook ReactJS, use Emacs25 to fix component indentation problem
+;; @see https://github.com/mooz/js2-mode/issues/291
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . rjsx-mode))
+;;(add-to-list 'auto-mode-alist '("components\\/.*\\.js\\'" . rjsx-mode))
+(add-to-list 'auto-mode-alist '("\\.mock.js\\'" . js-mode))
+(add-to-list 'interpreter-mode-alist (cons "node" 'js2-mode))
+
 (add-to-list 'auto-mode-alist '("\\.babelrc\\'" . js-mode))
-
-;; @see https://github.com/felipeochoa/rjsx-mode/issues/33
-(eval-after-load 'rjsx-mode
-  '(progn
-     (define-key rjsx-mode-map "<" nil)))
-
-;; {{ js-beautify
-(defun js-beautify (&optional indent-size)
-  "Beautify selected region or whole buffer with js-beautify.
-INDENT-SIZE decide the indentation level.
-`sudo pip install jsbeautifier` to install js-beautify.'"
-  (interactive "P")
-  (let* ((orig-point (point))
-         (b (if (region-active-p) (region-beginning) (point-min)))
-         (e (if (region-active-p) (region-end) (point-max)))
-         (js-beautify (if (executable-find "js-beautify") "js-beautify"
-                        "jsbeautify")))
-    ;; detect indentation level
-    (unless indent-size
-      (setq indent-size (cond
-                         ((memq major-mode '(js-mode javascript-mode))
-                          js-indent-level)
-                         ((memq major-mode '(web-mode))
-                          web-mode-code-indent-offset)
-                         (t
-                          js2-basic-offset))))
-    ;; do it!
-    (shell-command-on-region b e
-                             (concat "js-beautify"
-                                     " --stdin "
-                                     " --jslint-happy --brace-style=end-expand --keep-array-indentation "
-                                     (format " --indent-size=%d " indent-size))
-                             nil t)
-    (goto-char orig-point)))
-;; }}
-
-;; {{ js-comint
-(defun js-clear-send-buffer ()
-  (interactive)
-  (js-clear)
-  (js-send-buffer))
-;; }}
 
 ;; Latest rjsx-mode does not have indentation issue
 ;; @see https://emacs.stackexchange.com/questions/33536/how-to-edit-jsx-react-files-in-emacs
@@ -401,4 +344,4 @@ INDENT-SIZE decide the indentation level.
                 "util" ; Keysnail
                 "utag"))
 
-(provide 'init-javascript)
+(provide 'init-javascript-imenu)

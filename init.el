@@ -22,7 +22,6 @@
         preproc-font-lock
         ac-geiser
         geiser
-        undo-tree
         which-key
         cython-mode
         js2-mode
@@ -32,7 +31,7 @@
         company-tern
         web-beautify
         imenu
-        iedit
+        multiple-cursors
         cmake-mode
         desktop-registry
         helm
@@ -103,6 +102,12 @@
 
 (line-number-mode t)
 
+;; undo-tree
+(global-undo-tree-mode 1)
+(global-set-key (kbd "C-z") 'undo)
+(defalias 'redo 'undo-tree-redo)
+(global-set-key (kbd "C-S-z") 'redo)
+
 (setq make-backup-files nil)
 ;; desktop
 (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
@@ -147,7 +152,7 @@
 (global-set-key (kbd "C-x s") 'save-buffer) ; replace `save-some-buffers'
 
 (global-set-key (kbd "C-`") 'kill-current-buffer)
-(global-set-key (kbd "C-;") 'iedit-mode)
+(global-set-key (kbd "C-;") 'mc/mark-all-dwim)
 
 (global-set-key (kbd "C-c C-r") 'revert-buffer)
 
@@ -313,7 +318,6 @@
             (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
 
             (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
-            (customize-set-variable 'ggtags-highlight-tag nil) ; conflicts with iedit, disabled
             (auto-complete-mode 1)
             (abbrev-mode 1)
             ;; print all methods that item implements
@@ -459,7 +463,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
       '(("django" . "\\.html\\'")))
 (add-hook 'web-mode-hook
           (lambda ()
-            (setq tab-width 2)
+            (setq tab-width 4)
             ;;(hs-minor-mode)
             (setq web-mode-script-padding 2) ; indent in script tag
             (setq web-mode-markup-indent-offset 2)
@@ -516,7 +520,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 (add-hook 'ssass-mode-hook
           (lambda ()
             (rainbow-mode t)
-            (define-key css-mode-map (kbd "M-.") 'helm-ag)))
+            (define-key ssass-mode-map (kbd "M-.") 'helm-ag)))
 
 ;;----------------------------------------------------
 ;;; web-beautify.el
@@ -549,6 +553,19 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
   (backward-char 2) t)
 (put 'abbrev-console-log 'no-self-insert t)
 
+
+;; (load-file 
+;;  (expand-file-name "javascript_imenu.el"
+;;                    (file-name-directory load-file-name)))
+
+;; (defun my-js2-imenu ()
+;;   (interactive)
+;;   (js2-mode-create-imenu-index))
+
+(defun my-imenu-rescan ()
+  (interactive)
+  (imenu--menubar-select imenu--rescan-item))
+
 (add-hook 'js2-mode-hook
           (lambda ()
             (setq tab-width 4)
@@ -556,7 +573,6 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (rainbow-mode 1)
             (tern-mode 1)
             (company-mode 1)
-            (setq imenu-create-index-function #'js--imenu-create-index)
             (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
             ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
             (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
