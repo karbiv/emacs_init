@@ -66,7 +66,8 @@
         bash-completion
         ascii
         apache-mode
-        ace-window))
+        ace-window
+        glsl-mode))
 
 (if (getenv "DEV")
     (progn
