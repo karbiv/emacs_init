@@ -641,11 +641,18 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (rtags-start-process-unless-running)
             (setq rtags-jump-to-first-match nil) ; show multiple matches
             (setq rtags-display-result-backend 'helm) ; show it in helm
+            (setq rtags-results-buffer-other-window t) ; in other window
+            ;;(setq rtags-other-window-function #'(lambda () (other-window 2)))
+            
             ;; mask a key binding of ggtags minor mode
             (let ((oldmap (cdr (assoc 'ggtags-mode minor-mode-map-alist)))
                   (newmap (make-sparse-keymap)))
               (set-keymap-parent newmap oldmap)
-              (define-key newmap (kbd "M-.") 'rtags-find-symbol-at-point)
+              (define-key newmap (kbd "M-.")
+                #'(lambda () ; open in other window
+                    (interactive)
+                    (let ((current-prefix-arg '(4))) ; C-u
+                      (call-interactively 'rtags-find-symbol-at-point))))
               (define-key newmap (kbd "M-,") 'rtags-location-stack-back)
               (make-local-variable 'minor-mode-overriding-map-alist)
               (push `(ggtags-mode . ,newmap) minor-mode-overriding-map-alist))
