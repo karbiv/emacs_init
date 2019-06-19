@@ -61,6 +61,8 @@
         go-gopath
         go-autocomplete
         ggtags
+        rtags ; c++, clang
+        helm-rtags
         dired-toggle-sudo
         buffer-move
         bash-completion
@@ -102,6 +104,9 @@
 (tool-bar-mode -1)
 
 (line-number-mode t)
+
+;; recursive grep
+(global-set-key (kbd "C-c r") 'rgrep)
 
 ;; undo-tree
 (global-undo-tree-mode 1)
@@ -627,6 +632,24 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 #pragma message \"The value: \" XSTR()
 #error \"stop here\"")
               )))
+
+;;----------------------------------------------------
+;;; c++ mode
+
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (rtags-start-process-unless-running)
+            (setq rtags-jump-to-first-match nil) ; show multiple matches
+            (setq rtags-display-result-backend 'helm) ; show it in helm
+            ;; mask a key binding of ggtags minor mode
+            (let ((oldmap (cdr (assoc 'ggtags-mode minor-mode-map-alist)))
+                  (newmap (make-sparse-keymap)))
+              (set-keymap-parent newmap oldmap)
+              (define-key newmap (kbd "M-.") 'rtags-find-symbol-at-point)
+              (define-key newmap (kbd "M-,") 'rtags-location-stack-back)
+              (make-local-variable 'minor-mode-overriding-map-alist)
+              (push `(ggtags-mode . ,newmap) minor-mode-overriding-map-alist))
+            ))
 
 ;;----------------------------------------------------
 ;;; org mode
