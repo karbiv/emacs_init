@@ -204,8 +204,7 @@
 (setq slime-contribs '(slime-fancy))
 (add-hook 'slime-load-hook
           (lambda ()
-            (define-key slime-prefix-map (kbd "M-h") 'slime-documentation-lookup))
-          )
+            (define-key slime-prefix-map (kbd "M-h") 'slime-documentation-lookup)))
 
 ;;----------------------------------------------------
 ;;; dired
@@ -266,41 +265,14 @@
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
 ;;----------------------------------------------------
-;; rust-mode
-
-;; rustup component add rls-preview rust-analysis rust-src
-;; cargo install racer
-;; cargo install --force rustfmt-nightly
-
-;;(setq rust-format-on-save t)
-(add-hook 'rust-mode-hook
-          (lambda ()
-            (racer-mode 1)
-            (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-            (define-key rust-mode-map (kbd "C-c C-c") #'rust-compile)
-            (setq company-tooltip-align-annotations t)
-            (flycheck-mode 1)
-            (flycheck-rust-setup)
-            ;; "M-{" is already used for `backward-paragraph'
-            (define-key rust-mode-map (kbd "C-{") #'insert-pair)
-            ;;(rust-semantic-mode 1)
-            (abbrev-mode 1)
-            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
-            (eldoc-mode -1) ;; disable, slow
-            ))
-(add-hook 'racer-mode-hook #'company-mode)
-;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
-
-;;----------------------------------------------------
-;; makefile-mode
+;;; makefile-mode
 
 (add-hook 'makefile-mode-hook
           (lambda ()
             (setq tab-width 4)))
 
 ;;----------------------------------------------------
-
-;; go-mode
+;;; go-mode
 
 (add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
 
@@ -413,17 +385,11 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 (add-hook 'python-mode-hook 'python-mode-func)
 
 ;;----------------------------------------------------
-
 ;;; magit
 (global-set-key (kbd "C-c m") 'magit-status)
 
 ;;----------------------------------------------------
-
-;;(ido-mode t)
-;;(global-set-key [(meta n )] 'idomenu)
-
-;;----------------------------------------------------
-;; ini-mode
+;;; ini-mode
 
 (add-to-list 'auto-mode-alist '("\\.ini$"  . ini-mode))
 (add-to-list 'auto-mode-alist '("\\.service\\|\\.target$"  . ini-mode)) ; Systemd
@@ -431,6 +397,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 (add-to-list 'auto-mode-alist '("\\.toml$"  . ini-mode)) ; Cargo.toml
 
 ;;----------------------------------------------------
+;;; php-mode
 
 (eval-after-load "php-mode"
   '(progn
@@ -455,6 +422,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;;; web-mode
+
 (add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.vue$" . web-mode))
@@ -512,6 +480,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;;; css
+
 (add-hook 'css-mode-hook
           (lambda ()
             (rainbow-mode t)
@@ -519,6 +488,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;;; sass|scss-mode
+
 (add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
 (add-to-list 'auto-mode-alist '("\\.sass$" . ssass-mode))
 (eval-after-load 'scss-mode '(define-key scss-mode-map (kbd "C-c b") 'web-beautify-css))
@@ -530,6 +500,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;;; web-beautify.el
+
 ;; requires "beautifier" through npm
 (eval-after-load 'css-mode  '(define-key css-mode-map (kbd "C-c b") 'web-beautify-css))
 (eval-after-load 'json-mode '(define-key json-mode-map (kbd "C-c b") 'web-beautify-js))
@@ -544,6 +515,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;;; linum-mode
+
 (global-set-key (kbd "C-c l") 'linum-mode)
 ;;(global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
@@ -588,6 +560,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;;----------------------------------------------------
 ;; JSON
+
 (add-to-list 'auto-mode-alist '("\\.tern-project$" . json-mode))
 
 ;;----------------------------------------------------
@@ -616,7 +589,8 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
               (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
               (semantic-mode 1)
-              ;;(semantic-decoration-mode 1)
+              (semantic-idle-breadcrumbs-mode 1)
+              (semantic-decoration-mode 1)
               (c-add-style "python-new"
                            '("python"
                              (c-basic-offset . 4))
@@ -642,7 +616,6 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (setq rtags-jump-to-first-match nil) ; show multiple matches
             (setq rtags-display-result-backend 'helm) ; show it in helm
             (setq rtags-results-buffer-other-window t) ; in other window
-            ;;(setq rtags-other-window-function #'(lambda () (other-window 2)))
             
             ;; mask a key binding of ggtags minor mode
             (let ((oldmap (cdr (assoc 'ggtags-mode minor-mode-map-alist)))
@@ -657,6 +630,32 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
               (make-local-variable 'minor-mode-overriding-map-alist)
               (push `(ggtags-mode . ,newmap) minor-mode-overriding-map-alist))
             ))
+
+;;----------------------------------------------------
+;; rust-mode
+
+;; rustup component add rls-preview rust-analysis rust-src
+;; cargo install racer
+;; cargo install --force rustfmt-nightly
+
+;;(setq rust-format-on-save t)
+(add-hook 'rust-mode-hook
+          (lambda ()
+            (racer-mode 1)
+            (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+            (define-key rust-mode-map (kbd "C-c C-c") #'rust-compile)
+            (setq company-tooltip-align-annotations t)
+            (flycheck-mode 1)
+            (flycheck-rust-setup)
+            ;; "M-{" is already used for `backward-paragraph'
+            (define-key rust-mode-map (kbd "C-{") #'insert-pair)
+            ;;(rust-semantic-mode 1)
+            (abbrev-mode 1)
+            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
+            (eldoc-mode -1) ;; disable, slow
+            ))
+(add-hook 'racer-mode-hook #'company-mode)
+;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
 
 ;;----------------------------------------------------
 ;;; org mode
