@@ -621,11 +621,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (let ((oldmap (cdr (assoc 'ggtags-mode minor-mode-map-alist)))
                   (newmap (make-sparse-keymap)))
               (set-keymap-parent newmap oldmap)
-              (define-key newmap (kbd "M-.")
-                #'(lambda () ; open in other window
-                    (interactive)
-                    (let ((current-prefix-arg '(4))) ; C-u
-                      (call-interactively 'rtags-find-symbol-at-point))))
+              (define-key newmap (kbd "M-.") 'rtags-find-symbol-at-point)
               (define-key newmap (kbd "M-,") 'rtags-location-stack-back)
               (make-local-variable 'minor-mode-overriding-map-alist)
               (push `(ggtags-mode . ,newmap) minor-mode-overriding-map-alist))
