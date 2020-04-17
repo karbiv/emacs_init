@@ -4,22 +4,24 @@
 
 ;;; Code:
 
-(setq custom-file "~/.emacs.d/customize.el")
-(load custom-file)
-
 (require 'package)
 
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 ;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 
+; Some combination of GNU TLS and Emacs fail to retrieve archive
+; contents over https.
+; https://www.reddit.com/r/emacs/comments/cdei4p/failed_to_download_gnu_archive_bad_request/etw48ux
+; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
+(if (and (version< emacs-version "26.3") (>= libgnutls-version 30604))
+    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+
 (setq package-selected-packages
       '(
-        slime
-        slime-company
-        undo-tree
+        ;;undo-tree
         org-super-agenda
         realgud
-        preproc-font-lock
+        ;;preproc-font-lock
         ac-geiser
         geiser
         which-key
@@ -35,6 +37,7 @@
         cmake-mode
         desktop-registry
         helm
+        helm-tramp
         helm-systemd
         helm-swoop
         helm-ag
@@ -42,13 +45,37 @@
         ssass-mode
         smartparens
         rainbow-mode
+        flycheck
+
+        projectile
+        yasnippet
+
+        ng2-mode
+
+        lsp-mode
+        helm-lsp
+        lsp-java
+        hydra ; key bindings like "C-c jjkk3j5k"
+        dap-mode
+        company-lsp
+        lsp-ui
+        kotlin-mode
+        gradle-mode
+        flycheck-kotlin
+        lsp-typescript
+        treemacs
+        lsp-treemacs
+        treemacs-projectile
+        groovy-mode ; gradle scripts
+
         rust-mode
         cargo
-        flycheck
+        flycheck-rust
+        racer
+
         web-mode
         yaml-mode
         web-mode-edit-element
-        racer
         php-mode
         paredit
         nginx-mode
@@ -59,7 +86,7 @@
         highlight-symbol
         go-mode
         go-gopath
-        go-autocomplete
+        company-go
         ggtags
         rtags ; c++, clang
         helm-rtags
@@ -69,7 +96,17 @@
         ascii
         apache-mode
         ace-window
-        glsl-mode))
+        glsl-mode
+
+	;; themes
+	cloud-theme
+	farmhouse-theme
+	lab-themes
+	material-theme
+	flucui-themes
+	one-themes
+
+	))
 
 (if (getenv "DEV")
     (progn
@@ -85,34 +122,31 @@
       (package-initialize)
 
       ;; now load package from dev repository as its docs recommend
-      (load "helm-config.el"))
+      (load "helm-config"))
   ;; else
   (package-initialize))
-
 
 (when (display-graphic-p)
   ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
-  ;;(add-to-list 'default-frame-alist '(background-color . "#EEFFCC"))
   ;; selection color
   ;;(set-face-attribute 'region nil :background "#4AB0C9" :foreground "#ffffff")
   ;; Show file path in frame title
-  (setq-default frame-title-format "%b (%f)")
-  )
+  (setq-default frame-title-format "%b (%f)"))
 
-;; disable toolbar
-(tool-bar-mode -1)
+(setq custom-file "~/.emacs.d/customize.el")
+(load custom-file)
 
-(line-number-mode t)
+(tool-bar-mode -1) ; disable toolbar
+(line-number-mode 1) ; show line numbers in modeline
 
-;; recursive grep
-(global-set-key (kbd "C-c r") 'rgrep)
+(global-set-key (kbd "C-c r") 'rgrep) ;; recursive grep
 
 ;; undo-tree
-(global-undo-tree-mode 1)
-(global-set-key (kbd "C-z") 'undo)
-(defalias 'redo 'undo-tree-redo)
-(global-set-key (kbd "C-S-z") 'redo)
+;; (global-undo-tree-mode 1)
+;; (global-set-key (kbd "C-z") 'undo)
+;; (defalias 'redo 'undo-tree-redo)
+;; (global-set-key (kbd "C-S-z") 'redo)
 
 (setq make-backup-files nil)
 ;; desktop
@@ -122,7 +156,8 @@
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-;;(set-face-attribute 'default nil :height 124)
+(set-face-attribute 'default nil :font "Iosevka")
+(set-face-attribute 'default nil :height 108)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -142,10 +177,8 @@
 (put 'erase-buffer 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
-(add-hook 'emacs-lisp-mode-hook #'auto-complete-mode)
 (setq-default indent-tabs-mode nil) ; use spaces
 
-;;(global-set-key (kbd "<f8>") #'buf-move)
 (global-set-key (kbd "C-o") #'ace-window)
 (global-set-key (kbd "M-p") (lambda ()
                               (interactive)
@@ -163,6 +196,9 @@
 (global-set-key (kbd "C-c C-r") 'revert-buffer)
 
 (global-company-mode 1)
+
+;;(global-set-key (kbd "<f8>") #'buf-move)
+(global-set-key (kbd "<f8>") #'rgrep)
 
 ;;----------------------------------------------------
 ;;; helm
@@ -198,15 +234,6 @@
 
 
 ;;----------------------------------------------------
-;;; slime
-
-(setq inferior-lisp-program "/usr/bin/sbcl")
-(setq slime-contribs '(slime-fancy))
-(add-hook 'slime-load-hook
-          (lambda ()
-            (define-key slime-prefix-map (kbd "M-h") 'slime-documentation-lookup)))
-
-;;----------------------------------------------------
 ;;; dired
 
 ;; https://www.emacswiki.org/emacs/DiredGetFileSize
@@ -228,8 +255,11 @@
             (define-key dired-mode-map (kbd "?") 'dired-get-size)))
 
 ;;; tramp
+(setq-default password-cache-expiry 604800) ; How many seconds passwords are cached
+(setq auth-source-debug t)
+(eval-after-load 'tramp
+  (setenv "SHELL" "/bin/bash"))
 
-(setq-default password-cache-expiry 3600) ; How many seconds passwords are cached
 
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
@@ -241,7 +271,7 @@
       '((c-mode . semantic-default-c-setup)
         (c++-mode . semantic-default-c-setup)
         (html-mode . semantic-default-html-setup)
-        (java-mode . wisent-java-default-setup)
+        (java-mode . wisent-java-default-setup) ; lsp-java
         ;;(js-mode . wisent-javascript-setup-parser) ;
         (python-mode . wisent-python-default-setup)
         ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
@@ -257,8 +287,26 @@
 
 (add-hook 'semantic-inhibit-functions
           (lambda ()
-            (when (member major-mode '(js-mode php-mode))
+            (when
+                ;;(member major-mode '(js-mode php-mode))
+                (member major-mode '(js-mode))
               t)))
+
+(semantic-mode 1)
+;; semantic fixes
+(load-file
+ (expand-file-name "semantic_fixes.el"
+		   (file-name-directory load-file-name)))
+
+(add-hook 'semantic-decoration-mode-hook
+          (lambda ()
+            (setq semantic-decoration-styles
+                  '(("semantic-decoration-on-includes" . t)
+                    ("semantic-decoration-on-protected-members" . nil)
+                    ("semantic-decoration-on-private-members" . nil)
+                    ("semantic-tag-boundary" . t)))))
+(global-semantic-decoration-mode 1)
+(global-semantic-stickyfunc-mode 1)
 
 ;;----------------------------------------------------
 ;;; shell mode
@@ -295,8 +343,9 @@
             (define-key ggtags-mode-map (kbd "M-.") nil)
             (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
 
-            (define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
-            (auto-complete-mode 1)
+            ;; TODO change to company-mode
+            ;;(define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
+            ;;(auto-complete-mode 1)
             (abbrev-mode 1)
             ;; print all methods that item implements
             (define-abbrev go-mode-abbrev-table "impls"
@@ -317,9 +366,6 @@
             ;; (define-key m "n" #'go-goto-function-name)
             ;; (define-key m "r" #'go-goto-return-values)
             ))
-;; requires github.com/nsf/gocode
-;; `go-gopath-set-gopath'
-(eval-after-load "go-mode" '(require 'go-autocomplete))
 
 (defun ak-go-goto-imports ()
   "Uses xref mark ring to return back from imports section, when quick (un)comment of import is done."
@@ -344,7 +390,6 @@
 (add-hook 'yaml-mode-hook
           (lambda ()
             (setq yaml-indent-offset 2)))
-;;(add-hook 'python-mode-hook 'auto-complete-mode)
 ;;; to customize
 ;;(setq jedi:server-args '("--sys-path" "/home/...somepath.../venv/lib/python3.5/site-packages"))
 
@@ -359,6 +404,7 @@
   (hs-minor-mode)
   (jedi:setup)
   (abbrev-mode 1)
+  (semantic-mode 1)
   (define-abbrev python-mode-abbrev-table  "pd" "import os
 if os.getenv('AKDEBUG'):import pdb;pdb.set_trace()
 " #'python-mode-abbrev-debug-handler)
@@ -376,6 +422,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
   (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
   (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
+  (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
   (define-key jedi-mode-map (kbd "M-.") (lambda ()
                                           (interactive)
                                           (xref-push-marker-stack)
@@ -406,6 +453,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
      ))
 (add-hook 'php-mode-hook
           (lambda ()
+            (semantic-mode 1)
             (hs-minor-mode 1)
             (local-unset-key "C-M-\\")
             (local-unset-key "C")
@@ -415,10 +463,12 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
                   c-basic-offset 4)
             (define-key php-mode-map (kbd "M-n") 'imenu)
             (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
+            (define-key php-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
             ))
+(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
+;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
 (global-set-key (kbd "<f11>") 'php-mode)
-;;(add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
-(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
+(global-set-key (kbd "<f12>") 'web-mode)
 
 ;;----------------------------------------------------
 ;;; web-mode
@@ -513,10 +563,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
       (setq web-beautify-css-program "~/.npm/bin/css-beautify")
       (setq web-beautify-js-program "~/.npm/bin/js-beautify")))
 
-;;----------------------------------------------------
-;;; linum-mode
-
-(global-set-key (kbd "C-c l") 'linum-mode)
+;;;
 ;;(global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
 ;;----------------------------------------------------
@@ -532,7 +579,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 (put 'abbrev-console-log 'no-self-insert t)
 
 
-;; (load-file 
+;; (load-file
 ;;  (expand-file-name "javascript_imenu.el"
 ;;                    (file-name-directory load-file-name)))
 
@@ -573,24 +620,120 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
               (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")))
 
 ;;----------------------------------------------------
+;;; lsp-mode
+
+(add-hook 'lsp-ui-mode-hook
+          (lambda ()
+
+            (lsp-ui-sideline-mode -1)
+            ;;(global-set-key (kbd "C-c l") 'linum-mode)
+            (define-prefix-command 'lsp-prefix)
+            (define-key lsp-prefix (kbd "d") #'lsp-ui-doc-hide)
+            ;; toggle Sideline mode
+            (define-key lsp-prefix (kbd "s") #'lsp-ui-sideline-mode)
+            ;; execute code action
+            (define-key lsp-prefix (kbd "a") #'lsp-execute-code-action)
+            ;; toggle treemacs
+            (define-key lsp-prefix (kbd "t") #'treemacs)
+            ;; lsp workspaces
+            ;;(define-key lsp-prefix (kbd "w") #')
+
+            (global-set-key (kbd "C-c l") 'lsp-prefix)
+
+            (setq lsp-ui-sideline-show-code-actions nil
+                  lsp-ui-sideline-show-symbol nil
+                  lsp-ui-sideline-ignore-duplicate t
+                  lsp-ui-sideline-show-diagnostics t
+                  lsp-ui-sideline-show-hover t
+                  lsp-ui-flycheck-enable t
+                  lsp-ui-flycheck-list-position 'right
+                  lsp-ui-flycheck-live-reporting t
+                  lsp-ui-peek-enable t
+                  lsp-ui-peek-list-width 60
+                  lsp-ui-peek-peek-height 25
+                  )
+
+            (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+            (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+            ))
+
+
+;;----------------------------------------------------
+;;; java mode
+
+(setq lsp-java-vmargs
+      (list
+       "-noverify"
+       "-Xmx1G"
+       "-XX:+UseG1GC"
+       "-XX:+UseStringDeduplication"
+       ;;"-javaagent:/path/to/lombok-1.18.6.jar"
+       ))
+
+(setq ak-lsp-java-boot-enabled nil)
+
+(defun spring-boot-init ()
+  (interactive)
+  (require 'lsp-java-boot)
+  ;; to enable the lenses
+  (add-hook 'lsp-mode-hook #'lsp-lens-mode)
+  (add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
+
+  (setq ak-lsp-java-boot-enabled t)
+
+  ;; revert all java-mode buffers
+  (dolist ($buf (buffer-list (current-buffer)))
+    (with-current-buffer $buf
+      (when (eq major-mode 'java-mode)
+        ;; revert buffer to execute hooks
+        (revert-buffer nil ; IGNORE-AUTO
+                       t ; NOCONFIRM
+                       nil ; PRESERVE-MODES
+                       )))))
+
+(add-hook 'java-mode-hook
+          (lambda ()
+            (setq tab-width 4)
+            (yas-minor-mode t)
+
+            ;; do not restore Spring Tools Suite language Server in desktop-read, "boot-ls"
+            (if ak-lsp-java-boot-enabled
+                (setq lsp-java-boot-enabled t)
+              (setq lsp-java-boot-enabled nil))
+
+            (setq lsp-java-references-code-lens-enabled nil)
+            (setq lsp-java-implementations-code-lens-enabled nil)
+            (require 'lsp-java)
+            (setq lsp-prefer-flymake nil)
+            (lsp nil)
+
+            (lsp-ui-sideline-mode -1)
+            (gradle-mode t)
+            (projectile-mode t)
+            ;;(define-key java-mode-map "M-." 'lsp-find-type-definition)
+            (hl-line-mode t)
+
+            ))
+
+
+;;----------------------------------------------------
 ;;; c mode
 
-(add-hook 'c-mode-common-hook
+(add-hook 'c-mode-hook
           (lambda ()
+            ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
+            (c-set-style "gnu")
             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
               (setq c-macro-preprocessor "cpp -CC")
-              (preproc-font-lock-mode 1)
-              (hs-minor-mode 1)
-              (hs-minor-mode) ; hide/show blocks
+              ;;(preproc-font-lock-mode 1)
+              (hs-minor-mode 1) ; hide/show blocks
               (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
               (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
               ;;(flycheck-mode 1)
-              (ggtags-mode 1)
               (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
-              (semantic-mode 1)
+              ;;(semantic-mode 1)
               (semantic-idle-breadcrumbs-mode 1)
-              (semantic-decoration-mode 1)
               (c-add-style "python-new"
                            '("python"
                              (c-basic-offset . 4))
@@ -616,7 +759,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (setq rtags-jump-to-first-match nil) ; show multiple matches
             (setq rtags-display-result-backend 'helm) ; show it in helm
             (setq rtags-results-buffer-other-window t) ; in other window
-            
+
             ;; mask a key binding of ggtags minor mode
             (let ((oldmap (cdr (assoc 'ggtags-mode minor-mode-map-alist)))
                   (newmap (make-sparse-keymap)))
@@ -668,3 +811,9 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 ;;   `(let ((time (current-time)))
 ;;      ,@body
 ;;      (message "%.06f" (float-time (time-since time)))))
+
+
+;;; dev
+
+;; (add-to-list 'load-path "~/worksp/cython-semantic")
+;; (require 'cython-semantic-mode)
