@@ -90,6 +90,7 @@
         ggtags
         rtags ; c++, clang
         helm-rtags
+        dired-du ; disk usage
         dired-toggle-sudo
         buffer-move
         bash-completion
@@ -198,7 +199,12 @@
 (global-company-mode 1)
 
 ;;(global-set-key (kbd "<f8>") #'buf-move)
-(global-set-key (kbd "<f8>") #'rgrep)
+(global-set-key (kbd "<f8>")
+                (lambda () (interactive)
+                  (revert-buffer t ; IGNORE-AUTO
+                                 t ; NOCONFIRM
+                                 nil ; PRESERVE-MODES
+                                 )))
 
 ;;----------------------------------------------------
 ;;; helm
@@ -251,7 +257,7 @@
           (lambda ()
             (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
             ;;(setq dired-listing-switches "-hal --time-style=iso")
-            (setq dired-listing-switches "-hal")
+            (setq dired-listing-switches "-hal --group-directories-first")
             (define-key dired-mode-map (kbd "?") 'dired-get-size)))
 
 ;;; tramp
