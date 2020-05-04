@@ -135,8 +135,9 @@
   ;; Show file path in frame title
   (setq-default frame-title-format "%b (%f)"))
 
-(setq custom-file "~/.emacs.d/customize.el")
-(load custom-file)
+;; file doesn't exist in initial install
+;(setq custom-file "~/.emacs.d/customize.el")
+;(load custom-file)
 
 (tool-bar-mode -1) ; disable toolbar
 (line-number-mode 1) ; show line numbers in modeline
@@ -157,7 +158,7 @@
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
 ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :font "Iosevka")
+;;(set-face-attribute 'default nil :font "Iosevka")
 (set-face-attribute 'default nil :height 108)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
@@ -198,13 +199,15 @@
 
 (global-company-mode 1)
 
-;;(global-set-key (kbd "<f8>") #'buf-move)
-(global-set-key (kbd "<f8>")
+(global-set-key (kbd "<f7>")
                 (lambda () (interactive)
                   (revert-buffer t ; IGNORE-AUTO
                                  t ; NOCONFIRM
                                  nil ; PRESERVE-MODES
                                  )))
+(global-set-key (kbd "<f8>")
+                (lambda () (interactive)
+                  (other-window 1)))
 
 ;;----------------------------------------------------
 ;;; helm
@@ -300,9 +303,9 @@
 
 (semantic-mode 1)
 ;; semantic fixes
-(load-file
- (expand-file-name "semantic_fixes.el"
-		   (file-name-directory load-file-name)))
+;; (load-file
+;;  (expand-file-name "semantic_fixes.el"
+;; 		   (file-name-directory load-file-name)))
 
 (add-hook 'semantic-decoration-mode-hook
           (lambda ()
