@@ -18,6 +18,8 @@
 
 (setq package-selected-packages
       '(
+        tramp
+        real-auto-save
         ;;undo-tree
         org-super-agenda
         realgud
@@ -74,8 +76,8 @@
         racer
 
         web-mode
-        yaml-mode
         web-mode-edit-element
+        yaml-mode
         php-mode
         paredit
         nginx-mode
@@ -157,9 +159,9 @@
 (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
 (setq inhibit-startup-screen t)
 ;;(set-face-attribute 'default nil :font "Liberation Mono")
-;;(set-face-attribute 'default nil :font "Ubuntu Mono")
+(set-face-attribute 'default nil :font "Ubuntu Mono")
 ;;(set-face-attribute 'default nil :font "Iosevka")
-(set-face-attribute 'default nil :height 108)
+(set-face-attribute 'default nil :height 118)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 ;;(setq visible-bell 1)
 (show-paren-mode 1)
@@ -205,9 +207,38 @@
                                  t ; NOCONFIRM
                                  nil ; PRESERVE-MODES
                                  )))
-(global-set-key (kbd "<f8>")
+(global-set-key (kbd "C-c o")
                 (lambda () (interactive)
                   (other-window 1)))
+;; for menu key to the right of space and AltGr
+(global-set-key (kbd "<menu>")
+                (lambda () (interactive)
+                  (other-window 1)))
+
+;; real autosave
+(setq real-auto-save-interval 5) ;; in seconds
+;; to save all buffers, every real-auto-save-interval seconds, irrespective of idle time
+(setq real-auto-save-use-idle-timer nil)
+
+(add-hook 'prog-mode-hook 'real-auto-save-mode)
+(add-hook 'make-mode-hook 'real-auto-save-mode)
+
+;;----------------------------------------------------
+;;; tramp
+(require 'tramp)
+(eval-after-load 'tramp
+  (progn
+    ;;(setq auth-source-debug t)
+    (setq-default password-cache-expiry 604800) ; seconds
+    (setq tramp-default-method "ssh")
+    (setenv "SHELL" "/bin/bash")
+    ;; (tramp-set-completion-function
+    ;;  "ssh"
+    ;;  '((tramp-parse-sconfig "/etc/ssh/ssh_config")
+    ;;    (tramp-parse-sconfig "~/.ssh/config")
+    ;;    ;;(tramp-parse-netrc "~/.authinfo")
+    ;;    ))
+    ))
 
 ;;----------------------------------------------------
 ;;; helm
@@ -263,13 +294,7 @@
             (setq dired-listing-switches "-hal --group-directories-first")
             (define-key dired-mode-map (kbd "?") 'dired-get-size)))
 
-;;; tramp
-(setq-default password-cache-expiry 604800) ; How many seconds passwords are cached
-(setq auth-source-debug t)
-(eval-after-load 'tramp
-  (setenv "SHELL" "/bin/bash"))
-
-
+;;----------------------------------------------------
 ;;; macrostep
 (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand)
 
@@ -315,7 +340,7 @@
                     ("semantic-decoration-on-private-members" . nil)
                     ("semantic-tag-boundary" . t)))))
 (global-semantic-decoration-mode 1)
-(global-semantic-stickyfunc-mode 1)
+;;(global-semantic-stickyfunc-mode 1)
 
 ;;----------------------------------------------------
 ;;; shell mode
@@ -581,24 +606,11 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 (add-to-list 'company-backends 'company-tern)
 ;; npm install tern
-(setq tern-command (list (expand-file-name "~/soft/tern/bin/tern")))
+(setq tern-command (list (expand-file-name "~/node_modules/tern/bin/tern")))
 
 (defun abbrev-console-log ()
   (backward-char 2) t)
 (put 'abbrev-console-log 'no-self-insert t)
-
-
-;; (load-file
-;;  (expand-file-name "javascript_imenu.el"
-;;                    (file-name-directory load-file-name)))
-
-;; (defun my-js2-imenu ()
-;;   (interactive)
-;;   (js2-mode-create-imenu-index))
-
-(defun my-imenu-rescan ()
-  (interactive)
-  (imenu--menubar-select imenu--rescan-item))
 
 (add-hook 'js2-mode-hook
           (lambda ()
@@ -607,6 +619,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
             (rainbow-mode 1)
             (tern-mode 1)
             (company-mode 1)
+            (js2-imenu-extras-mode)
             (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
             ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
             (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
@@ -826,3 +839,15 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 ;; (add-to-list 'load-path "~/worksp/cython-semantic")
 ;; (require 'cython-semantic-mode)
+
+;; (add-to-list 'load-path "~/.emacs.d/freepascal")
+;; (require 'freepascal)
+;; (add-to-list 'auto-mode-alist '("\\.inc$"  . freepascal-mode))
+;; (add-to-list 'auto-mode-alist '("\\.pas$"  . freepascal-mode))
+;; (add-to-list 'auto-mode-alist '("\\.pp$"  . freepascal-mode))
+
+;; (add-hook 'freepascal-mode-hook
+;;           (lambda ()
+;;             (semantic-mode 1)
+;;             (hs-minor-mode 1)
+;;             (ggtags-mode 1)))
