@@ -1,33 +1,17 @@
-;;; package --- Summary
-
-;;; Commentary:
-
-;;; Code:
-
 (require 'package)
-
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
-;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
-
-; Some combination of GNU TLS and Emacs fail to retrieve archive
-; contents over https.
-; https://www.reddit.com/r/emacs/comments/cdei4p/failed_to_download_gnu_archive_bad_request/etw48ux
-; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
-(if (and (version< emacs-version "26.3") (>= libgnutls-version 30604))
-    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 (setq package-selected-packages
       '(
-        tramp
+        tramp ; manually over system's version
         real-auto-save
-        ;;undo-tree
+        undo-tree
         org-super-agenda
         realgud
-        ;;preproc-font-lock
+        preproc-font-lock
         ac-geiser
         geiser
         which-key
-        cython-mode
         js2-mode
         tern ; js code analysis
         json-mode
@@ -38,42 +22,30 @@
         multiple-cursors
         cmake-mode
         desktop-registry
+
         helm
+        helm-locate
         helm-tramp
         helm-systemd
         helm-swoop
         helm-ag
         helm-gtags
+        
         ssass-mode
         smartparens
         rainbow-mode
         flycheck
-
         projectile
         yasnippet
-
         ng2-mode
-
-        lsp-mode
-        helm-lsp
-        lsp-java
-        hydra ; key bindings like "C-c jjkk3j5k"
         dap-mode
         company-lsp
         lsp-ui
-        kotlin-mode
-        gradle-mode
         flycheck-kotlin
         lsp-typescript
         treemacs
         lsp-treemacs
         treemacs-projectile
-        groovy-mode ; gradle scripts
-
-        rust-mode
-        cargo
-        flycheck-rust
-        racer
 
         web-mode
         web-mode-edit-element
@@ -90,9 +62,6 @@
         go-gopath
         company-go
         ggtags
-        rtags ; c++, clang
-        helm-rtags
-        dired-du ; disk usage
         dired-toggle-sudo
         buffer-move
         bash-completion
@@ -101,119 +70,56 @@
         ace-window
         glsl-mode
 
-	;; themes
-	cloud-theme
-	farmhouse-theme
-	lab-themes
-	material-theme
-	flucui-themes
-	one-themes
-
+        rust-mode
+        cargo
+        flycheck-rust
+        racer
 	))
 
-(if (getenv "DEV")
-    (progn
-      ;; disable activation of some installed packages
-      (setq package-load-list
-            (append '((helm nil))
-                    '((helm-core nil))
-                    package-load-list))
-
-      ;; add dev repository of disable packages to `load-path'
-      (add-to-list 'load-path "~/worksp/emacs_package_dev/helm")
-
-      (package-initialize)
-
-      ;; now load package from dev repository as its docs recommend
-      (load "helm-config"))
-  ;; else
-  (package-initialize))
+(package-initialize)
 
 (when (display-graphic-p)
-  ;;(setq initial-buffer-choice (lambda () (get-buffer "*Messages*")))
   (toggle-frame-maximized)
-  ;; selection color
-  ;;(set-face-attribute 'region nil :background "#4AB0C9" :foreground "#ffffff")
-  ;; Show file path in frame title
   (setq-default frame-title-format "%b (%f)"))
 
-;; file doesn't exist in initial install
-;(setq custom-file "~/.emacs.d/customize.el")
-;(load custom-file)
-
 (tool-bar-mode -1) ; disable toolbar
-(line-number-mode 1) ; show line numbers in modeline
-
-(global-set-key (kbd "C-c r") 'rgrep) ;; recursive grep
-
-;; undo-tree
-;; (global-undo-tree-mode 1)
-;; (global-set-key (kbd "C-z") 'undo)
-;; (defalias 'redo 'undo-tree-redo)
-;; (global-set-key (kbd "C-S-z") 'redo)
+(line-number-mode) ; show line numbers in modeline
 
 (setq make-backup-files nil)
-;; desktop
-(global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
-;;(global-set-key (kbd "C-c d r") 'desktop-read)
-(global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
 (setq inhibit-startup-screen t)
-;;(set-face-attribute 'default nil :font "Liberation Mono")
 (set-face-attribute 'default nil :font "Ubuntu Mono")
-;;(set-face-attribute 'default nil :font "Iosevka")
 (set-face-attribute 'default nil :height 118)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
-;;(setq visible-bell 1)
-(show-paren-mode 1)
+(show-paren-mode)
 (column-number-mode)
-;; https://stackoverflow.com/questions/5738170/why-doeppps-emacs-create-temporary-symbolic-links-for-modified-files
+;; https://stackoverflow.com/questions/5738170/why-does-emacs-create-temporary-symbolic-links-for-modified-files
 (setq create-lockfiles nil)
 (global-set-key (kbd "C-c c") 'comment-region)
-(global-set-key (kbd "C-c s") 'delete-trailing-whitespace)
-(add-hook 'scheme-mode-hook #'enable-paredit-mode)
+
 ;; Path to Emacs C source, for functions help system
-(setq find-function-C-source-directory "~/soft/emacs/src")
+;;(setq find-function-C-source-directory "~/soft/emacs/src")
+
 ;; Disable menu and scrollbars
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
-;;(global-flycheck-mode)
-;;(set-default 'truncate-lines t)
-(put 'erase-buffer 'disabled nil)
-(put 'set-goal-column 'disabled nil)
 (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode)
 (setq-default indent-tabs-mode nil) ; use spaces
-
-(global-set-key (kbd "C-o") #'ace-window)
-(global-set-key (kbd "M-p") (lambda ()
-                              (interactive)
-                              (set-window-buffer (selected-window) (other-buffer))))
 
 ;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
 
-(global-set-key (kbd "C-x s") 'save-buffer) ; replace `save-some-buffers'
-
-(global-set-key (kbd "C-`") 'kill-current-buffer)
 (global-set-key (kbd "C-;") 'mc/mark-all-dwim)
-
-(global-set-key (kbd "C-c C-r") 'revert-buffer)
-
-(global-company-mode 1)
-
 (global-set-key (kbd "<f7>")
                 (lambda () (interactive)
                   (revert-buffer t ; IGNORE-AUTO
                                  t ; NOCONFIRM
                                  nil ; PRESERVE-MODES
                                  )))
-(global-set-key (kbd "C-c o")
-                (lambda () (interactive)
-                  (other-window 1)))
+;; (global-set-key (kbd "C-c o")
+;;                 (lambda () (interactive)
+;;                   (other-window 1)))
 ;; for menu key to the right of space and AltGr
-(global-set-key (kbd "<menu>")
-                (lambda () (interactive)
-                  (other-window 1)))
 
 ;; real autosave
 (setq real-auto-save-interval 5) ;; in seconds
@@ -223,22 +129,39 @@
 (add-hook 'prog-mode-hook 'real-auto-save-mode)
 (add-hook 'make-mode-hook 'real-auto-save-mode)
 
+(global-company-mode 1)
+
+;;----------------------------------------------------
+;;; desktop
+(global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
+(global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop)
+
+;;----------------------------------------------------
+;;; ace window
+(global-set-key (kbd "C-c o") #'ace-window)
+(global-set-key (kbd "M-p") (lambda ()
+                              (interactive)
+                              (set-window-buffer (selected-window) (other-buffer))))
+
+;;----------------------------------------------------
+;;; undo-tree
+(global-undo-tree-mode)
+(global-set-key (kbd "C-/") 'undo)
+(global-set-key (kbd "C-M-/") 'undo-tree-redo)
+
 ;;----------------------------------------------------
 ;;; tramp
-(require 'tramp)
-(eval-after-load 'tramp
-  (progn
-    ;;(setq auth-source-debug t)
-    (setq-default password-cache-expiry 604800) ; seconds
-    (setq tramp-default-method "ssh")
-    (setenv "SHELL" "/bin/bash")
-    ;; (tramp-set-completion-function
-    ;;  "ssh"
-    ;;  '((tramp-parse-sconfig "/etc/ssh/ssh_config")
-    ;;    (tramp-parse-sconfig "~/.ssh/config")
-    ;;    ;;(tramp-parse-netrc "~/.authinfo")
-    ;;    ))
-    ))
+(add-hook 'tramp--startup-hook
+          (lambda ()
+            (progn
+              ;;(setq auth-source-debug t)
+              (setq-default password-cache-expiry 604800) ; seconds
+              (setq tramp-default-method "ssh")
+              (setenv "SHELL" "/bin/bash")
+              (tramp-set-completion-function
+               "ssh"
+               '((tramp-parse-sconfig "/etc/ssh/ssh_config")
+                 (tramp-parse-sconfig "~/.ssh/config"))))))
 
 ;;----------------------------------------------------
 ;;; helm
@@ -327,20 +250,13 @@
               t)))
 
 (semantic-mode 1)
-;; semantic fixes
-;; (load-file
-;;  (expand-file-name "semantic_fixes.el"
-;; 		   (file-name-directory load-file-name)))
-
 (add-hook 'semantic-decoration-mode-hook
           (lambda ()
             (setq semantic-decoration-styles
-                  '(("semantic-decoration-on-includes" . t)
-                    ("semantic-decoration-on-protected-members" . nil)
+                  '(("semantic-decoration-on-protected-members" . nil)
                     ("semantic-decoration-on-private-members" . nil)
                     ("semantic-tag-boundary" . t)))))
 (global-semantic-decoration-mode 1)
-;;(global-semantic-stickyfunc-mode 1)
 
 ;;----------------------------------------------------
 ;;; shell mode
@@ -637,6 +553,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 
 (add-hook 'scheme-mode-hook
           #'(lambda ()
+              (enable-paredit-mode)
               (abbrev-mode 1)
               (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
               (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")))
@@ -745,6 +662,7 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
           (lambda ()
             ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
             (c-set-style "gnu")
+            (ggtags-mode)
             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
               (setq c-macro-preprocessor "cpp -CC")
               ;;(preproc-font-lock-mode 1)
