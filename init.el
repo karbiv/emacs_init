@@ -63,7 +63,6 @@
         company-go
         ggtags
         dired-toggle-sudo
-        buffer-move
         bash-completion
         ascii
         apache-mode
@@ -139,6 +138,7 @@
 ;;----------------------------------------------------
 ;;; ace window
 (global-set-key (kbd "C-c o") #'ace-window)
+(global-set-key (kbd "C-c C-s") #'ace-swap-window)
 (global-set-key (kbd "M-p") (lambda ()
                               (interactive)
                               (set-window-buffer (selected-window) (other-buffer))))
