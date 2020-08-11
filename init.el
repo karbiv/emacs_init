@@ -4,7 +4,6 @@
 (setq package-selected-packages
       '(
         tramp ; manually over system's version
-        real-auto-save
         undo-tree
         org-super-agenda
         realgud
@@ -30,6 +29,17 @@
         helm-swoop
         helm-ag
         helm-gtags
+        helm-lsp
+        which-key
+
+        dap-mode
+        dap-java
+        dap-hydra
+        lsp-ui
+        lsp-java
+        gradle-mode
+        kotlin-mode
+        groovy-mode
         
         ssass-mode
         smartparens
@@ -38,14 +48,15 @@
         projectile
         yasnippet
         ng2-mode
-        dap-mode
         company-lsp
-        lsp-ui
         flycheck-kotlin
         lsp-typescript
-        treemacs
         lsp-treemacs
+        treemacs
         treemacs-projectile
+
+        ;;jedi
+        elpy
 
         web-mode
         web-mode-edit-element
@@ -55,7 +66,6 @@
         nginx-mode
         magit
         macrostep
-        jedi
         ini-mode
         highlight-symbol
         go-mode
@@ -69,10 +79,8 @@
         ace-window
         glsl-mode
 
-        rust-mode
-        cargo
-        flycheck-rust
-        racer
+        ;; themes
+        flatui-theme
 	))
 
 (package-initialize)
@@ -87,7 +95,7 @@
 (setq make-backup-files nil)
 (setq inhibit-startup-screen t)
 (set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 118)
+(set-face-attribute 'default nil :height 110)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 (show-paren-mode)
 (column-number-mode)
@@ -113,20 +121,12 @@
                 (lambda () (interactive)
                   (revert-buffer t ; IGNORE-AUTO
                                  t ; NOCONFIRM
-                                 nil ; PRESERVE-MODES
+                                 t ; PRESERVE-MODES
                                  )))
 ;; (global-set-key (kbd "C-c o")
 ;;                 (lambda () (interactive)
 ;;                   (other-window 1)))
 ;; for menu key to the right of space and AltGr
-
-;; real autosave
-(setq real-auto-save-interval 5) ;; in seconds
-;; to save all buffers, every real-auto-save-interval seconds, irrespective of idle time
-(setq real-auto-save-use-idle-timer nil)
-
-(add-hook 'prog-mode-hook 'real-auto-save-mode)
-(add-hook 'make-mode-hook 'real-auto-save-mode)
 
 (global-company-mode 1)
 
@@ -138,13 +138,13 @@
 ;;----------------------------------------------------
 ;;; ace window
 (global-set-key (kbd "C-c o") #'ace-window)
-(global-set-key (kbd "C-c C-s") #'ace-swap-window)
-(global-set-key (kbd "M-p") (lambda ()
-                              (interactive)
-                              (set-window-buffer (selected-window) (other-buffer))))
+(global-set-key (kbd "C-c s") #'ace-swap-window)
+;; (global-set-key (kbd "M-p") (lambda ()
+;;                               (interactive)
+;;                               (set-window-buffer (selected-window) (other-buffer))))
 
 ;;----------------------------------------------------
-;;; undo-tree
+;;; Undo-Tree
 (global-undo-tree-mode)
 (global-set-key (kbd "C-/") 'undo)
 (global-set-key (kbd "C-M-/") 'undo-tree-redo)
@@ -228,9 +228,9 @@
       '((c-mode . semantic-default-c-setup)
         (c++-mode . semantic-default-c-setup)
         (html-mode . semantic-default-html-setup)
-        (java-mode . wisent-java-default-setup) ; lsp-java
+        (java-mode . wisent-java-default-setup)
         ;;(js-mode . wisent-javascript-setup-parser) ;
-        (python-mode . wisent-python-default-setup)
+        ;;(python-mode . wisent-python-default-setup) ; no decoration for type hints
         ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
         (srecode-template-mode . srecode-template-setup-parser)
         (texinfo-mode . semantic-default-texi-setup)
@@ -268,6 +268,11 @@
 (add-hook 'makefile-mode-hook
           (lambda ()
             (setq tab-width 4)))
+
+;;----------------------------------------------------
+;;; markdown-mode
+
+(add-to-list 'auto-mode-alist '("\\.mm$" . markdown-mode))
 
 ;;----------------------------------------------------
 ;;; go-mode
@@ -349,35 +354,34 @@
   (move-end-of-line 1)
   (save-buffer 0))
 
+(elpy-enable)
+
 (defun python-mode-func ()
   (setq tab-width 4)
   (hs-minor-mode)
-  (jedi:setup)
   (abbrev-mode 1)
   (semantic-mode 1)
-  (define-abbrev python-mode-abbrev-table  "pd" "import os
-if os.getenv('AKDEBUG'):import pdb;pdb.set_trace()
-" #'python-mode-abbrev-debug-handler)
-  (define-abbrev python-mode-abbrev-table  "tr" "import os
-if os.getenv('AKDEBUG'):from trepan.api import debug;debug()
-" #'python-mode-abbrev-debug-handler)
-  (define-abbrev python-mode-abbrev-table  "ipd" "import os
-if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
-" #'python-mode-abbrev-debug-handler)
+  (define-abbrev python-mode-abbrev-table  "pd" "import os; 'ak'; import pdb;pdb.set_trace()"
+    #'python-mode-abbrev-debug-handler)
+  (define-abbrev python-mode-abbrev-table  "tr" "import os; from trepan.api import debug;debug()"
+    #'python-mode-abbrev-debug-handler)
+  (define-abbrev python-mode-abbrev-table  "ipd" "import os; import ipdb;ipdb.set_trace()"
+    #'python-mode-abbrev-debug-handler)
   (define-abbrev python-mode-abbrev-table  "pp" "import pprint; pp=pprint.PrettyPrinter(); pp.pprint()")
   (define-key python-mode-map (kbd "C-c C-r") 'revert-buffer) ; orig is send region to python shell
-  (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
-  ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
 
-  (local-unset-key (kbd "C-c !")) ; unhide flycheck
-  (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
-  (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
-  (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
-  (define-key jedi-mode-map (kbd "M-.") (lambda ()
-                                          (interactive)
-                                          (xref-push-marker-stack)
-                                          (jedi:goto-definition)))
-  (define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+  ;; (jedi:setup)
+  ;; (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
+  ;; ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
+  ;; (local-unset-key (kbd "C-c !")) ; unhide flycheck
+  ;; (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
+  ;; (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
+  ;; (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
+  ;; (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
+  ;;                                         (xref-push-marker-stack)
+  ;;                                         (jedi:goto-definition)))
+  ;; (define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+  
   )
 (add-hook 'python-mode-hook 'python-mode-func)
 
@@ -561,98 +565,122 @@ if os.getenv('AKDEBUG'):import ipdb;ipdb.set_trace()
 ;;----------------------------------------------------
 ;;; lsp-mode
 
-(add-hook 'lsp-ui-mode-hook
-          (lambda ()
+;; for helm-lsp
+;;(define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol)
 
-            (lsp-ui-sideline-mode -1)
-            ;;(global-set-key (kbd "C-c l") 'linum-mode)
-            (define-prefix-command 'lsp-prefix)
-            (define-key lsp-prefix (kbd "d") #'lsp-ui-doc-hide)
-            ;; toggle Sideline mode
-            (define-key lsp-prefix (kbd "s") #'lsp-ui-sideline-mode)
-            ;; execute code action
-            (define-key lsp-prefix (kbd "a") #'lsp-execute-code-action)
-            ;; toggle treemacs
-            (define-key lsp-prefix (kbd "t") #'treemacs)
-            ;; lsp workspaces
-            ;;(define-key lsp-prefix (kbd "w") #')
+;; (add-hook 'lsp-ui-mode-hook
+;;           (lambda ()
 
-            (global-set-key (kbd "C-c l") 'lsp-prefix)
+;;             (lsp-ui-sideline-mode -1)
+;;             ;;(global-set-key (kbd "C-c l") 'linum-mode)
+;;             (define-prefix-command 'lsp-prefix)
+;;             (define-key lsp-prefix (kbd "d") #'lsp-ui-doc-hide)
+;;             ;; toggle Sideline mode
+;;             (define-key lsp-prefix (kbd "s") #'lsp-ui-sideline-mode)
+;;             ;; execute code action
+;;             (define-key lsp-prefix (kbd "a") #'lsp-execute-code-action)
+;;             ;; toggle treemacs
+;;             (define-key lsp-prefix (kbd "t") #'treemacs)
+;;             ;; lsp workspaces
+;;             ;;(define-key lsp-prefix (kbd "w") #')
 
-            (setq lsp-ui-sideline-show-code-actions nil
-                  lsp-ui-sideline-show-symbol nil
-                  lsp-ui-sideline-ignore-duplicate t
-                  lsp-ui-sideline-show-diagnostics t
-                  lsp-ui-sideline-show-hover t
-                  lsp-ui-flycheck-enable t
-                  lsp-ui-flycheck-list-position 'right
-                  lsp-ui-flycheck-live-reporting t
-                  lsp-ui-peek-enable t
-                  lsp-ui-peek-list-width 60
-                  lsp-ui-peek-peek-height 25
-                  )
+;;             (global-set-key (kbd "C-c l") 'lsp-prefix)
 
-            (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-            (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-            ))
+;;             (setq lsp-ui-sideline-show-code-actions nil
+;;                   lsp-ui-sideline-show-symbol nil
+;;                   lsp-ui-sideline-ignore-duplicate t
+;;                   lsp-ui-sideline-show-diagnostics t
+;;                   lsp-ui-sideline-show-hover t
+;;                   lsp-ui-flycheck-enable t
+;;                   lsp-ui-flycheck-list-position 'right
+;;                   lsp-ui-flycheck-live-reporting t
+;;                   lsp-ui-peek-enable t
+;;                   lsp-ui-peek-list-width 60
+;;                   lsp-ui-peek-peek-height 25
+;;                   )
+
+;;             (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+;;             (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+;;             ))
 
 
 ;;----------------------------------------------------
 ;;; java mode
 
-(setq lsp-java-vmargs
-      (list
-       "-noverify"
-       "-Xmx1G"
-       "-XX:+UseG1GC"
-       "-XX:+UseStringDeduplication"
-       ;;"-javaagent:/path/to/lombok-1.18.6.jar"
-       ))
+(setq
+ lsp-java-vmargs (list
+                  "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9125"
+                  "-noverify"
+                  "-Xmx2G")
+ 
+ lsp-file-watch-ignored
+ '(".idea" ".ensime_cache" ".eunit" "node_modules"
+   ".git" ".hg" ".fslckout" "_FOSSIL_"
+   ".bzr" "_darcs" ".tox" ".svn" ".stack-work"
+   "build")
+ lsp-java-import-order '["" "java" "javax" "#"]
+ lsp-java-save-action-organize-imports nil)
 
-(setq ak-lsp-java-boot-enabled nil)
+(add-hook
+ 'java-mode-hook
+ (lambda ()
+   (setq tab-width 4)
+   (yas-minor-mode t)
 
-(defun spring-boot-init ()
-  (interactive)
-  (require 'lsp-java-boot)
-  ;; to enable the lenses
-  (add-hook 'lsp-mode-hook #'lsp-lens-mode)
-  (add-hook 'java-mode-hook #'lsp-java-boot-lens-mode)
+   ;; eglot
+   ;;(setenv "CLASSPATH" "/home/ak/.emacs.d/.cache/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar")
 
-  (setq ak-lsp-java-boot-enabled t)
+   ;;; LSP
+   
+   (setq
+    lsp-response-timeout 10
+    ;;lsp-log-io t
+    lsp-file-watch-threshold 11000
+    lsp-ui-doc-enable nil
+    lsp-java-boot-enabled nil
+    lsp-signature-auto-activate t
+    lsp-signature-doc-lines 1
+    lsp-ui-sideline-enable t
+    ;;lsp-ui-sideline-show-diagnostics t
+    lsp-ui-sideline-show-hover t)
 
-  ;; revert all java-mode buffers
-  (dolist ($buf (buffer-list (current-buffer)))
-    (with-current-buffer $buf
-      (when (eq major-mode 'java-mode)
-        ;; revert buffer to execute hooks
-        (revert-buffer nil ; IGNORE-AUTO
-                       t ; NOCONFIRM
-                       nil ; PRESERVE-MODES
-                       )))))
+   (lsp t)
+   (lsp-ui-mode)
+   (lsp-lens-mode)
+   ;; (projectile-mode t)
+   (define-key java-mode-map (kbd "M-'") #'lsp-ui-doc-focus-frame)
 
-(add-hook 'java-mode-hook
-          (lambda ()
-            (setq tab-width 4)
-            (yas-minor-mode t)
+   ;; Spring Boot server requires JDK-9 or higher
+   ;;(lsp-java-boot-lens-mode)
 
-            ;; do not restore Spring Tools Suite language Server in desktop-read, "boot-ls"
-            (if ak-lsp-java-boot-enabled
-                (setq lsp-java-boot-enabled t)
-              (setq lsp-java-boot-enabled nil))
+   ;; ;; Enabling only some features
+   ;; (setq dap-auto-configure-features '(sessions locals controls tooltip))
 
-            (setq lsp-java-references-code-lens-enabled nil)
-            (setq lsp-java-implementations-code-lens-enabled nil)
-            (require 'lsp-java)
-            (setq lsp-prefer-flymake nil)
-            (lsp nil)
+   (require 'dap-java)
+   (dap-register-debug-template "My Remote"
+                                (list :type "java"
+                                      :request "attach"
+                                      :hostName "localhost"
+                                      :port "9125"
+                                      ))
+   ;;(setq dap-auto-configure-features '(sessions locals controls tooltip))
+   (setq dap-auto-configure-features '()
+         dap-print-io t)
+   (dap-mode 1)
+   (dap-ui-mode 1)
+   (dap-tooltip-mode 1)
+   ;; if it is not enabled `dap-mode' will use the minibuffer.
+   (tooltip-mode 1)
 
-            (lsp-ui-sideline-mode -1)
-            (gradle-mode t)
-            (projectile-mode t)
-            ;;(define-key java-mode-map "M-." 'lsp-find-type-definition)
-            (hl-line-mode t)
+   (define-key java-mode-map (kbd "C-c C-n") #'dap-next)
+   (define-key java-mode-map (kbd "C-c C-r") #'dap-continue)
+   ))
 
-            ))
+
+;;----------------------------------------------------
+;;; glsl mode
+
+(add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode))
 
 
 ;;----------------------------------------------------
