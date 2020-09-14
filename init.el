@@ -57,6 +57,10 @@
 
         ;;jedi
         elpy
+        
+        go-mode
+        go-gopath
+        company-go
 
         web-mode
         web-mode-edit-element
@@ -68,9 +72,6 @@
         macrostep
         ini-mode
         highlight-symbol
-        go-mode
-        go-gopath
-        company-go
         ggtags
         dired-toggle-sudo
         bash-completion
@@ -78,6 +79,8 @@
         apache-mode
         ace-window
         glsl-mode
+
+        rustic
 
         ;; themes
         flatui-theme
@@ -294,13 +297,13 @@
             (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
             (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
 
+            (lsp-deferred)
+
             ;;(local-unset-key (kbd "M-.")) ; unmask ggtags
             (define-key ggtags-mode-map (kbd "M-.") nil)
-            (define-key go-mode-map (kbd "M-.") #'godef-jump-other-window)
+            ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
+            (define-key go-mode-map (kbd "M-.") #'lsp-find-definition)
 
-            ;; TODO change to company-mode
-            ;;(define-key go-mode-map (kbd "C-<tab>") #'auto-complete)
-            ;;(auto-complete-mode 1)
             (abbrev-mode 1)
             ;; print all methods that item implements
             (define-abbrev go-mode-abbrev-table "impls"
