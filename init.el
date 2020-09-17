@@ -742,30 +742,18 @@
             ))
 
 ;;----------------------------------------------------
-;; rust-mode
+;; rustic-mode
 
-;; rustup component add rls-preview rust-analysis rust-src
-;; cargo install racer
-;; cargo install --force rustfmt-nightly
+;; rustup component add rls rust-analysis rust-src
+;; or
+;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
 
 ;;(setq rust-format-on-save t)
-(add-hook 'rust-mode-hook
+(add-hook 'rustic-mode-hook
           (lambda ()
-            (racer-mode 1)
-            (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-            (define-key rust-mode-map (kbd "C-c C-c") #'rust-compile)
-            (setq company-tooltip-align-annotations t)
-            (flycheck-mode 1)
-            (flycheck-rust-setup)
-            ;; "M-{" is already used for `backward-paragraph'
-            (define-key rust-mode-map (kbd "C-{") #'insert-pair)
-            ;;(rust-semantic-mode 1)
-            (abbrev-mode 1)
-            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
-            (eldoc-mode -1) ;; disable, slow
+            ;; (abbrev-mode 1)
+            ;; (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
             ))
-(add-hook 'racer-mode-hook #'company-mode)
-;; customizable vars `company-idle-delay' and `company-minimum-prefix-length'
 
 ;;----------------------------------------------------
 ;;; org mode
