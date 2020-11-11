@@ -40,7 +40,7 @@
         gradle-mode
         kotlin-mode
         groovy-mode
-        
+
         ssass-mode
         smartparens
         rainbow-mode
@@ -55,9 +55,10 @@
         treemacs
         treemacs-projectile
 
-        ;;jedi
-        elpy
-        
+        jedi
+        highlight-indentation
+        ;;elpy
+
         go-mode
         go-gopath
         company-go
@@ -80,11 +81,16 @@
         ace-window
         glsl-mode
 
+        ;; rust
         rustic
+        toml-mode ;; Cargo.toml
+
+        ;; common lisp
+        slime
 
         ;; themes
         flatui-theme
-	))
+        ))
 
 (package-initialize)
 
@@ -296,6 +302,7 @@
             (ggtags-mode 1)
             (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
             (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
+            (subword-mode)
 
             (lsp-deferred)
 
@@ -348,8 +355,6 @@
 (add-hook 'yaml-mode-hook
           (lambda ()
             (setq yaml-indent-offset 2)))
-;;; to customize
-;;(setq jedi:server-args '("--sys-path" "/home/...somepath.../venv/lib/python3.5/site-packages"))
 
 (defun python-mode-abbrev-debug-handler ()
   (forward-line -1)
@@ -357,7 +362,7 @@
   (move-end-of-line 1)
   (save-buffer 0))
 
-(elpy-enable)
+;;(elpy-enable)
 
 (defun python-mode-func ()
   (setq tab-width 4)
@@ -373,18 +378,18 @@
   (define-abbrev python-mode-abbrev-table  "pp" "import pprint; pp=pprint.PrettyPrinter(); pp.pprint()")
   (define-key python-mode-map (kbd "C-c C-r") 'revert-buffer) ; orig is send region to python shell
 
-  ;; (jedi:setup)
-  ;; (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
-  ;; ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
-  ;; (local-unset-key (kbd "C-c !")) ; unhide flycheck
-  ;; (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
-  ;; (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
-  ;; (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
-  ;; (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
-  ;;                                         (xref-push-marker-stack)
-  ;;                                         (jedi:goto-definition)))
-  ;; (define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-  
+  (jedi:setup)
+  (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
+  ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
+  (local-unset-key (kbd "C-c !")) ; unhide flycheck
+  (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
+  (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
+  (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
+  (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
+                                          (xref-push-marker-stack)
+                                          (jedi:goto-definition)))
+  ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+
   )
 (add-hook 'python-mode-hook 'python-mode-func)
 
@@ -398,7 +403,6 @@
 (add-to-list 'auto-mode-alist '("\\.ini$"  . ini-mode))
 (add-to-list 'auto-mode-alist '("\\.service\\|\\.target$"  . ini-mode)) ; Systemd
 (add-to-list 'auto-mode-alist '("PKGBUILD$"  . ini-mode)) ; Arch package file
-(add-to-list 'auto-mode-alist '("\\.toml$"  . ini-mode)) ; Cargo.toml
 
 ;;----------------------------------------------------
 ;;; php-mode
@@ -615,7 +619,7 @@
                   "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9125"
                   "-noverify"
                   "-Xmx2G")
- 
+
  lsp-file-watch-ignored
  '(".idea" ".ensime_cache" ".eunit" "node_modules"
    ".git" ".hg" ".fslckout" "_FOSSIL_"
@@ -634,7 +638,7 @@
    ;;(setenv "CLASSPATH" "/home/ak/.emacs.d/.cache/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar")
 
    ;;; LSP
-   
+
    (setq
     lsp-response-timeout 10
     ;;lsp-log-io t
@@ -689,6 +693,12 @@
 ;;----------------------------------------------------
 ;;; c mode
 
+;; (add-hook 'c-mode-common-hook
+;;           (lambda ()
+;;             (require 'ccls)
+;;             (setq ccls-executable "/usr/bin/ccls")
+;;             (lsp)))
+
 (add-hook 'c-mode-hook
           (lambda ()
             ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
@@ -700,10 +710,10 @@
               (hs-minor-mode 1) ; hide/show blocks
               (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
               (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-              ;;(flycheck-mode 1)
+              (flycheck-mode 1)
               (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
-              ;;(semantic-mode 1)
+              (semantic-mode 1)
               (semantic-idle-breadcrumbs-mode 1)
               (c-add-style "python-new"
                            '("python"
@@ -726,17 +736,11 @@
 
 (add-hook 'c++-mode-hook
           (lambda ()
-            (rtags-start-process-unless-running)
-            (setq rtags-jump-to-first-match nil) ; show multiple matches
-            (setq rtags-display-result-backend 'helm) ; show it in helm
-            (setq rtags-results-buffer-other-window t) ; in other window
-
+            (ggtags-mode)
             ;; mask a key binding of ggtags minor mode
             (let ((oldmap (cdr (assoc 'ggtags-mode minor-mode-map-alist)))
                   (newmap (make-sparse-keymap)))
               (set-keymap-parent newmap oldmap)
-              (define-key newmap (kbd "M-.") 'rtags-find-symbol-at-point)
-              (define-key newmap (kbd "M-,") 'rtags-location-stack-back)
               (make-local-variable 'minor-mode-overriding-map-alist)
               (push `(ggtags-mode . ,newmap) minor-mode-overriding-map-alist))
             ))
@@ -754,6 +758,14 @@
             ;; (abbrev-mode 1)
             ;; (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
             ))
+
+;; slime
+(add-hook 'lisp-mode-hook
+          (lambda ()
+            (setq slime-lisp-implementations
+                  '(;;(cmucl ("cmucl" "-quiet"))
+                    (sbcl ("sbcl") :coding-system utf-8-unix))))
+          )
 
 ;;----------------------------------------------------
 ;;; org mode
