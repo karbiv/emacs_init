@@ -49,7 +49,6 @@
         yasnippet
         ng2-mode
         company-lsp
-        flycheck-kotlin
         lsp-typescript
         lsp-treemacs
         treemacs
@@ -62,6 +61,8 @@
         go-mode
         go-gopath
         company-go
+
+        ccls
 
         web-mode
         web-mode-edit-element
@@ -572,44 +573,6 @@
 ;;----------------------------------------------------
 ;;; lsp-mode
 
-;; for helm-lsp
-;;(define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol)
-
-;; (add-hook 'lsp-ui-mode-hook
-;;           (lambda ()
-
-;;             (lsp-ui-sideline-mode -1)
-;;             ;;(global-set-key (kbd "C-c l") 'linum-mode)
-;;             (define-prefix-command 'lsp-prefix)
-;;             (define-key lsp-prefix (kbd "d") #'lsp-ui-doc-hide)
-;;             ;; toggle Sideline mode
-;;             (define-key lsp-prefix (kbd "s") #'lsp-ui-sideline-mode)
-;;             ;; execute code action
-;;             (define-key lsp-prefix (kbd "a") #'lsp-execute-code-action)
-;;             ;; toggle treemacs
-;;             (define-key lsp-prefix (kbd "t") #'treemacs)
-;;             ;; lsp workspaces
-;;             ;;(define-key lsp-prefix (kbd "w") #')
-
-;;             (global-set-key (kbd "C-c l") 'lsp-prefix)
-
-;;             (setq lsp-ui-sideline-show-code-actions nil
-;;                   lsp-ui-sideline-show-symbol nil
-;;                   lsp-ui-sideline-ignore-duplicate t
-;;                   lsp-ui-sideline-show-diagnostics t
-;;                   lsp-ui-sideline-show-hover t
-;;                   lsp-ui-flycheck-enable t
-;;                   lsp-ui-flycheck-list-position 'right
-;;                   lsp-ui-flycheck-live-reporting t
-;;                   lsp-ui-peek-enable t
-;;                   lsp-ui-peek-list-width 60
-;;                   lsp-ui-peek-peek-height 25
-;;                   )
-
-;;             (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-;;             (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-;;             ))
-
 
 ;;----------------------------------------------------
 ;;; java mode
@@ -651,7 +614,7 @@
     ;;lsp-ui-sideline-show-diagnostics t
     lsp-ui-sideline-show-hover t)
 
-   (lsp t)
+   (lsp)
    (lsp-ui-mode)
    (lsp-lens-mode)
    ;; (projectile-mode t)
@@ -693,12 +656,6 @@
 ;;----------------------------------------------------
 ;;; c mode
 
-;; (add-hook 'c-mode-common-hook
-;;           (lambda ()
-;;             (require 'ccls)
-;;             (setq ccls-executable "/usr/bin/ccls")
-;;             (lsp)))
-
 (add-hook 'c-mode-hook
           (lambda ()
             ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
@@ -710,10 +667,14 @@
               (hs-minor-mode 1) ; hide/show blocks
               (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
               (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-              (flycheck-mode 1)
               (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
+
               (semantic-mode 1)
+              (lsp)
+              ;; (flycheck-mode 1)
+              ;; (flycheck-clang-analyzer-setup)
+              
               (semantic-idle-breadcrumbs-mode 1)
               (c-add-style "python-new"
                            '("python"
