@@ -57,12 +57,14 @@
         jedi
         highlight-indentation
         ;;elpy
+        cython-mode
 
         go-mode
         go-gopath
         company-go
 
         ccls
+        flycheck-irony
 
         web-mode
         web-mode-edit-element
@@ -71,6 +73,7 @@
         paredit
         nginx-mode
         magit
+        gitignore-mode
         macrostep
         ini-mode
         highlight-symbol
@@ -338,6 +341,13 @@
   (interactive)
   (xref-push-marker-stack)
   (go-goto-imports))
+
+;;----------------------------------------------------
+;;; go assembly
+
+(defun ak-go-asm-comment-char ()
+  (interactive)
+  (setq-local comment-start "// "))
 
 ;;----------------------------------------------------
 
@@ -671,7 +681,8 @@
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
 
               (semantic-mode 1)
-              (lsp)
+              ;;(lsp)
+              
               ;; (flycheck-mode 1)
               ;; (flycheck-clang-analyzer-setup)
               
