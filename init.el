@@ -8,8 +8,8 @@
         org-super-agenda
         realgud
         preproc-font-lock
-        ac-geiser
         geiser
+        ac-geiser
         which-key
         js2-mode
         tern ; js code analysis
@@ -578,7 +578,17 @@
               (enable-paredit-mode)
               (abbrev-mode 1)
               (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
-              (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")))
+              (define-abbrev scheme-mode-abbrev-table  "dl" "(display )"))
+
+          ;;add `define*' to scheme mode
+          (setq scheme-imenu-generic-expression
+                '((nil
+                   "^(define\\(\\|\\*\\|-\\(generic\\(\\|-procedure\\)\\|method\\)\\)*\\s-+(?\\(\\sw+\\)" 4)
+                  ("Types"
+                   "^(define-class\\s-+(?\\(\\sw+\\)" 1)
+                  ("Macros"
+                   "^(\\(defmacro\\|define-macro\\|define-syntax\\)\\s-+(?\\(\\sw+\\)" 2)))
+          )
 
 ;;----------------------------------------------------
 ;;; lsp-mode
