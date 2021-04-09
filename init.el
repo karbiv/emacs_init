@@ -66,6 +66,8 @@
         ccls
         flycheck-irony
 
+        lua-mode
+
         web-mode
         web-mode-edit-element
         yaml-mode
@@ -86,14 +88,19 @@
         glsl-mode
 
         ;; rust
+        rust-mode
         rustic
-        toml-mode ;; Cargo.toml
+        cargo
+        flymake-rust
+        rust-auto-use
+        rust-playground
 
         ;; common lisp
         slime
 
         ;; themes
-        flatui-theme
+        base16-theme
+        doom-modeline
         ))
 
 (package-initialize)
@@ -108,7 +115,7 @@
 (setq make-backup-files nil)
 (setq inhibit-startup-screen t)
 (set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 110)
+(set-face-attribute 'default nil :height 130)
 (setq ring-bell-function 'ignore) ; ignore sound notifications
 (show-paren-mode)
 (column-number-mode)
@@ -580,14 +587,15 @@
               (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
               (define-abbrev scheme-mode-abbrev-table  "dl" "(display )"))
 
-          ;;add `define*' to scheme mode
+          ;; added `define*' to scheme mode
+          ;; added `define-syntax-rule' for macros
           (setq scheme-imenu-generic-expression
                 '((nil
                    "^(define\\(\\|\\*\\|-\\(generic\\(\\|-procedure\\)\\|method\\)\\)*\\s-+(?\\(\\sw+\\)" 4)
                   ("Types"
                    "^(define-class\\s-+(?\\(\\sw+\\)" 1)
                   ("Macros"
-                   "^(\\(defmacro\\|define-macro\\|define-syntax\\)\\s-+(?\\(\\sw+\\)" 2)))
+                   "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
           )
 
 ;;----------------------------------------------------
