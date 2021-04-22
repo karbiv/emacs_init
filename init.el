@@ -87,18 +87,18 @@
         ace-window
         glsl-mode
 
-        ;; rust
-        rust-mode
+        ;;; rust
+        ;;rust-mode ; if isntalled takes priority over rustic
         rustic
         cargo
         flymake-rust
         rust-auto-use
         rust-playground
 
-        ;; common lisp
-        slime
+        ;;; common lisp
+        ;;slime
 
-        ;; themes
+        ;;; themes
         base16-theme
         doom-modeline
         ))
@@ -742,13 +742,16 @@
 ;; or
 ;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
 
+(add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
+
 ;;(setq rust-format-on-save t)
 (add-hook 'rustic-mode-hook
           (lambda ()
-            ;; (abbrev-mode 1)
-            ;; (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
+            (abbrev-mode 1)
+            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
             ))
 
+;;----------------------------------------------------
 ;; slime
 (add-hook 'lisp-mode-hook
           (lambda ()
@@ -772,21 +775,3 @@
 ;;   `(let ((time (current-time)))
 ;;      ,@body
 ;;      (message "%.06f" (float-time (time-since time)))))
-
-
-;;; dev
-
-;; (add-to-list 'load-path "~/worksp/cython-semantic")
-;; (require 'cython-semantic-mode)
-
-;; (add-to-list 'load-path "~/.emacs.d/freepascal")
-;; (require 'freepascal)
-;; (add-to-list 'auto-mode-alist '("\\.inc$"  . freepascal-mode))
-;; (add-to-list 'auto-mode-alist '("\\.pas$"  . freepascal-mode))
-;; (add-to-list 'auto-mode-alist '("\\.pp$"  . freepascal-mode))
-
-;; (add-hook 'freepascal-mode-hook
-;;           (lambda ()
-;;             (semantic-mode 1)
-;;             (hs-minor-mode 1)
-;;             (ggtags-mode 1)))
