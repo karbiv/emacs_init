@@ -22,14 +22,22 @@
         cmake-mode
         desktop-registry
 
-        helm
-        helm-locate
-        helm-tramp
-        helm-systemd
-        helm-swoop
-        helm-ag
-        helm-gtags
-        helm-lsp
+        ;; helm
+        ;; helm-locate
+        ;; helm-tramp
+        ;; helm-systemd
+        ;; helm-swoop
+        ;; helm-ag
+        ;; helm-gtags
+        ;; helm-lsp
+        selectrum
+        selectrum-prescient-mode
+        prescient
+        consult
+        marginalia
+        embark
+        embark-consult
+        
         which-key
 
         dap-mode
@@ -183,26 +191,55 @@
                '((tramp-parse-sconfig "/etc/ssh/ssh_config")
                  (tramp-parse-sconfig "~/.ssh/config"))))))
 
+
+
+
 ;;----------------------------------------------------
 ;;; helm
 
 ;; (require 'helm-config)
-(helm-mode 1)
-(global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "C-c j") 'helm-mini)
-(global-set-key (kbd "C-c C-j") 'helm-mini)
-(global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
-(global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
+;; (helm-mode 1)
+;; (global-set-key (kbd "M-x") 'helm-M-x)
+;; (global-set-key (kbd "C-c j") 'helm-mini)
+;; (global-set-key (kbd "C-c C-j") 'helm-mini)
+;; (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
+;; (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 
-;;; helm-ag
-(setq-default helm-ag-insert-at-point 'symbol)
+;; ;;; helm-ag
+;; (setq-default helm-ag-insert-at-point 'symbol)
 
-;;; helm-swoop
+;; ;;; helm-swoop
 
-(global-set-key (kbd "M-i") 'helm-swoop)
-(global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-(global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-(global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+;; (global-set-key (kbd "M-i") 'helm-swoop)
+;; (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+;; (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+;; (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+
+;;----------------------------------------------------
+;;; selectrum
+(selectrum-mode)
+(selectrum-prescient-mode)
+
+;;; consult
+(global-set-key (kbd "C-c j") 'consult-buffer)
+(global-set-key (kbd "M-n") 'consult-imenu)
+(global-set-key (kbd "M-i") 'consult-line)
+(global-set-key (kbd "M-s g") 'consult-grep)
+(global-set-key (kbd "M-s G") 'consult-git-grep)
+
+;;; marginalia
+(marginalia-mode)
+
+;;; embark
+(global-set-key (kbd "M-;") 'embark-act)
+(global-set-key (kbd "C-;") 'embark-dwim)
+(global-set-key (kbd "C-h B") 'embark-bindings)
+
+;; Hide the mode line of the Embark live/completions buffers
+(add-to-list 'display-buffer-alist
+             '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+               nil
+               (window-parameters (mode-line-format . none))))
 
 ;;----------------------------------------------------
 
@@ -513,7 +550,8 @@
 (add-hook 'css-mode-hook
           (lambda ()
             (rainbow-mode t)
-            (define-key css-mode-map (kbd "M-.") 'helm-ag)))
+            ;;(define-key css-mode-map (kbd "M-.") 'helm-ag)
+            ))
 
 ;;----------------------------------------------------
 ;;; sass|scss-mode
@@ -525,7 +563,8 @@
 (add-hook 'ssass-mode-hook
           (lambda ()
             (rainbow-mode t)
-            (define-key ssass-mode-map (kbd "M-.") 'helm-ag)))
+            ;;(define-key ssass-mode-map (kbd "M-.") 'helm-ag)
+            ))
 
 ;;----------------------------------------------------
 ;;; web-beautify.el
