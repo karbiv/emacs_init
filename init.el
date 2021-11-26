@@ -1,70 +1,159 @@
 
 (when (display-graphic-p)
-  (toggle-frame-maximized)
+  (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)"))
 
-(tool-bar-mode -1) ; disable toolbar
-(line-number-mode) ; show line numbers in modeline
-
-(setq make-backup-files nil)
-(setq inhibit-startup-screen t)
 (set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 130)
-(setq ring-bell-function 'ignore) ; ignore sound notifications
-(show-paren-mode)
-(column-number-mode)
-;; https://stackoverflow.com/questions/5738170/why-does-emacs-create-temporary-symbolic-links-for-modified-files
+(set-face-attribute 'default nil :height 120)
+
+(tool-bar-mode -1)   ; disable toolbar
+(line-number-mode)   ; show line numbers in modeline
+(menu-bar-mode -1)   ; disable menu
+(scroll-bar-mode -1) ; disable scrollbars
+(setq-default indent-tabs-mode nil) ; use spaces
+(setq make-backup-files nil)
+(setq inhibit-startup-screen t) ; no startup screen
+;;(setq ring-bell-function 'ignore)
+
 (setq create-lockfiles nil)
 (global-set-key (kbd "C-c c") 'comment-region)
 
 ;; Path to Emacs C source, for functions help system
 ;;(setq find-function-C-source-directory "~/soft/emacs/src")
 
-;; Disable menu and scrollbars
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
-(setq-default indent-tabs-mode nil) ; use spaces
-
-;; http://stackoverflow.com/questions/7022898/emacs-autocompletion-in-emacs-lisp-mode
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
 
-(global-set-key (kbd "C-;") 'mc/mark-all-dwim)
-(global-set-key (kbd "<f7>")
-                (lambda () (interactive)
-                  (revert-buffer t ; IGNORE-AUTO
-                                 t ; NOCONFIRM
-                                 t ; PRESERVE-MODES
-                                 )))
-;; (global-set-key (kbd "C-c o")
-;;                 (lambda () (interactive)
-;;                   (other-window 1)))
-;; for menu key to the right of space and AltGr
-
 (setq enable-recursive-minibuffers t)
+(show-paren-mode)
+(column-number-mode)
 (recentf-mode)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
+(electric-pair-mode)
 
 ;;;;;----------------------------------------------------
 ;;; Selected packages
 ;;;;;----------------------------------------------------
 
+(setq
+ package-selected-packages
+ '(
+   desktop-registry
+   tramp ; manually over system's version
+   undo-tree
+
+   helm
+   helm-tramp
+   helm-systemd
+   helm-swoop
+   helm-ag
+   helm-gtags
+   helm-lsp
+   lsp-ui
+
+   ;; selectrum
+   ;; prescient
+   ;; company-prescient
+   ;; selectrum-prescient
+   ;; consult
+   
+   marginalia
+   embark
+   
+   which-key
+   js2-mode
+   tern ; js code analysis
+   json-mode
+   company
+   web-beautify
+   imenu
+   multiple-cursors
+   cmake-mode
+   which-key
+   ssass-mode
+   smartparens
+   rainbow-mode
+   flycheck
+   projectile
+   yasnippet
+   realgud
+
+   ;; Dart
+   dart-mode
+   lsp-dart
+   flutter
+   ;;flutter-l10n-flycheck
+
+   jedi
+   highlight-indentation
+   ;;elpy
+   cython-mode
+
+   go-mode
+   company-go
+
+   ccls
+   flycheck-irony
+
+   lua-mode
+
+   web-mode
+   web-mode-edit-element
+   yaml-mode
+   php-mode
+   paredit
+   magit
+   macrostep
+   ini-mode
+   highlight-symbol
+   ggtags
+   dired-toggle-sudo
+   bash-completion
+   ace-window
+   glsl-mode
+
+   ;;rust-mode
+   ;;; or
+   rustic
+   cargo
+   ;; rust-auto-use
+   ;; rust-playground
+
+   ;;geiser
+   ;;slime
+
+   doom-modeline
+   ;; themes
+   faff-theme
+   silkworm-theme
+   soft-morning-theme
+   ;;white-sand-theme
+   ;;hydandata-light-theme
+   ;;dakrone-light-theme
+   ))
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+(package-initialize)
+;; check package archives cache
+(unless package-archive-contents
+  (package-refresh-contents))
+
+(mapcar ; install selected packages
+ (lambda (pkg)
+   (when (not (package-installed-p pkg))
+     (package-install pkg))
+   )
+ package-selected-packages)
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
   `(if (package-installed-p ',name)
-       (progn
-         ,@init-code
-         )
-     (progn
-       (package-install ',name))))
+       (progn ,@init-code)
+     (message "INIT PACKAGES, %s not installed" ',name)))
 
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
 
 ;;;;; Configure packages
 
@@ -73,19 +162,15 @@
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop))
 
 (conf selectrum
-  (selectrum-mode))
-
-;;(init selectrum-prescient-mode
-;;  (selectrum-prescient-mode))
-
-(conf orderless
-  (setq completion-styles '(orderless)))
+  (selectrum-mode)
+  (conf prescient)
+  (conf selectrum-prescient
+    (selectrum-prescient-mode))
+  (conf company-prescient
+    (company-prescient-mode)))
 
 (conf yasnippet
   (yas-global-mode))
-
-(conf vertico
-  (vertico-mode))
 
 (conf consult
   (global-set-key (kbd "C-c j") 'consult-buffer)
@@ -109,6 +194,15 @@
 
 (conf embark-consult)
 
+(conf dart-mode
+  ;;(setenv "PATH" (concat (getenv "PATH") ":/opt/dart-sdk/bin"))
+  (add-hook 'dart-mode-hook
+            (lambda ()
+              (lsp)
+              (setq flutter-sdk-path lsp-dart-flutter-sdk-dir)
+              (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
+              )))
+
 (conf go-mode
   
   (add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
@@ -128,7 +222,22 @@
 	      (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
 	      (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
 	      (subword-mode)
+
 	      (lsp-deferred)
+              (lsp-ui-doc-frame-mode)
+              ;; (lsp)
+              ;; ;; lsp-response-timeout 10
+              ;; ;; ;;lsp-log-io t
+              ;; ;; lsp-file-watch-threshold 11000
+              ;; lsp-ui-doc-enable t
+              ;; ;; lsp-signature-auto-activate t
+              ;; ;; lsp-signature-doc-lines 1
+              ;; lsp-ui-sideline-enable t
+              ;; ;; lsp-ui-sideline-show-diagnostics t
+              ;; lsp-ui-sideline-show-hover t
+              
+              ;; (lsp-ui-mode)
+              ;; (lsp-lens-mode)
 
 	      ;;(local-unset-key (kbd "M-.")) ; unmask ggtags
 	      (define-key ggtags-mode-map (kbd "M-.") nil)
@@ -236,7 +345,8 @@
 
 (conf imenu)
 
-(conf multiple-cursors)
+(conf multiple-cursors
+  (global-set-key (kbd "C-;") 'mc/mark-all-dwim))
 
 (conf cmake-mode)
 
@@ -399,7 +509,9 @@
 (conf glsl-mode
   (add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode)))
 
-(conf company)
+(conf company
+  (global-set-key (kbd "M-n") #'company-complete)
+  )
 
 ;; Themes
 
@@ -420,8 +532,8 @@
                  (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
                  (match-string 1))))))
 
+(conf dired-toggle-sudo)
 (add-hook 'dired-mode-hook
-	  (conf dired-toggle-sudo)
           (lambda ()
             (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
             ;;(setq dired-listing-switches "-hal --time-style=iso")
@@ -432,25 +544,26 @@
 ;;----------------------------------------------------
 ;;; helm
 
-;; (conf helm)
-;; (require 'helm-config)
-;; (helm-mode 1)
-;; (global-set-key (kbd "M-x") 'helm-M-x)
-;; (global-set-key (kbd "C-c j") 'helm-mini)
-;; (global-set-key (kbd "C-c C-j") 'helm-mini)
-;; (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
-;; (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
+(conf helm
+  (require 'helm-config)
+  (helm-mode 1)
+  (setq helm-M-x-fuzzy-match t)
+  ;;(setq helm-M-x-fuzzy-match t)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-c j") 'helm-mini)
+  (global-set-key (kbd "C-c C-j") 'helm-mini)
+  (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
+  (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
 
-;; ;;; helm-ag
-;; (setq-default helm-ag-insert-at-point 'symbol)
+  ;;; helm-ag
+  (setq-default helm-ag-insert-at-point 'symbol)
 
-;; ;;; helm-swoop
-
-;; (global-set-key (kbd "M-i") 'helm-swoop)
-;; (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-;; (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-;; (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-
+  ;;; helm-swoop
+  (global-set-key (kbd "M-i") 'helm-swoop)
+  (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+  (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+  (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+  )
 
 ;;----------------------------------------------------
 ;;; semantic
@@ -547,6 +660,7 @@
                                           (jedi:goto-definition)))
   ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
 
+  (auto-complete-mode -1)
   )
 (add-hook 'python-mode-hook 'python-mode-func)
 
@@ -586,12 +700,6 @@
                   ("Macros"
                    "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
           )
-
-;;----------------------------------------------------
-;;; org mode
-
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c c") 'org-capture)
 
 ;;----------------------------------------------------
 ;;; c mode
@@ -648,30 +756,30 @@
               (push `(ggtags-mode . ,newmap) minor-mode-overriding-map-alist))
             ))
 
-;; ;;----------------------------------------------------
-;; ;; rustic-mode
+;;----------------------------------------------------
+;; rustic-mode
 
-;; ;; rustup component add rls rust-analysis rust-src
-;; ;; or
-;; ;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
+;; rustup component add rls rust-analysis rust-src
+;; or
+;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
 
-;; (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
+(add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
 
-;; ;;(setq rust-format-on-save t)
-;; (add-hook 'rustic-mode-hook
-;;           (lambda ()
-;;             (abbrev-mode 1)
-;;             (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
-;;             ))
+;;(setq rust-format-on-save t)
+(add-hook 'rustic-mode-hook
+          (lambda ()
+            (abbrev-mode 1)
+            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
+            ))
 
-;; ;;----------------------------------------------------
-;; ;; slime
-;; (add-hook 'lisp-mode-hook
-;;           (lambda ()
-;;             (setq slime-lisp-implementations
-;;                   '(;;(cmucl ("cmucl" "-quiet"))
-;;                     (sbcl ("sbcl") :coding-system utf-8-unix))))
-;;           )
+;;----------------------------------------------------
+;; slime
+(add-hook 'lisp-mode-hook
+          (lambda ()
+            (setq slime-lisp-implementations
+                  '(;;(cmucl ("cmucl" "-quiet"))
+                    (sbcl ("sbcl") :coding-system utf-8-unix))))
+          )
 
 ;; ;;----------------------------------------------------
 ;; ;;; java mode
@@ -755,4 +863,3 @@
 ;; ;;      ,@body
 ;; ;;      (message "%.06f" (float-time (time-since time)))))
 
-(princ package-selected-packages)
