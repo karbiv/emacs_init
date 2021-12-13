@@ -30,8 +30,6 @@
 (recentf-mode)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 
-(electric-pair-mode)
-
 ;;;;;----------------------------------------------------
 ;;; Selected packages
 ;;;;;----------------------------------------------------
@@ -84,6 +82,8 @@
    lsp-dart
    flutter
    ;;flutter-l10n-flycheck
+   electric-case
+   string-inflection
 
    jedi
    highlight-indentation
@@ -128,9 +128,7 @@
    faff-theme
    silkworm-theme
    soft-morning-theme
-   ;;white-sand-theme
-   ;;hydandata-light-theme
-   ;;dakrone-light-theme
+   flatui-theme
    ))
 
 (require 'package)
@@ -194,13 +192,46 @@
 
 (conf embark-consult)
 
+(conf electric-case)
+
+(conf string-inflection)
+
 (conf dart-mode
-  ;;(setenv "PATH" (concat (getenv "PATH") ":/opt/dart-sdk/bin"))
   (add-hook 'dart-mode-hook
             (lambda ()
-              (lsp)
+
+              (require 'electric-case)
+              (electric-case-mode)
+              (smartparens-strict-mode)
+              (c-subword-mode)
+              (setq
+               lsp-ui-doc-enable t
+               lsp-ui-doc-delay 0.5
+               lsp-ui-doc-position 'at-point ; 'top 'bottom
+               lsp-ui-doc-show-with-cursor t
+               ;;lsp-ui-doc-show-with-mouse t
+
+               lsp-ui-imenu-enable nil
+               
+               lsp-response-timeout 5
+               lsp-file-watch-threshold 11000
+               ;; lsp-signature-auto-activate t
+               ;; lsp-signature-render-documentation t
+               ;; lsp-signature-doc-lines 1
+
+               ;;lsp-ui-sideline-enable nil
+               lsp-ui-sideline-show-hover nil
+               lsp-ui-sideline-ignore-duplicate t
+               lsp-ui-sideline-show-symbol nil
+               lsp-ui-sideline-show-diagnostics t ; flycheck messages
+               ;;lsp-ui-sideline-show-code-actions t
+               )
+              (lsp-deferred)
+              (lsp-ui-doc-frame-mode)
+              
               (setq flutter-sdk-path lsp-dart-flutter-sdk-dir)
               (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
+              (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
               )))
 
 (conf go-mode
