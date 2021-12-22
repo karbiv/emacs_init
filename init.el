@@ -205,7 +205,7 @@
               (smartparens-strict-mode)
               (c-subword-mode)
               (setq
-               lsp-ui-doc-enable t
+               lsp-ui-doc-enable nil
                lsp-ui-doc-delay 0.5
                lsp-ui-doc-position 'at-point ; 'top 'bottom
                lsp-ui-doc-show-with-cursor t
@@ -213,21 +213,22 @@
 
                lsp-ui-imenu-enable nil
                
-               lsp-response-timeout 5
-               lsp-file-watch-threshold 11000
-               ;; lsp-signature-auto-activate t
+               ;;lsp-response-timeout 10
+               ;;lsp-file-watch-threshold 11000
+               
+               lsp-signature-auto-activate nil
                ;; lsp-signature-render-documentation t
                ;; lsp-signature-doc-lines 1
 
                ;;lsp-ui-sideline-enable nil
-               lsp-ui-sideline-show-hover nil
+               ;;lsp-ui-sideline-show-hover nil
                lsp-ui-sideline-ignore-duplicate t
                lsp-ui-sideline-show-symbol nil
                lsp-ui-sideline-show-diagnostics t ; flycheck messages
                ;;lsp-ui-sideline-show-code-actions t
                )
               (lsp-deferred)
-              (lsp-ui-doc-frame-mode)
+              (define-key dart-mode-map (kbd "<f8>") #'lsp-ui-doc-show)
               
               (setq flutter-sdk-path lsp-dart-flutter-sdk-dir)
               (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
