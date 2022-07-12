@@ -1,38 +1,10 @@
 
-(when (display-graphic-p)
-  (toggle-frame-maximized) ; maximize Emacs
-  (setq-default frame-title-format "%b (%f)"))
-
-(set-face-attribute 'default nil :font "Ubuntu Mono")
-(set-face-attribute 'default nil :height 120)
-
-(tool-bar-mode -1)   ; disable toolbar
-(line-number-mode)   ; show line numbers in modeline
-(menu-bar-mode -1)   ; disable menu
-(scroll-bar-mode -1) ; disable scrollbars
-(setq-default indent-tabs-mode nil) ; use spaces
-(setq make-backup-files nil)
-(setq inhibit-startup-screen t) ; no startup screen
-;;(setq ring-bell-function 'ignore)
-
-(setq create-lockfiles nil)
-(global-set-key (kbd "C-c c") 'comment-region)
-
-;; Path to Emacs C source, for functions help system
-;;(setq find-function-C-source-directory "~/soft/emacs/src")
-
-(setq tab-always-indent 'complete)
-(add-to-list 'completion-styles 'initials t)
-
-(setq enable-recursive-minibuffers t)
-(show-paren-mode)
-(column-number-mode)
-(recentf-mode)
-(global-set-key (kbd "C-c C-h") 'hl-line-mode)
-
 ;;;;;----------------------------------------------------
 ;;; Selected packages
 ;;;;;----------------------------------------------------
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 (setq
  package-selected-packages
@@ -131,26 +103,59 @@
    flatui-theme
    ))
 
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-
 (package-initialize)
-;; check package archives cache
-(unless package-archive-contents
-  (package-refresh-contents))
 
-(mapcar ; install selected packages
- (lambda (pkg)
-   (when (not (package-installed-p pkg))
-     (package-install pkg))
-   )
- package-selected-packages)
+(add-hook
+ 'server-after-make-frame-hook
+ (lambda ()
+   (when (display-graphic-p)
+     (toggle-frame-maximized) ; maximize Emacs
+     (setq-default frame-title-format "%b (%f)")
+
+     ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
+     ;;(set-face-attribute 'default nil :height 120)
+
+     (tool-bar-mode -1)   ; disable toolbar
+     (line-number-mode)   ; show line numbers in modeline
+     (menu-bar-mode -1)   ; disable menu
+     (scroll-bar-mode -1) ; disable scrollbars
+     (setq-default indent-tabs-mode nil) ; use spaces
+     (setq make-backup-files nil)
+     (setq inhibit-startup-screen t) ; no startup screen
+     ;;(setq ring-bell-function 'ignore)
+
+     (setq create-lockfiles nil)
+     (global-set-key (kbd "C-c c") 'comment-region)
+
+     ;; Path to Emacs C source, for functions help system
+     ;;(setq find-function-C-source-directory "~/soft/emacs/src")
+
+     (setq tab-always-indent 'complete)
+     (add-to-list 'completion-styles 'initials t)
+
+     (setq enable-recursive-minibuffers t)
+     (show-paren-mode)
+     (column-number-mode)
+     (recentf-mode)
+     (global-set-key (kbd "C-c C-h") 'hl-line-mode)
+     (global-set-key (kbd "C-c C-r") 'revert-buffer)
+
+     ;; check package archives cache
+     (unless package-archive-contents
+       (package-refresh-contents))
+     
+     (mapcar ; install selected packages
+      (lambda (pkg)
+	(when (not (package-installed-p pkg))
+	  (package-install pkg)))
+      package-selected-packages))
+   ))
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
   `(if (package-installed-p ',name)
        (progn ,@init-code)
-     (message "INIT PACKAGES, %s not installed" ',name)))
+     (message "EMACS PACKAGES, %s not installed" ',name)))
 
 
 ;;;;; Configure packages
@@ -180,60 +185,21 @@
 (conf marginalia
   (marginalia-mode))
 
-(conf embark
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-		 nil
-		 (window-parameters (mode-line-format . none))))
-  (global-set-key (kbd "M-;") 'embark-act)
-  (global-set-key (kbd "C-;") 'embark-dwim)
-  (global-set-key (kbd "C-h B") 'embark-bindings))
+;; (conf embark
+;;   ;; Hide the mode line of the Embark live/completions buffers
+;;   (add-to-list 'display-buffer-alist
+;;                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+;; 		 nil
+;; 		 (window-parameters (mode-line-format . none))))
+;;   (global-set-key (kbd "M-;") 'embark-act)
+;;   (global-set-key (kbd "C-;") 'embark-dwim)
+;;   (global-set-key (kbd "C-h B") 'embark-bindings))
 
 (conf embark-consult)
 
 (conf electric-case)
 
 (conf string-inflection)
-
-(conf dart-mode
-  (add-hook 'dart-mode-hook
-            (lambda ()
-
-              (require 'electric-case)
-              (electric-case-mode)
-              (smartparens-strict-mode)
-              (c-subword-mode)
-              (setq
-               lsp-ui-doc-enable nil
-               lsp-ui-doc-delay 0.5
-               lsp-ui-doc-position 'at-point ; 'top 'bottom
-               lsp-ui-doc-show-with-cursor t
-               ;;lsp-ui-doc-show-with-mouse t
-
-               lsp-ui-imenu-enable nil
-               
-               ;;lsp-response-timeout 10
-               ;;lsp-file-watch-threshold 11000
-               
-               lsp-signature-auto-activate nil
-               ;; lsp-signature-render-documentation t
-               ;; lsp-signature-doc-lines 1
-
-               ;;lsp-ui-sideline-enable nil
-               ;;lsp-ui-sideline-show-hover nil
-               lsp-ui-sideline-ignore-duplicate t
-               lsp-ui-sideline-show-symbol nil
-               lsp-ui-sideline-show-diagnostics t ; flycheck messages
-               ;;lsp-ui-sideline-show-code-actions t
-               )
-              (lsp-deferred)
-              (define-key dart-mode-map (kbd "<f8>") #'lsp-ui-doc-show)
-              
-              (setq flutter-sdk-path lsp-dart-flutter-sdk-dir)
-              (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
-              (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
-              )))
 
 (conf go-mode
   
@@ -325,10 +291,10 @@
 		 '((tramp-parse-sconfig "/etc/ssh/ssh_config")
 		   (tramp-parse-sconfig "~/.ssh/config")))))))
 
-(conf undo-tree
-  (global-undo-tree-mode)
-  (global-set-key (kbd "C-/") 'undo)
-  (global-set-key (kbd "C-M-/") 'undo-tree-redo))
+;; (conf undo-tree
+;;   (global-undo-tree-mode)
+;;   (global-set-key (kbd "C-/") 'undo)
+;;   (global-set-key (kbd "C-M-/") 'undo-tree-redo))
 
 (conf js2-mode
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
@@ -507,8 +473,6 @@
 (conf magit
   (global-set-key (kbd "C-c m") 'magit-status))
 
-(conf gitignore-mode)
-
 (conf macrostep
   (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand))
 
@@ -599,14 +563,22 @@
 
 ;;----------------------------------------------------
 ;;; semantic
+
+;;(add-to-list 'load-path "/mnt/sx900/worksp/dart/dart-mode/dart_semantic")
+;;(require 'dart-tags)
+;;(load "/mnt/sx900/worksp/lsp-dart/dart_semantic/dart-semantic.el")
+
 ;; disable semantic in some modes
 (setq semantic-new-buffer-setup-functions
       '((c-mode . semantic-default-c-setup)
         (c++-mode . semantic-default-c-setup)
         (html-mode . semantic-default-html-setup)
         (java-mode . wisent-java-default-setup)
+
+        (dart-mode . wisent-dart-default-setup)
+        
         ;;(js-mode . wisent-javascript-setup-parser) ;
-        ;;(python-mode . wisent-python-default-setup) ; no decoration for type hints
+        (python-mode . wisent-python-default-setup) ; no decoration for type hints
         ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
         (srecode-template-mode . srecode-template-setup-parser)
         (texinfo-mode . semantic-default-texi-setup)
@@ -633,6 +605,58 @@
                     ("semantic-decoration-on-private-members" . nil)
                     ("semantic-tag-boundary" . t)))))
 (global-semantic-decoration-mode 1)
+
+
+(add-to-list 'load-path "/mnt/sx900/worksp/dart/dart-mode")
+(progn
+  ;;conf dart-mode
+  (add-hook 'dart-mode-hook
+            (lambda ()
+
+              ;; lsp-dart dev
+              (add-to-list 'load-path "/mnt/sx900/worksp/lsp-dart")
+              (load "lsp-dart.el")
+
+              ;;(setenv "FLUTTER_ROOT" "/mnt/sx900/soft/flutter")
+
+              ;; (projectile-mode)
+              ;; (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+              
+              (require 'electric-case)
+              (electric-case-mode)
+              (smartparens-strict-mode)
+              (subword-mode)
+              (setq
+               read-process-output-max 16384 ; lsp stdout
+               
+               lsp-ui-doc-enable nil
+               lsp-ui-doc-delay 0.5
+               lsp-ui-doc-position 'at-point ; 'top 'bottom
+               lsp-ui-doc-show-with-cursor t
+               ;;lsp-ui-doc-show-with-mouse t
+
+               lsp-ui-imenu-enable nil
+               
+               ;;lsp-response-timeout 10
+               ;;lsp-file-watch-threshold 11000
+               
+               lsp-signature-auto-activate nil
+               ;; lsp-signature-render-documentation t
+               ;; lsp-signature-doc-lines 1
+
+               ;;lsp-ui-sideline-enable nil
+               ;;lsp-ui-sideline-show-hover nil
+               lsp-ui-sideline-ignore-duplicate t
+               lsp-ui-sideline-show-symbol nil
+               lsp-ui-sideline-show-diagnostics t ; flycheck messages
+               ;;lsp-ui-sideline-show-code-actions t
+               )
+              ;;(lsp-deferred)
+              (define-key dart-mode-map (kbd "<f8>") #'lsp-ui-doc-show)
+              
+              (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
+              (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
+              )))
 
 ;;----------------------------------------------------
 ;;; shell mode
