@@ -105,51 +105,47 @@
 
 (package-initialize)
 
-(add-hook
- 'server-after-make-frame-hook
- (lambda ()
-   (when (display-graphic-p)
-     (toggle-frame-maximized) ; maximize Emacs
-     (setq-default frame-title-format "%b (%f)")
+(when (display-graphic-p)
+  (toggle-frame-maximized) ; maximize Emacs
+  (setq-default frame-title-format "%b (%f)")
 
-     ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-     ;;(set-face-attribute 'default nil :height 120)
+  ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
+  ;;(set-face-attribute 'default nil :height 120)
 
-     (tool-bar-mode -1)   ; disable toolbar
-     (line-number-mode)   ; show line numbers in modeline
-     (menu-bar-mode -1)   ; disable menu
-     (scroll-bar-mode -1) ; disable scrollbars
-     (setq-default indent-tabs-mode nil) ; use spaces
-     (setq make-backup-files nil)
-     (setq inhibit-startup-screen t) ; no startup screen
-     ;;(setq ring-bell-function 'ignore)
+  (tool-bar-mode -1)   ; disable toolbar
+  (line-number-mode)   ; show line numbers in modeline
+  (menu-bar-mode -1)   ; disable menu
+  (scroll-bar-mode -1) ; disable scrollbars
+  (setq-default indent-tabs-mode nil) ; use spaces
+  (setq make-backup-files nil)
+  (setq inhibit-startup-screen t) ; no startup screen
+  ;;(setq ring-bell-function 'ignore)
 
-     (setq create-lockfiles nil)
-     (global-set-key (kbd "C-c c") 'comment-region)
+  (setq create-lockfiles nil)
+  (global-set-key (kbd "C-c c") 'comment-region)
 
-     ;; Path to Emacs C source, for functions help system
-     ;;(setq find-function-C-source-directory "~/soft/emacs/src")
+  ;; Path to Emacs C source, for functions help system
+  ;;(setq find-function-C-source-directory "~/soft/emacs/src")
 
-     (setq tab-always-indent 'complete)
-     (add-to-list 'completion-styles 'initials t)
+  (setq tab-always-indent 'complete)
+  (add-to-list 'completion-styles 'initials t)
 
-     (setq enable-recursive-minibuffers t)
-     (show-paren-mode)
-     (column-number-mode)
-     (recentf-mode)
-     (global-set-key (kbd "C-c C-h") 'hl-line-mode)
-     (global-set-key (kbd "C-c C-r") 'revert-buffer)
+  (setq enable-recursive-minibuffers t)
+  (show-paren-mode)
+  (column-number-mode)
+  (recentf-mode)
+  (global-set-key (kbd "C-c C-h") 'hl-line-mode)
+  (global-set-key (kbd "C-c C-r") 'revert-buffer)
 
-     ;; check package archives cache
-     (unless package-archive-contents
-       (package-refresh-contents))
-     
-     (mapcar ; install selected packages
-      (lambda (pkg)
-	(when (not (package-installed-p pkg))
-	  (package-install pkg)))
-      package-selected-packages))
-   ))
+  ;; check package archives cache
+  (unless package-archive-contents
+    (package-refresh-contents))
+  
+  (mapcar ; install selected packages
+   (lambda (pkg)
+     (when (not (package-installed-p pkg))
+       (package-install pkg)))
+   package-selected-packages))
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
