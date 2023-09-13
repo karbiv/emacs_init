@@ -13,58 +13,51 @@
    tramp ; manually over system's version
    undo-tree
 
-   helm
-   helm-tramp
-   helm-systemd
-   helm-swoop
-   helm-ag
-   helm-gtags
-   helm-lsp
-   lsp-ui
+   ;; helm
+   ;; helm-tramp
+   ;; helm-systemd
+   ;; helm-swoop
+   ;; helm-rg
+   ;; helm-gtags
+   ;; helm-lsp
+   ;; helm-xref
 
-   ;; selectrum
-   ;; prescient
-   ;; company-prescient
-   ;; selectrum-prescient
-   ;; consult
-   
-   marginalia
+   vertico
+   consult
+   orderless
    embark
+   embark-consult
+   marginalia
+
+   company
    
    which-key
    js2-mode
    tern ; js code analysis
    json-mode
-   company
    web-beautify
    imenu
    multiple-cursors
    cmake-mode
-   which-key
    ssass-mode
    smartparens
-   rainbow-mode
    flycheck
    projectile
    yasnippet
    realgud
 
+   lsp-ui
    ;; Dart
    dart-mode
    lsp-dart
    flutter
-   ;;flutter-l10n-flycheck
    electric-case
    string-inflection
 
    jedi
-   highlight-indentation
-   ;;elpy
-   cython-mode
 
    go-mode
    company-go
-
    ccls
    flycheck-irony
 
@@ -82,25 +75,19 @@
    ggtags
    dired-toggle-sudo
    bash-completion
-   ace-window
-   glsl-mode
 
    ;;rust-mode
    ;;; or
-   rustic
-   cargo
-   ;; rust-auto-use
-   ;; rust-playground
+   ;;rustic
+   ;;cargo
 
-   ;;geiser
-   ;;slime
+   geiser
+   macrostep-geiser
 
    doom-modeline
+   git-timemachine
    ;; themes
-   faff-theme
-   silkworm-theme
-   soft-morning-theme
-   flatui-theme
+   humanoid-themes
    ))
 
 (package-initialize)
@@ -109,8 +96,12 @@
   (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
-  ;;(set-face-attribute 'default nil :font "Ubuntu Mono")
-  ;;(set-face-attribute 'default nil :height 120)
+  ;; (progn
+  ;;   (set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono")
+  ;;   (set-face-attribute 'default nil :height 125))
+  (progn
+    (set-face-attribute 'default nil :font "Liberation Mono")
+    (set-face-attribute 'default nil :height 115))
 
   (tool-bar-mode -1)   ; disable toolbar
   (line-number-mode)   ; show line numbers in modeline
@@ -136,6 +127,7 @@
   (recentf-mode)
   (global-set-key (kbd "C-c C-h") 'hl-line-mode)
   (global-set-key (kbd "C-c C-r") 'revert-buffer)
+  (global-set-key (kbd "M-o") 'other-window)
 
   ;; check package archives cache
   (unless package-archive-contents
@@ -145,7 +137,8 @@
    (lambda (pkg)
      (when (not (package-installed-p pkg))
        (package-install pkg)))
-   package-selected-packages))
+   package-selected-packages)
+  )
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
@@ -156,42 +149,15 @@
 
 ;;;;; Configure packages
 
+(conf which-key
+  (which-key-mode))
+
 (conf desktop-registry
   (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop))
 
-(conf selectrum
-  (selectrum-mode)
-  (conf prescient)
-  (conf selectrum-prescient
-    (selectrum-prescient-mode))
-  (conf company-prescient
-    (company-prescient-mode)))
-
 (conf yasnippet
   (yas-global-mode))
-
-(conf consult
-  (global-set-key (kbd "C-c j") 'consult-buffer)
-  (global-set-key (kbd "C-c i") 'consult-imenu)
-  (global-set-key (kbd "M-i")   'consult-line)
-  (global-set-key (kbd "M-s g") 'consult-grep)
-  (global-set-key (kbd "M-s G") 'consult-git-grep))
-
-(conf marginalia
-  (marginalia-mode))
-
-;; (conf embark
-;;   ;; Hide the mode line of the Embark live/completions buffers
-;;   (add-to-list 'display-buffer-alist
-;;                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-;; 		 nil
-;; 		 (window-parameters (mode-line-format . none))))
-;;   (global-set-key (kbd "M-;") 'embark-act)
-;;   (global-set-key (kbd "C-;") 'embark-dwim)
-;;   (global-set-key (kbd "C-h B") 'embark-bindings))
-
-(conf embark-consult)
 
 (conf electric-case)
 
@@ -212,48 +178,27 @@
 	      (setq go-packages-function 'go-packages-go-list)
 
 	      ;; for CGO
-	      (ggtags-mode 1)
-	      (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-	      (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
+	      ;; (ggtags-mode 1)
+	      ;; (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+	      ;; (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
 	      (subword-mode)
+              (abbrev-mode 1)
 
-	      (lsp-deferred)
-              (lsp-ui-doc-frame-mode)
-              ;; (lsp)
-              ;; ;; lsp-response-timeout 10
-              ;; ;; ;;lsp-log-io t
-              ;; ;; lsp-file-watch-threshold 11000
-              ;; lsp-ui-doc-enable t
-              ;; ;; lsp-signature-auto-activate t
-              ;; ;; lsp-signature-doc-lines 1
-              ;; lsp-ui-sideline-enable t
-              ;; ;; lsp-ui-sideline-show-diagnostics t
-              ;; lsp-ui-sideline-show-hover t
+              (eglot-ensure)
+              (define-key go-mode-map (kbd "M-.") #'xref-find-definitions)
+              ;;(define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
               
-              ;; (lsp-ui-mode)
-              ;; (lsp-lens-mode)
-
-	      ;;(local-unset-key (kbd "M-.")) ; unmask ggtags
-	      (define-key ggtags-mode-map (kbd "M-.") nil)
-	      ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
-	      (define-key go-mode-map (kbd "M-.") #'lsp-find-definition)
-
-	      (abbrev-mode 1)
-	      ;; print all methods that item implements
-	      (define-abbrev go-mode-abbrev-table "impls"
-		"foo := reflect.TypeOf();
-    for i:=0; i<foo.NumMethod();i++ {method:=foo.Method(i);Println(method.Name)}")
-	      (define-abbrev go-mode-abbrev-table "ifer"
-		"if err != nil {
-
-}" 'abbrev-iferr)
+	      ;; (lsp-deferred)              
+	      ;; ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
+	      ;; (define-key go-mode-map (kbd "M-.") #'lsp-find-definition)
+              ;; (setq lsp-ui-doc-show-with-mouse nil)
 
 	      ;; Bindings in  go-goto-map
 	      ;; (define-key m "a" #'go-goto-arguments)
 	      ;; (define-key m "d" #'go-goto-docstring)
 	      ;; (define-key m "f" #'go-goto-function)
 	      ;; (define-key m "i" #'go-goto-imports)
-	      (define-key go-goto-map "i" #'ak-go-goto-imports)
+	      ;; (define-key go-goto-map "i" #'ak-go-goto-imports)
 	      ;; (define-key m "m" #'go-goto-method-receiver)
 	      ;; (define-key m "n" #'go-goto-function-name)
 	      ;; (define-key m "r" #'go-goto-return-values)
@@ -272,8 +217,6 @@
     (interactive)
     (setq-local comment-start "// ")))
 
-;;(conf go-gopath)
-
 (conf tramp
   (add-hook 'tramp--startup-hook
 	    (lambda ()
@@ -287,10 +230,11 @@
 		 '((tramp-parse-sconfig "/etc/ssh/ssh_config")
 		   (tramp-parse-sconfig "~/.ssh/config")))))))
 
-;; (conf undo-tree
-;;   (global-undo-tree-mode)
-;;   (global-set-key (kbd "C-/") 'undo)
-;;   (global-set-key (kbd "C-M-/") 'undo-tree-redo))
+(conf undo-tree
+  (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history nil)
+  (global-set-key (kbd "C-/") 'undo)
+  (global-set-key (kbd "C-M-/") 'undo-tree-redo))
 
 (conf js2-mode
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
@@ -312,7 +256,6 @@
               ;;(add-to-list 'company-backends 'company-tern)
               (js2-imenu-extras-mode)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
-              ;;(define-key js-mode-map (kbd "M-.") 'helm-ag)
               (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
 		'abbrev-console-log)
               (setq js-indent-level 2)
@@ -355,19 +298,9 @@
   (add-hook 'ssass-mode-hook
 	    (lambda ()
 	      (rainbow-mode t)
-	      ;;(define-key ssass-mode-map (kbd "M-.") 'helm-ag)
 	      )))
 
 (conf smartparens)
-
-(conf flycheck
-  (defvar ak-flycheck-toggle nil)
-  (defun ak-flycheck-mode ()
-    (interactive)
-    (if ak-flycheck-toggle
-	(flycheck-mode -1)
-      (flycheck-mode 1))
-    (setq ak-flycheck-toggle (not ak-flycheck-toggle))))
 
 (conf projectile)
 
@@ -454,7 +387,7 @@
               (setq indent-tabs-mode t
                     tab-width 4
                     c-basic-offset 4)
-              (define-key php-mode-map (kbd "M-n") 'imenu)
+              (define-key php-mode-map (kbd "C-c i") 'imenu)
               (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
               (define-key php-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               ))
@@ -503,152 +436,98 @@
 
 (conf company
   (global-set-key (kbd "M-n") #'company-complete)
+  (company-mode))
+
+(conf git-timemachine
   )
 
 ;; Themes
 
-(conf base16-theme)
-(conf doom-modeline)
+(conf doom-modeline
+  (doom-modeline-mode 1)
+  )
 
 ;;----------------------------------------------------
 ;;; dired
-
-;; https://www.emacswiki.org/emacs/DiredGetFileSize
-(defun dired-get-size ()
-  (interactive)
-  (let ((files (dired-get-marked-files)))
-    (with-temp-buffer
-      (apply 'call-process "/usr/bin/du" nil t nil "-sch" files)
-      (message "Size of all marked files: %s"
-               (progn
-                 (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
-                 (match-string 1))))))
 
 (conf dired-toggle-sudo)
 (add-hook 'dired-mode-hook
           (lambda ()
             (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
-            ;;(setq dired-listing-switches "-hal --time-style=iso")
-            (setq dired-listing-switches "-hal --group-directories-first")
-            (define-key dired-mode-map (kbd "?") 'dired-get-size)))
+            (setq dired-listing-switches "-hal --group-directories-first")))
 
+;;----------------------------------------------------
+;;; vertico consult orderless embark marginalia
+
+(conf vertico
+  (vertico-mode)
+  (vertico-buffer-mode))
+
+(conf consult
+  (global-set-key (kbd "C-c j") 'consult-buffer)
+  (global-set-key (kbd "C-c C-j") 'consult-buffer)
+  (global-set-key (kbd "C-c i") 'consult-imenu))
+
+(conf orderless
+  (setq completion-styles '(orderless basic)
+        completion-category-overrides '((file (styles basic partial-completion)))))
+
+(conf embark
+  (global-set-key (kbd "C-.") 'embark-act)
+  (global-set-key (kbd "C-'") 'embark-dwim)
+  (global-set-key (kbd "C-h b") 'embark-bindigs)
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+  ;; strategy, if you want to see the documentation from multiple providers.
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+(conf marginalia
+  (marginalia-mode))
 
 ;;----------------------------------------------------
 ;;; helm
 
-(conf helm
-  (require 'helm-config)
-  (helm-mode 1)
-  (setq helm-M-x-fuzzy-match t)
-  ;;(setq helm-M-x-fuzzy-match t)
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-c j") 'helm-mini)
-  (global-set-key (kbd "C-c C-j") 'helm-mini)
-  (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
-  (global-set-key (kbd "M-n") 'helm-semantic-or-imenu)
+;; (conf helm
+;;   (helm-mode 1)
+;;   (setq helm-M-x-fuzzy-match t)
+;;   (global-set-key (kbd "M-x") 'helm-M-x)
+;;   (global-set-key (kbd "C-c j") 'helm-mini)
+;;   (global-set-key (kbd "C-c C-j") 'helm-mini)
+;;   (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
+;;   (global-set-key (kbd "C-c i") 'helm-semantic-or-imenu)
 
-  ;;; helm-ag
-  (setq-default helm-ag-insert-at-point 'symbol)
+;;   ;;; helm-swoop
+;;   (global-set-key (kbd "M-i") 'helm-swoop)
+;;   (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+;;   (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+;;   (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+;;   )
 
-  ;;; helm-swoop
-  (global-set-key (kbd "M-i") 'helm-swoop)
-  (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-  (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-  (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-  )
-
-;;----------------------------------------------------
-;;; semantic
-
-;;(add-to-list 'load-path "/mnt/sx900/worksp/dart/dart-mode/dart_semantic")
-;;(require 'dart-tags)
-;;(load "/mnt/sx900/worksp/lsp-dart/dart_semantic/dart-semantic.el")
-
-;; disable semantic in some modes
-(setq semantic-new-buffer-setup-functions
-      '((c-mode . semantic-default-c-setup)
-        (c++-mode . semantic-default-c-setup)
-        (html-mode . semantic-default-html-setup)
-        (java-mode . wisent-java-default-setup)
-
-        (dart-mode . wisent-dart-default-setup)
-        
-        ;;(js-mode . wisent-javascript-setup-parser) ;
-        (python-mode . wisent-python-default-setup) ; no decoration for type hints
-        ;;(scheme-mode . semantic-default-scheme-setup) ; crashes in some scheme variants
-        (srecode-template-mode . srecode-template-setup-parser)
-        (texinfo-mode . semantic-default-texi-setup)
-        (makefile-automake-mode . semantic-default-make-setup)
-        (makefile-gmake-mode . semantic-default-make-setup)
-        (makefile-makepp-mode . semantic-default-make-setup)
-        (makefile-bsdmake-mode . semantic-default-make-setup)
-        (makefile-imake-mode . semantic-default-make-setup)
-        (makefile-mode . semantic-default-make-setup)
-        (hs-minor-mode 1)))
-
-(add-hook 'semantic-inhibit-functions
-          (lambda ()
-            (when
-                ;;(member major-mode '(js-mode php-mode))
-                (member major-mode '(js-mode))
-              t)))
-
-(semantic-mode 1)
-(add-hook 'semantic-decoration-mode-hook
-          (lambda ()
-            (setq semantic-decoration-styles
-                  '(("semantic-decoration-on-protected-members" . nil)
-                    ("semantic-decoration-on-private-members" . nil)
-                    ("semantic-tag-boundary" . t)))))
-(global-semantic-decoration-mode 1)
-
-
-(add-to-list 'load-path "/mnt/sx900/worksp/dart/dart-mode")
-(progn
-  ;;conf dart-mode
+(conf dart-mode
   (add-hook 'dart-mode-hook
             (lambda ()
-
-              ;; lsp-dart dev
-              (add-to-list 'load-path "/mnt/sx900/worksp/lsp-dart")
-              (load "lsp-dart.el")
-
-              ;;(setenv "FLUTTER_ROOT" "/mnt/sx900/soft/flutter")
-
-              ;; (projectile-mode)
-              ;; (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+              ;;(ggtags-mode)
               
               (require 'electric-case)
               (electric-case-mode)
               (smartparens-strict-mode)
               (subword-mode)
-              (setq
-               read-process-output-max 16384 ; lsp stdout
-               
-               lsp-ui-doc-enable nil
-               lsp-ui-doc-delay 0.5
-               lsp-ui-doc-position 'at-point ; 'top 'bottom
-               lsp-ui-doc-show-with-cursor t
-               ;;lsp-ui-doc-show-with-mouse t
 
-               lsp-ui-imenu-enable nil
-               
-               ;;lsp-response-timeout 10
-               ;;lsp-file-watch-threshold 11000
-               
-               lsp-signature-auto-activate nil
-               ;; lsp-signature-render-documentation t
-               ;; lsp-signature-doc-lines 1
-
-               ;;lsp-ui-sideline-enable nil
-               ;;lsp-ui-sideline-show-hover nil
-               lsp-ui-sideline-ignore-duplicate t
-               lsp-ui-sideline-show-symbol nil
-               lsp-ui-sideline-show-diagnostics t ; flycheck messages
-               ;;lsp-ui-sideline-show-code-actions t
-               )
-              ;;(lsp-deferred)
-              (define-key dart-mode-map (kbd "<f8>") #'lsp-ui-doc-show)
+              (projectile-mode +1)
+              (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+              (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
+              (lsp-deferred)
+              (lsp-ui-sideline-mode)
+              (define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
+              (setq lsp-ui-doc-show-with-mouse nil)
               
               (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
               (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
@@ -681,8 +560,6 @@
   (move-end-of-line 1)
   (save-buffer 0))
 
-;;(elpy-enable)
-
 (conf cython-mode)
 
 (defun python-mode-func ()
@@ -704,13 +581,13 @@
   (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
   ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
-  (local-set-key (kbd "C-c f") #'ak-flycheck-mode)
   (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
   (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
   (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
                                           (xref-push-marker-stack)
                                           (jedi:goto-definition)))
   ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+  (define-key python-mode-map (kbd "C-c i") 'imenu)
 
   (auto-complete-mode -1)
   )
@@ -728,7 +605,6 @@
 (add-hook 'css-mode-hook
           (lambda ()
             (rainbow-mode t)
-            ;;(define-key css-mode-map (kbd "M-.") 'helm-ag)
             ))
 
 
@@ -736,22 +612,24 @@
 ;;; Scheme mode
 
 (add-hook 'scheme-mode-hook
-          #'(lambda ()
-              (enable-paredit-mode)
-              (abbrev-mode 1)
-              (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
-              (define-abbrev scheme-mode-abbrev-table  "dl" "(display )"))
+          (lambda ()
+            (enable-paredit-mode)
+            (abbrev-mode 1)
+            (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
+            (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")
 
-          ;; added `define*' to scheme mode
-          ;; added `define-syntax-rule' for macros
-          (setq scheme-imenu-generic-expression
-                '((nil
-                   "^(define\\(\\|\\*\\|-\\(generic\\(\\|-procedure\\)\\|method\\)\\)*\\s-+(?\\(\\sw+\\)" 4)
-                  ("Types"
-                   "^(define-class\\s-+(?\\(\\sw+\\)" 1)
-                  ("Macros"
-                   "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
-          )
+            ;; added `define*' to scheme mode
+            ;; added `define-syntax-rule' for macros
+            (setq scheme-imenu-generic-expression
+                  '((nil
+                     "^(define\\(\\|\\*\\|-\\(generic\\(\\|-procedure\\)\\|method\\)\\)*\\s-+(?\\(\\sw+\\)" 4)
+                    ("Types"
+                     "^(define-class\\s-+(?\\(\\sw+\\)" 1)
+                    ("Macros"
+                     "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
+            
+            (macrostep-geiser-setup)
+            ))
 
 ;;----------------------------------------------------
 ;;; c mode
@@ -772,7 +650,7 @@
               (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
 
               (semantic-mode 1)
-              ;;(lsp)
+              ;;(lsp-deferred)
               
               ;; (flycheck-mode 1)
               ;; (flycheck-clang-analyzer-setup)
@@ -786,12 +664,6 @@
               (setq c-auto-align-backslashes nil)
               (abbrev-mode 1)
               (define-abbrev c-mode-abbrev-table "err" "#error \"stop here\"")
-              ;; expand and print macros for diagnostic
-              (define-abbrev c-mode-abbrev-table "def"
-                "#define XSTR(x) STR(x)
-#define STR(x) #x
-#pragma message \"The value: \" XSTR()
-#error \"stop here\"")
               )))
 
 ;;----------------------------------------------------
@@ -828,82 +700,11 @@
 ;; slime
 (add-hook 'lisp-mode-hook
           (lambda ()
+            (enable-paredit-mode)
+            (setq inferior-lisp-program "sbcl")
             (setq slime-lisp-implementations
-                  '(;;(cmucl ("cmucl" "-quiet"))
-                    (sbcl ("sbcl") :coding-system utf-8-unix))))
-          )
-
-;; ;;----------------------------------------------------
-;; ;;; java mode
-
-;; (setq
-;;  lsp-java-vmargs (list
-;;                   "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:9125"
-;;                   "-noverify"
-;;                   "-Xmx2G")
-
-;;  lsp-file-watch-ignored
-;;  '(".idea" ".ensime_cache" ".eunit" "node_modules"
-;;    ".git" ".hg" ".fslckout" "_FOSSIL_"
-;;    ".bzr" "_darcs" ".tox" ".svn" ".stack-work"
-;;    "build")
-;;  lsp-java-import-order '["" "java" "javax" "#"]
-;;  lsp-java-save-action-organize-imports nil)
-
-;; (add-hook
-;;  'java-mode-hook
-;;  (lambda ()
-;;    (setq tab-width 4)
-
-;;    ;; eglot
-;;    ;;(setenv "CLASSPATH" "/home/ak/.emacs.d/.cache/lsp/eclipse.jdt.ls/plugins/org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar")
-
-;;    ;;; LSP
-
-;;    (setq
-;;     lsp-response-timeout 10
-;;     ;;lsp-log-io t
-;;     lsp-file-watch-threshold 11000
-;;     lsp-ui-doc-enable nil
-;;     lsp-java-boot-enabled nil
-;;     lsp-signature-auto-activate t
-;;     lsp-signature-doc-lines 1
-;;     lsp-ui-sideline-enable t
-;;     ;;lsp-ui-sideline-show-diagnostics t
-;;     lsp-ui-sideline-show-hover t)
-
-;;    (lsp)
-;;    (lsp-ui-mode)
-;;    (lsp-lens-mode)
-;;    ;; (projectile-mode t)
-;;    (define-key java-mode-map (kbd "M-'") #'lsp-ui-doc-focus-frame)
-
-;;    ;; Spring Boot server requires JDK-9 or higher
-;;    ;;(lsp-java-boot-lens-mode)
-
-;;    ;; ;; Enabling only some features
-;;    ;; (setq dap-auto-configure-features '(sessions locals controls tooltip))
-
-;;    (require 'dap-java)
-;;    (dap-register-debug-template "My Remote"
-;;                                 (list :type "java"
-;;                                       :request "attach"
-;;                                       :hostName "localhost"
-;;                                       :port "9125"
-;;                                       ))
-;;    ;;(setq dap-auto-configure-features '(sessions locals controls tooltip))
-;;    (setq dap-auto-configure-features '()
-;;          dap-print-io t)
-;;    (dap-mode 1)
-;;    (dap-ui-mode 1)
-;;    (dap-tooltip-mode 1)
-;;    ;; if it is not enabled `dap-mode' will use the minibuffer.
-;;    (tooltip-mode 1)
-
-;;    (define-key java-mode-map (kbd "C-c C-n") #'dap-next)
-;;    (define-key java-mode-map (kbd "C-c C-r") #'dap-continue)
-;;    ))
-
+                  '((sbcl ("sbcl") :coding-system utf-8-unix)))
+            ))
 
 ;; ;;----------------------------------------------------
 
