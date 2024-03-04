@@ -3,6 +3,19 @@
 ;;; Selected packages
 ;;;;;----------------------------------------------------
 
+;;; LSP optimization start
+;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
+(setenv "LSP_USE_PLISTS" "true")
+;; Set it to big number(100mb) like most of the popular kits like Spacemacs/Doom/Prelude do:
+(setq gc-cons-threshold 100000000)
+;; Again the emacs default is too low 4k considering that the some of the
+;; language server responses are in 800k - 3M range.
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+;;; LSP optimization end
+;;; doom-modeline recommendation
+;; Don’t compact font caches during GC.
+(setq inhibit-compacting-font-caches t)
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
@@ -10,24 +23,21 @@
  package-selected-packages
  '(
    desktop-registry
-   tramp ; manually over system's version
+   tramp
    undo-tree
-
-   ;; helm
-   ;; helm-tramp
-   ;; helm-systemd
-   ;; helm-swoop
-   ;; helm-rg
-   ;; helm-gtags
-   ;; helm-lsp
-   ;; helm-xref
-
+   switch-window
+   
    vertico
    consult
    orderless
    embark
    embark-consult
    marginalia
+   corfu
+
+   helm
+   helm-swoop
+   helm-ls-git
 
    company
    
@@ -57,7 +67,7 @@
    jedi
 
    go-mode
-   company-go
+   ;;company-go
    ccls
    flycheck-irony
 
@@ -69,25 +79,35 @@
    php-mode
    paredit
    magit
+   ghub
    macrostep
    ini-mode
-   highlight-symbol
+   symbol-overlay
    ggtags
    dired-toggle-sudo
    bash-completion
 
+   slime
+
    ;;rust-mode
-   ;;; or
-   ;;rustic
-   ;;cargo
+   ;; or
+   ;; rustic
+   ;; cargo
 
    geiser
    macrostep-geiser
 
    doom-modeline
    git-timemachine
+
+   ;;dirvish
+   ;;treemacs
+
    ;; themes
-   humanoid-themes
+
+   ;; avk-emacs-themes
+   ;; moe-theme
+   ;; dakrone-light-theme
    ))
 
 (package-initialize)
@@ -95,13 +115,20 @@
 (when (display-graphic-p)
   (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
-
+  
+  (progn
+    (set-face-attribute 'default nil :font "Consolas")
+    (set-face-attribute 'default nil :height 110))
+  ;; (progn
+  ;;   (set-face-attribute 'default nil :font "Inconsolata")
+  ;;   (set-face-attribute 'default nil :height 120)
+  ;;   )
   ;; (progn
   ;;   (set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono")
-  ;;   (set-face-attribute 'default nil :height 125))
-  (progn
-    (set-face-attribute 'default nil :font "Liberation Mono")
-    (set-face-attribute 'default nil :height 115))
+  ;;   (set-face-attribute 'default nil :height 120))
+  ;; (progn
+  ;;   (set-face-attribute 'default nil :font "Liberation Mono")
+  ;;   (set-face-attribute 'default nil :height 105))
 
   (tool-bar-mode -1)   ; disable toolbar
   (line-number-mode)   ; show line numbers in modeline
@@ -110,24 +137,9 @@
   (setq-default indent-tabs-mode nil) ; use spaces
   (setq make-backup-files nil)
   (setq inhibit-startup-screen t) ; no startup screen
-  ;;(setq ring-bell-function 'ignore)
-
-  (setq create-lockfiles nil)
-  (global-set-key (kbd "C-c c") 'comment-region)
 
   ;; Path to Emacs C source, for functions help system
   ;;(setq find-function-C-source-directory "~/soft/emacs/src")
-
-  (setq tab-always-indent 'complete)
-  (add-to-list 'completion-styles 'initials t)
-
-  (setq enable-recursive-minibuffers t)
-  (show-paren-mode)
-  (column-number-mode)
-  (recentf-mode)
-  (global-set-key (kbd "C-c C-h") 'hl-line-mode)
-  (global-set-key (kbd "C-c C-r") 'revert-buffer)
-  (global-set-key (kbd "M-o") 'other-window)
 
   ;; check package archives cache
   (unless package-archive-contents
@@ -137,14 +149,27 @@
    (lambda (pkg)
      (when (not (package-installed-p pkg))
        (package-install pkg)))
-   package-selected-packages)
-  )
+   package-selected-packages))
+
+(setq create-lockfiles nil)
+(global-set-key (kbd "C-c c") 'comment-region)
+
+(setq tab-always-indent 'complete)
+(add-to-list 'completion-styles 'initials t)
+
+(show-paren-mode)
+(column-number-mode)
+(recentf-mode)
+(global-set-key (kbd "C-c C-h") 'hl-line-mode)
+(global-set-key (kbd "C-c C-r") 'revert-buffer)
+(global-set-key (kbd "C-c h") #'save-buffers-kill-emacs)
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
-  `(if (package-installed-p ',name)
-       (progn ,@init-code)
-     (message "EMACS PACKAGES, %s not installed" ',name)))
+  (when (member name package-selected-packages)
+    `(if (package-installed-p ',name)
+         (progn ,@init-code)
+       (message "EMACS PACKAGES, %s not installed" ',name))))
 
 
 ;;;;; Configure packages
@@ -252,7 +277,7 @@
               (abbrev-mode 1)
               (rainbow-mode 1)
               (tern-mode 1)
-              (company-mode 1)
+              ;;(company-mode 1)
               ;;(add-to-list 'company-backends 'company-tern)
               (js2-imenu-extras-mode)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
@@ -287,7 +312,12 @@
 
 (conf cmake-mode)
 
-(conf lsp-ui)
+(conf lsp-ui
+  (setq
+   lsp-headerline-breadcrumb-icons-enable nil
+   lsp-headerline-breadcrumb-enable-diagnostics nil
+   )
+  )
 
 ;;; sass|scss
 (conf ssass-mode
@@ -305,9 +335,6 @@
 (conf projectile)
 
 (conf highlight-indentation)
-
-;; C++ language server
-(conf ccls)
 
 (conf flycheck-irony)
 
@@ -402,6 +429,9 @@
 (conf magit
   (global-set-key (kbd "C-c m") 'magit-status))
 
+(conf ghub
+  )
+
 (conf macrostep
   (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand))
 
@@ -411,32 +441,30 @@
   (add-to-list 'auto-mode-alist '("PKGBUILD$"  . ini-mode)) ; Arch package file
   )
 
-(conf highlight-symbol
-  (global-set-key [(control f9)] 'highlight-symbol-at-point)
-  (global-set-key [f9] 'highlight-symbol-next)
-  (global-set-key [(shift f9)] 'highlight-symbol-prev)
-  (global-set-key [(meta f9)] 'highlight-symbol-query-replace)
-
-  (add-hook 'prog-mode-hook #'highlight-symbol-mode)
-  ;;(setq highlight-symbol-on-navigation-p nil)
+(conf symbol-overlay
+  (global-set-key [(control f9)] 'symbol-overlay-put)
+  (global-set-key [f9] 'symbol-overlay-jump-next)
+  (global-set-key [(shift f9)] 'symbol-overlay-jump-next)
+  (global-set-key [(meta f9)] 'symbol-overlay-query-replace)
   )
 
 (conf ggtags)
 
-(conf ace-window
-  (global-set-key (kbd "C-c o") #'ace-window)
-  (global-set-key (kbd "C-c s") #'ace-swap-window)
-  ;; (global-set-key (kbd "M-p") (lambda ()
-  ;;                               (interactive)
-  ;;                               (set-window-buffer (selected-window) (other-buffer))))
+;; (conf ace-window
+;;   (global-set-key (kbd "C-c o") #'ace-window)
+;;   (global-set-key (kbd "C-c s") #'ace-swap-window)
+;;   )
+
+(conf switch-window
+  (global-set-key (kbd "C-c o") #'switch-window)
   )
 
 (conf glsl-mode
   (add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode)))
 
-(conf company
-  (global-set-key (kbd "M-n") #'company-complete)
-  (company-mode))
+;; (conf company
+;;   (global-set-key (kbd "M-n") #'company-complete)
+;;   (company-mode))
 
 (conf git-timemachine
   )
@@ -444,90 +472,132 @@
 ;; Themes
 
 (conf doom-modeline
+  ;; leftmost part:
+  ;;(setq doom-modeline-bar-width 0)
   (doom-modeline-mode 1)
   )
 
-;;----------------------------------------------------
-;;; dired
 
-(conf dired-toggle-sudo)
-(add-hook 'dired-mode-hook
-          (lambda ()
-            (define-key dired-mode-map (kbd "C-c C-s") 'dired-toggle-sudo)
-            (setq dired-listing-switches "-hal --group-directories-first")))
+;; ;;----------------------------------------------------
+;; ;;; vertico consult orderless embark marginalia corfu
 
-;;----------------------------------------------------
-;;; vertico consult orderless embark marginalia
+;; (conf vertico
+;;   (vertico-mode)
+;;   (vertico-buffer-mode)
+;;   ;; (define-key vertico-map (kbd "C-M-n") #'vertico-next-group)
+;;   )
 
-(conf vertico
-  (vertico-mode)
-  (vertico-buffer-mode))
+;; (conf consult
+;;   (global-set-key (kbd "C-c j") 'consult-buffer)
+;;   (global-set-key (kbd "C-c C-j") 'consult-buffer)
+;;   (global-set-key (kbd "C-c i") 'consult-imenu)
 
-(conf consult
-  (global-set-key (kbd "C-c j") 'consult-buffer)
-  (global-set-key (kbd "C-c C-j") 'consult-buffer)
-  (global-set-key (kbd "C-c i") 'consult-imenu))
+;;   (require 'consult)
 
-(conf orderless
-  (setq completion-styles '(orderless basic)
-        completion-category-overrides '((file (styles basic partial-completion)))))
+;;   (consult-customize
+;;    consult--source-buffer
+;;    :items (lambda ()
+;;             (consult--buffer-query
+;;              :sort nil :as #'buffer-name
+;;              ;; Buffers excluding Dired
+;;              :predicate
+;;              (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
+;;                                     'dired-mode))))))
+;;   ;; Dired buffers group
+;;   (add-to-list
+;;    'consult-buffer-sources
+;;    (list :name "Dired" :category 'buffer :narrow ?d
+;;          :face 'consult-buffer
+;;          :items (lambda ()
+;;                   (consult--buffer-query
+;;                    :sort 'visibility :as #'buffer-name
+;;                    :predicate
+;;                    (lambda (buf) (eq (buffer-local-value 'major-mode buf)
+;;                                      'dired-mode))))
+;;          :state #'consult--buffer-preview
+;;          :action #'consult--buffer-action
+;;          )
+;;    'append))
 
-(conf embark
-  (global-set-key (kbd "C-.") 'embark-act)
-  (global-set-key (kbd "C-'") 'embark-dwim)
-  (global-set-key (kbd "C-h b") 'embark-bindigs)
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-  ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+;; (conf orderless
+;;   (setq completion-styles '(orderless basic)
+;;         completion-category-overrides '((file (styles basic partial-completion)))))
 
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+;; (conf embark
+;;   (global-set-key (kbd "C-.") 'embark-act)
+;;   (global-set-key (kbd "C-'") 'embark-dwim)
+;;   (global-set-key (kbd "C-h b") 'embark-bindings)
+;;   ;; Optionally replace the key help with a completing-read interface
+;;   (setq prefix-help-command #'embark-prefix-help-command)
+;;   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+;;   ;; strategy, if you want to see the documentation from multiple providers.
+;;   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+;;   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-(conf marginalia
-  (marginalia-mode))
+;;   ;; Hide the mode line of the Embark live/completions buffers
+;;   (add-to-list 'display-buffer-alist
+;;                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+;;                  nil
+;;                  (window-parameters (mode-line-format . none)))))
+
+;; (conf marginalia
+;;   (marginalia-mode))
+
+;; (conf corfu
+;;   (global-corfu-mode))
+
 
 ;;----------------------------------------------------
 ;;; helm
 
-;; (conf helm
-;;   (helm-mode 1)
-;;   (setq helm-M-x-fuzzy-match t)
-;;   (global-set-key (kbd "M-x") 'helm-M-x)
-;;   (global-set-key (kbd "C-c j") 'helm-mini)
-;;   (global-set-key (kbd "C-c C-j") 'helm-mini)
-;;   (global-set-key (kbd "C-x C-f") 'helm-find-files) ;replace `find-file
-;;   (global-set-key (kbd "C-c i") 'helm-semantic-or-imenu)
+;; dev
+(add-to-list 'load-path (expand-file-name "~/helm"))
+(require 'helm)
+(require 'helm-autoloads)
 
-;;   ;;; helm-swoop
-;;   (global-set-key (kbd "M-i") 'helm-swoop)
-;;   (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-;;   (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-;;   (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-;;   )
+(progn ;;conf helm
+  (helm-mode)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-c j") 'helm-mini)
+  (global-set-key (kbd "C-x C-f") #'helm-find-files)
+  (global-set-key (kbd "C-x C-c") #'helm-command-prefix) ; disables `save-buffers-kill-emacs
+
+  (define-key helm-command-map (kbd "s") #'helm-swoop) ; disables 'surfraw
+  (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
+
+  (setq
+   helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
+   helm-ff-file-name-history-use-recentf nil
+   helm-echo-input-in-header-line t
+   helm-M-x-fuzzy-match t
+   helm-candidate-number-limit 500
+   helm-follow-mode-persistent t
+
+   ;; helm-always-two-windows nil
+   ;; helm-split-window-inside-p nil
+   )
+  )
+
+;;----------------------------------------------------
+;;; dart
 
 (conf dart-mode
   (add-hook 'dart-mode-hook
             (lambda ()
-              ;;(ggtags-mode)
-              
               (require 'electric-case)
               (electric-case-mode)
               (smartparens-strict-mode)
               (subword-mode)
-
+              
               (projectile-mode +1)
               (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
               (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
               (lsp-deferred)
-              (lsp-ui-sideline-mode)
               (define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
-              (setq lsp-ui-doc-show-with-mouse nil)
+              ;;(setq lsp-ui-doc-show-with-mouse nil)
+              (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
+              
+              (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
               
               (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
               (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
@@ -589,8 +659,7 @@
   ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
   (define-key python-mode-map (kbd "C-c i") 'imenu)
 
-  (auto-complete-mode -1)
-  )
+  (auto-complete-mode -1))
 (add-hook 'python-mode-hook 'python-mode-func)
 
 ;;----------------------------------------------------
@@ -604,9 +673,7 @@
 
 (add-hook 'css-mode-hook
           (lambda ()
-            (rainbow-mode t)
-            ))
-
+            (rainbow-mode t)))
 
 ;;----------------------------------------------------
 ;;; Scheme mode
@@ -628,8 +695,7 @@
                     ("Macros"
                      "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
             
-            (macrostep-geiser-setup)
-            ))
+            (macrostep-geiser-setup)))
 
 ;;----------------------------------------------------
 ;;; c mode
@@ -639,35 +705,37 @@
             ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
             (c-set-style "gnu")
             (ggtags-mode)
-            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
-              (setq c-macro-preprocessor "cpp -CC")
-              ;;(conf preproc-font-lock-mode)
-              ;;(preproc-font-lock-mode 1)
-              (hs-minor-mode 1) ; hide/show blocks
-              (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
-              (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-              (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
-              (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
+            (setq c-macro-preprocessor "cpp -CC")
+            ;;(conf preproc-font-lock-mode)
+            ;;(preproc-font-lock-mode 1)
+            (hs-minor-mode 1) ; hide/show blocks
+            (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
+            (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
+            (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
+            (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
 
-              (semantic-mode 1)
-              ;;(lsp-deferred)
-              
-              ;; (flycheck-mode 1)
-              ;; (flycheck-clang-analyzer-setup)
-              
-              (semantic-idle-breadcrumbs-mode 1)
-              (c-add-style "python-new"
-                           '("python"
-                             (c-basic-offset . 4))
-                           t)
-              ;; disable auto-align of endline backslashes in multiline macros
-              (setq c-auto-align-backslashes nil)
-              (abbrev-mode 1)
-              (define-abbrev c-mode-abbrev-table "err" "#error \"stop here\"")
-              )))
+            (semantic-mode 1)
+            ;;(lsp-deferred)
+            
+            ;; (flycheck-mode 1)
+            ;; (flycheck-clang-analyzer-setup)
+            
+            (semantic-idle-breadcrumbs-mode 1)
+            (c-add-style "python-new"
+                         '("python"
+                           (c-basic-offset . 4))
+                         t)
+            ;; disable auto-align of endline backslashes in multiline macros
+            (setq c-auto-align-backslashes nil)
+            (abbrev-mode 1)
+            (define-abbrev c-mode-abbrev-table "err" "#error \"stop here\"")
+            ))
 
 ;;----------------------------------------------------
 ;;; c++ mode
+
+;; C++ language server
+(conf ccls)
 
 (add-hook 'c++-mode-hook
           (lambda ()
@@ -687,32 +755,25 @@
 ;; or
 ;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
 
-(add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
+;; (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
 
-;;(setq rust-format-on-save t)
-(add-hook 'rustic-mode-hook
-          (lambda ()
-            (abbrev-mode 1)
-            (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
-            ))
+;; ;;(setq rust-format-on-save t)
+;; (add-hook 'rustic-mode-hook
+;;           (lambda ()
+;;             (abbrev-mode 1)
+;;             (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
+;;             ))
 
 ;;----------------------------------------------------
 ;; slime
-(add-hook 'lisp-mode-hook
-          (lambda ()
-            (enable-paredit-mode)
-            (setq inferior-lisp-program "sbcl")
-            (setq slime-lisp-implementations
-                  '((sbcl ("sbcl") :coding-system utf-8-unix)))
-            ))
 
-;; ;;----------------------------------------------------
-
-;; ;;; utility functions
-
-;; ;; (defmacro measure-time (&rest body)
-;; ;;   "Measure the time it takes to evaluate BODY."
-;; ;;   `(let ((time (current-time)))
-;; ;;      ,@body
-;; ;;      (message "%.06f" (float-time (time-since time)))))
-
+(conf slime
+  (add-hook 'lisp-mode-hook
+            (lambda ()
+              (enable-paredit-mode)
+              (setq inferior-lisp-program "sbcl --noinform")
+              ;;(setq slime-contribs '(slime-scratch slime-editing-commands))
+              
+              ;; (setq slime-lisp-implementations
+              ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
+              )))
