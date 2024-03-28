@@ -1,4 +1,3 @@
-
 ;;;;;----------------------------------------------------
 ;;; Selected packages
 ;;;;;----------------------------------------------------
@@ -26,21 +25,22 @@
    tramp
    undo-tree
    switch-window
-   
+
    vertico
    consult
    orderless
-   embark
    embark-consult
+   embark
    marginalia
    corfu
 
-   helm
-   helm-swoop
-   helm-ls-git
+   ;; helm
+   ;; helm-swoop
+   ;; helm-ls-git
+   ;; all-the-icons
 
    company
-   
+
    which-key
    js2-mode
    tern ; js code analysis
@@ -95,6 +95,7 @@
    ;; cargo
 
    geiser
+   geiser-guile
    macrostep-geiser
 
    doom-modeline
@@ -115,20 +116,13 @@
 (when (display-graphic-p)
   (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
-  
-  (progn
-    (set-face-attribute 'default nil :font "Consolas")
-    (set-face-attribute 'default nil :height 110))
-  ;; (progn
-  ;;   (set-face-attribute 'default nil :font "Inconsolata")
-  ;;   (set-face-attribute 'default nil :height 120)
-  ;;   )
-  ;; (progn
-  ;;   (set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono")
-  ;;   (set-face-attribute 'default nil :height 120))
-  ;; (progn
-  ;;   (set-face-attribute 'default nil :font "Liberation Mono")
-  ;;   (set-face-attribute 'default nil :height 105))
+
+  (set-face-attribute 'default nil :font "Consolas" :height 113)
+  ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
+  ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
+
+  ;; test vary width font
+  ;;(set-face-attribute 'default nil :font "DejaVu Sans" :height 110)
 
   (tool-bar-mode -1)   ; disable toolbar
   (line-number-mode)   ; show line numbers in modeline
@@ -139,13 +133,15 @@
   (setq inhibit-startup-screen t) ; no startup screen
 
   ;; Path to Emacs C source, for functions help system
-  ;;(setq find-function-C-source-directory "~/soft/emacs/src")
+  ;;(setq find-function-C-source-directory "~/path/to/emacs/src")
 
   ;; check package archives cache
   (unless package-archive-contents
     (package-refresh-contents))
-  
-  (mapcar ; install selected packages
+
+  (require 'compile) ; for M-x recompile
+
+  (mapcar ;; install selected packages
    (lambda (pkg)
      (when (not (package-installed-p pkg))
        (package-install pkg)))
@@ -162,7 +158,6 @@
 (recentf-mode)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 (global-set-key (kbd "C-c C-r") 'revert-buffer)
-(global-set-key (kbd "C-c h") #'save-buffers-kill-emacs)
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
@@ -189,7 +184,7 @@
 (conf string-inflection)
 
 (conf go-mode
-  
+
   (add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
 
   (defun abbrev-iferr ()
@@ -198,36 +193,36 @@
     (delete-trailing-whitespace))
 
   (add-hook 'go-mode-hook
-	    (lambda ()
-	      (setq tab-width 4)
-	      (setq go-packages-function 'go-packages-go-list)
+            (lambda ()
+              (setq tab-width 4)
+              (setq go-packages-function 'go-packages-go-list)
 
-	      ;; for CGO
-	      ;; (ggtags-mode 1)
-	      ;; (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-	      ;; (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
-	      (subword-mode)
+              ;; for CGO
+              ;; (ggtags-mode 1)
+              ;; (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+              ;; (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
+              (subword-mode)
               (abbrev-mode 1)
 
               (eglot-ensure)
               (define-key go-mode-map (kbd "M-.") #'xref-find-definitions)
               ;;(define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
-              
-	      ;; (lsp-deferred)              
-	      ;; ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
-	      ;; (define-key go-mode-map (kbd "M-.") #'lsp-find-definition)
+
+              ;; (lsp-deferred)
+              ;; ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
+              ;; (define-key go-mode-map (kbd "M-.") #'lsp-find-definition)
               ;; (setq lsp-ui-doc-show-with-mouse nil)
 
-	      ;; Bindings in  go-goto-map
-	      ;; (define-key m "a" #'go-goto-arguments)
-	      ;; (define-key m "d" #'go-goto-docstring)
-	      ;; (define-key m "f" #'go-goto-function)
-	      ;; (define-key m "i" #'go-goto-imports)
-	      ;; (define-key go-goto-map "i" #'ak-go-goto-imports)
-	      ;; (define-key m "m" #'go-goto-method-receiver)
-	      ;; (define-key m "n" #'go-goto-function-name)
-	      ;; (define-key m "r" #'go-goto-return-values)
-	      ))
+              ;; Bindings in  go-goto-map
+              ;; (define-key m "a" #'go-goto-arguments)
+              ;; (define-key m "d" #'go-goto-docstring)
+              ;; (define-key m "f" #'go-goto-function)
+              ;; (define-key m "i" #'go-goto-imports)
+              ;; (define-key go-goto-map "i" #'ak-go-goto-imports)
+              ;; (define-key m "m" #'go-goto-method-receiver)
+              ;; (define-key m "n" #'go-goto-function-name)
+              ;; (define-key m "r" #'go-goto-return-values)
+              ))
 
   (defun ak-go-goto-imports ()
     "Uses xref mark ring to return back from imports section, when quick (un)comment of import is done."
@@ -244,16 +239,16 @@
 
 (conf tramp
   (add-hook 'tramp--startup-hook
-	    (lambda ()
-	      (progn
-		;;(setq auth-source-debug t)
-		(setq-default password-cache-expiry 604800) ; seconds
-		(setq tramp-default-method "ssh")
-		(setenv "SHELL" "/bin/bash")
-		(tramp-set-completion-function
-		 "ssh"
-		 '((tramp-parse-sconfig "/etc/ssh/ssh_config")
-		   (tramp-parse-sconfig "~/.ssh/config")))))))
+            (lambda ()
+              (progn
+                ;;(setq auth-source-debug t)
+                (setq-default password-cache-expiry 604800) ; seconds
+                (setq tramp-default-method "ssh")
+                (setenv "SHELL" "/bin/bash")
+                (tramp-set-completion-function
+                 "ssh"
+                 '((tramp-parse-sconfig "/etc/ssh/ssh_config")
+                   (tramp-parse-sconfig "~/.ssh/config")))))))
 
 (conf undo-tree
   (global-undo-tree-mode)
@@ -282,7 +277,7 @@
               (js2-imenu-extras-mode)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
               (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
-		'abbrev-console-log)
+                'abbrev-console-log)
               (setq js-indent-level 2)
               ))
 
@@ -298,9 +293,9 @@
   ;; npm config set prefix ~/.npm
   (eval-after-load "web-beautify"
     #'(lambda ()
-	(setq web-beautify-html-program "~/.npm/bin/html-beautify")
-	(setq web-beautify-css-program "~/.npm/bin/css-beautify")
-	(setq web-beautify-js-program "~/.npm/bin/js-beautify")))
+        (setq web-beautify-html-program "~/.npm/bin/html-beautify")
+        (setq web-beautify-css-program "~/.npm/bin/css-beautify")
+        (setq web-beautify-js-program "~/.npm/bin/js-beautify")))
   )
 
 (conf json-mode)
@@ -326,9 +321,9 @@
   (eval-after-load 'scss-mode '(define-key scss-mode-map (kbd "C-c b") 'web-beautify-css))
 
   (add-hook 'ssass-mode-hook
-	    (lambda ()
-	      (rainbow-mode t)
-	      )))
+            (lambda ()
+              (rainbow-mode t)
+              )))
 
 (conf smartparens)
 
@@ -352,7 +347,7 @@
        ))
 
   (setq web-mode-engines-alist
-	'(("django" . "\\.html\\'")))
+        '(("django" . "\\.html\\'")))
   (add-hook 'web-mode-hook
             (lambda ()
               (setq tab-width 4)
@@ -384,7 +379,7 @@
               ;;(set-face-attribute 'web-mode-block-face nil :background "#8fbc8f")
               ))
   (setq web-mode-extra-snippets
-	'((nil . (("div" . ("<div class=\"\">" . "</div>"))
+        '((nil . (("div" . ("<div class=\"\">" . "</div>"))
                   ;;("name" . ("beg" . "end"))
                   ))
           ))
@@ -456,7 +451,7 @@
 ;;   )
 
 (conf switch-window
-  (global-set-key (kbd "C-c o") #'switch-window)
+  (global-set-key (kbd "C-x o") #'switch-window)
   )
 
 (conf glsl-mode
@@ -478,105 +473,117 @@
   )
 
 
-;; ;;----------------------------------------------------
-;; ;;; vertico consult orderless embark marginalia corfu
+;;----------------------------------------------------
+;; vertico consult orderless embark marginalia corfu
 
-;; (conf vertico
-;;   (vertico-mode)
-;;   (vertico-buffer-mode)
-;;   ;; (define-key vertico-map (kbd "C-M-n") #'vertico-next-group)
-;;   )
+(conf vertico
+  (vertico-mode)
+  (vertico-buffer-mode)
+  (define-key vertico-map (kbd "C-o") #'vertico-next-group)) ;;
 
-;; (conf consult
-;;   (global-set-key (kbd "C-c j") 'consult-buffer)
-;;   (global-set-key (kbd "C-c C-j") 'consult-buffer)
-;;   (global-set-key (kbd "C-c i") 'consult-imenu)
+(conf consult
+  (global-set-key (kbd "C-c j") 'consult-buffer)
+  (global-set-key (kbd "C-c C-j") 'consult-buffer)
+  (global-set-key (kbd "C-c i") 'consult-imenu)
 
-;;   (require 'consult)
+  (require 'consult)
 
-;;   (consult-customize
-;;    consult--source-buffer
-;;    :items (lambda ()
-;;             (consult--buffer-query
-;;              :sort nil :as #'buffer-name
-;;              ;; Buffers excluding Dired
-;;              :predicate
-;;              (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
-;;                                     'dired-mode))))))
-;;   ;; Dired buffers group
-;;   (add-to-list
-;;    'consult-buffer-sources
-;;    (list :name "Dired" :category 'buffer :narrow ?d
-;;          :face 'consult-buffer
-;;          :items (lambda ()
-;;                   (consult--buffer-query
-;;                    :sort 'visibility :as #'buffer-name
-;;                    :predicate
-;;                    (lambda (buf) (eq (buffer-local-value 'major-mode buf)
-;;                                      'dired-mode))))
-;;          :state #'consult--buffer-preview
-;;          :action #'consult--buffer-action
-;;          )
-;;    'append))
+  ;; remove Dired buffers from common completions, they are grouped separately
+  (consult-customize
+   consult--source-buffer
+   :items (lambda ()
+            (consult--buffer-query
+             :sort nil :as #'buffer-name
+             ;; Buffers excluding Dired
+             :predicate
+             (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
+                                    'dired-mode))))))
 
-;; (conf orderless
-;;   (setq completion-styles '(orderless basic)
-;;         completion-category-overrides '((file (styles basic partial-completion)))))
+  ;; Dired buffers group
+  (add-to-list
+   'consult-buffer-sources
+   (list :name "Dired"
+         :category 'buffer
+         :narrow ?d
+         :face 'consult-buffer
+         :items (lambda () (consult--buffer-query
+                            :sort 'visibility :as #'buffer-name
+                            :predicate
+                            (lambda (buf) (eq (buffer-local-value 'major-mode buf)
+                                              'dired-mode))))
+         :state #'consult--buffer-preview
+         :action #'consult--buffer-action
+         )
+   'append))
 
-;; (conf embark
-;;   (global-set-key (kbd "C-.") 'embark-act)
-;;   (global-set-key (kbd "C-'") 'embark-dwim)
-;;   (global-set-key (kbd "C-h b") 'embark-bindings)
-;;   ;; Optionally replace the key help with a completing-read interface
-;;   (setq prefix-help-command #'embark-prefix-help-command)
-;;   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-;;   ;; strategy, if you want to see the documentation from multiple providers.
-;;   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-;;   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+(conf orderless
+  (setq completion-styles '(orderless basic)
+        completion-category-overrides '((file (styles basic partial-completion)))))
 
-;;   ;; Hide the mode line of the Embark live/completions buffers
-;;   (add-to-list 'display-buffer-alist
-;;                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-;;                  nil
-;;                  (window-parameters (mode-line-format . none)))))
+(conf embark
+  (global-set-key (kbd "C-.") 'embark-act)
+  (global-set-key (kbd "C-'") 'embark-dwim)
+  (global-set-key (kbd "C-h b") 'embark-bindings)
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+  ;; strategy, if you want to see the documentation from multiple providers.
+  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-;; (conf marginalia
-;;   (marginalia-mode))
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
 
-;; (conf corfu
-;;   (global-corfu-mode))
+(conf marginalia
+  (marginalia-mode))
+
+(conf corfu
+  (global-corfu-mode))
 
 
 ;;----------------------------------------------------
-;;; helm
+;; helm
 
-;; dev
-(add-to-list 'load-path (expand-file-name "~/helm"))
-(require 'helm)
-(require 'helm-autoloads)
+;; ;; dev
+;; (add-to-list 'load-path (expand-file-name "~/helm"))
+;; (require 'helm)
+;; (require 'helm-autoloads)
+;; (require 'helm-buffers)
 
-(progn ;;conf helm
-  (helm-mode)
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-c j") 'helm-mini)
-  (global-set-key (kbd "C-x C-f") #'helm-find-files)
-  (global-set-key (kbd "C-x C-c") #'helm-command-prefix) ; disables `save-buffers-kill-emacs
+;; (;;conf helm
+;;  progn
 
-  (define-key helm-command-map (kbd "s") #'helm-swoop) ; disables 'surfraw
-  (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
+;;   ;;(setq display-buffer-alist '((".*" display-buffer-use-some-window)))
+;;  ;;(setq display-buffer-alist nil)
 
-  (setq
-   helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
-   helm-ff-file-name-history-use-recentf nil
-   helm-echo-input-in-header-line t
-   helm-M-x-fuzzy-match t
-   helm-candidate-number-limit 500
-   helm-follow-mode-persistent t
+;;  (helm-mode)
+;;  (global-set-key (kbd "M-x") 'helm-M-x)
+;;  (global-set-key (kbd "C-c j") 'helm-mini)
+;;  (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
+;;  (global-set-key (kbd "C-x C-f") #'helm-find-files)
+;;  (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
+;;  (global-set-key (kbd "C-c s") #'helm-swap-windows)
 
-   ;; helm-always-two-windows nil
-   ;; helm-split-window-inside-p nil
-   )
-  )
+;;  (define-key helm-command-map (kbd "s") #'helm-swoop) ; disables Helm 'surfraw
+;;  (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
+
+;;  (setq
+;;   helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
+;;   helm-echo-input-in-header-line t
+;;   helm-M-x-fuzzy-match t
+;;   helm-buffers-show-icons t
+
+;;   helm-split-window-default-side 'same
+;;   ;;helm-split-window-default-side 'below
+
+;;   ;; dev
+;;   helm-update-edebug t
+;;   )
+;;  )
+
 
 ;;----------------------------------------------------
 ;;; dart
@@ -588,7 +595,7 @@
               (electric-case-mode)
               (smartparens-strict-mode)
               (subword-mode)
-              
+
               (projectile-mode +1)
               (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
               (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
@@ -596,9 +603,9 @@
               (define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
               ;;(setq lsp-ui-doc-show-with-mouse nil)
               (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
-              
+
               (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
-              
+
               (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
               (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
               )))
@@ -694,7 +701,7 @@
                      "^(define-class\\s-+(?\\(\\sw+\\)" 1)
                     ("Macros"
                      "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
-            
+
             (macrostep-geiser-setup)))
 
 ;;----------------------------------------------------
@@ -716,10 +723,10 @@
 
             (semantic-mode 1)
             ;;(lsp-deferred)
-            
+
             ;; (flycheck-mode 1)
             ;; (flycheck-clang-analyzer-setup)
-            
+
             (semantic-idle-breadcrumbs-mode 1)
             (c-add-style "python-new"
                          '("python"
@@ -773,7 +780,7 @@
               (enable-paredit-mode)
               (setq inferior-lisp-program "sbcl --noinform")
               ;;(setq slime-contribs '(slime-scratch slime-editing-commands))
-              
+
               ;; (setq slime-lisp-implementations
               ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
               )))
