@@ -26,12 +26,14 @@
    undo-tree
    switch-window
 
+   counsel
+   marginalia
+   
    vertico
    consult
    orderless
    embark-consult
    embark
-   marginalia
    corfu
 
    ;; helm
@@ -461,87 +463,121 @@
 ;;   (global-set-key (kbd "M-n") #'company-complete)
 ;;   (company-mode))
 
-(conf git-timemachine
-  )
-
-;; Themes
+(conf git-timemachine)
 
 (conf doom-modeline
   ;; leftmost part:
   ;;(setq doom-modeline-bar-width 0)
-  (doom-modeline-mode 1)
-  )
+  (doom-modeline-mode 1))
 
+;;----------------------------------------------------
+;; counsel, ivy, swiper, marginalia
+
+(conf counsel
+  (ivy-mode)
+  (marginalia-mode)
+  (global-set-key (kbd "C-s") 'swiper)
+  ;;(global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+  (global-set-key (kbd "<f1> l") 'counsel-find-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c i") 'counsel-imenu)
+  (global-set-key (kbd "C-c f") 'counsel-recentf)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-x j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+  )
 
 ;;----------------------------------------------------
 ;; vertico consult orderless embark marginalia corfu
 
-(conf vertico
-  (vertico-mode)
-  (vertico-buffer-mode)
-  (define-key vertico-map (kbd "C-o") #'vertico-next-group)) ;;
+;; (conf vertico
+;;   (vertico-mode)
+;;   (vertico-buffer-mode)
+;;   (define-key vertico-map (kbd "C-o") #'vertico-next-group)
+;;   (setq
+;;    vertico-cycle t
+;;    ))
 
-(conf consult
-  (global-set-key (kbd "C-c j") 'consult-buffer)
-  (global-set-key (kbd "C-c C-j") 'consult-buffer)
-  (global-set-key (kbd "C-c i") 'consult-imenu)
+;; (conf consult
+;;   (global-set-key (kbd "C-c j") 'consult-buffer)
+;;   (global-set-key (kbd "C-c C-j") 'consult-buffer)
+;;   (global-set-key (kbd "C-c i") 'consult-imenu)
 
-  (require 'consult)
+;;   (require 'consult)
 
-  ;; remove Dired buffers from common completions, they are grouped separately
-  (consult-customize
-   consult--source-buffer
-   :items (lambda ()
-            (consult--buffer-query
-             :sort nil :as #'buffer-name
-             ;; Buffers excluding Dired
-             :predicate
-             (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
-                                    'dired-mode))))))
+;;   ;; remove Dired buffers from common completions, they are grouped separately
+;;   (consult-customize
+;;    consult--source-buffer
+;;    :items (lambda ()
+;;             (consult--buffer-query
+;;              :sort nil :as #'buffer-name
+;;              ;; Buffers excluding Dired
+;;              :predicate
+;;              (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
+;;                                     'dired-mode))))))
 
-  ;; Dired buffers group
-  (add-to-list
-   'consult-buffer-sources
-   (list :name "Dired"
-         :category 'buffer
-         :narrow ?d
-         :face 'consult-buffer
-         :items (lambda () (consult--buffer-query
-                            :sort 'visibility :as #'buffer-name
-                            :predicate
-                            (lambda (buf) (eq (buffer-local-value 'major-mode buf)
-                                              'dired-mode))))
-         :state #'consult--buffer-preview
-         :action #'consult--buffer-action
-         )
-   'append))
+;;   ;; Dired buffers group
+;;   (add-to-list
+;;    'consult-buffer-sources
+;;    (list :name "Dired"
+;;          :category 'buffer
+;;          :narrow ?d
+;;          :face 'consult-buffer
+;;          :items (lambda () (consult--buffer-query
+;;                             :sort 'visibility :as #'buffer-name
+;;                             :predicate
+;;                             (lambda (buf) (eq (buffer-local-value 'major-mode buf)
+;;                                               'dired-mode))))
+;;          :state #'consult--buffer-preview
+;;          :action #'consult--buffer-action
+;;          )
+;;    'append))
 
-(conf orderless
-  (setq completion-styles '(orderless basic)
-        completion-category-overrides '((file (styles basic partial-completion)))))
+;; (conf orderless
+;;   (setq completion-styles '(orderless basic)
+;;         completion-category-overrides '((file (styles basic partial-completion)))))
 
-(conf embark
-  (global-set-key (kbd "C-.") 'embark-act)
-  (global-set-key (kbd "C-'") 'embark-dwim)
-  (global-set-key (kbd "C-h b") 'embark-bindings)
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-  ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
-  ;; strategy, if you want to see the documentation from multiple providers.
-  (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
-  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+;; (conf embark
+;;   (global-set-key (kbd "C-.") 'embark-act)
+;;   (global-set-key (kbd "C-'") 'embark-dwim)
+;;   (global-set-key (kbd "C-h b") 'embark-bindings)
+;;   ;; Optionally replace the key help with a completing-read interface
+;;   (setq prefix-help-command #'embark-prefix-help-command)
+;;   ;; Show the Embark target at point via Eldoc.  You may adjust the Eldoc
+;;   ;; strategy, if you want to see the documentation from multiple providers.
+;;   (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+;;   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+;;   ;; Hide the mode line of the Embark live/completions buffers
+;;   (add-to-list 'display-buffer-alist
+;;                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+;;                  nil
+;;                  (window-parameters (mode-line-format . none)))))
 
-(conf marginalia
-  (marginalia-mode))
+;; (conf marginalia
+;;   (marginalia-mode)
+;;   (setf (alist-get 'buffer marginalia-annotator-registry)
+;;         '((lambda (cand)
+;;             (when-let ((buffer (get-buffer cand)))
+;;               (if (buffer-live-p buffer)
+;;                   (marginalia--fields
+;;                    ((marginalia--buffer-status buffer))
+;;                    ((marginalia--buffer-file buffer) :face 'marginalia-file-name))
+;;                 (marginalia--fields ("(dead buffer)" :face 'error)))))
+;;           builtin none))
+;;   )
 
-(conf corfu
-  (global-corfu-mode))
+;; (conf corfu
+;;   (global-corfu-mode))
 
 
 ;;----------------------------------------------------
@@ -553,37 +589,32 @@
 ;; (require 'helm-autoloads)
 ;; (require 'helm-buffers)
 
-;; (;;conf helm
-;;  progn
+;; (progn
+;;   ;;conf helm
+  
+;;   (helm-mode)
+;;   (global-set-key (kbd "M-x") 'helm-M-x)
+;;   (global-set-key (kbd "C-c j") 'helm-mini)
+;;   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
+;;   (global-set-key (kbd "C-x C-f") #'helm-find-files)
+;;   (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
+;;   (global-set-key (kbd "C-c s") #'helm-swap-windows)
 
-;;   ;;(setq display-buffer-alist '((".*" display-buffer-use-some-window)))
-;;  ;;(setq display-buffer-alist nil)
+;;   (define-key helm-command-map (kbd "s") #'helm-swoop) ; disables Helm 'surfraw
+;;   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
 
-;;  (helm-mode)
-;;  (global-set-key (kbd "M-x") 'helm-M-x)
-;;  (global-set-key (kbd "C-c j") 'helm-mini)
-;;  (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
-;;  (global-set-key (kbd "C-x C-f") #'helm-find-files)
-;;  (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
-;;  (global-set-key (kbd "C-c s") #'helm-swap-windows)
+;;   (setq
+;;    helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
+;;    helm-echo-input-in-header-line t
+;;    helm-M-x-fuzzy-match t
+;;    helm-buffers-show-icons t
 
-;;  (define-key helm-command-map (kbd "s") #'helm-swoop) ; disables Helm 'surfraw
-;;  (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
+;;    helm-split-window-default-side 'same
+;;    ;;helm-split-window-default-side 'below
 
-;;  (setq
-;;   helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
-;;   helm-echo-input-in-header-line t
-;;   helm-M-x-fuzzy-match t
-;;   helm-buffers-show-icons t
-
-;;   helm-split-window-default-side 'same
-;;   ;;helm-split-window-default-side 'below
-
-;;   ;; dev
-;;   helm-update-edebug t
-;;   )
-;;  )
-
+;;    ;; dev
+;;    ;;helm-update-edebug t
+;;    ))
 
 ;;----------------------------------------------------
 ;;; dart
