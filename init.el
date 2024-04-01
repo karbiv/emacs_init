@@ -24,27 +24,28 @@
    desktop-registry
    tramp
    undo-tree
-   ace-window
-   
-   ;; counsel
-   ;; hydra
-   ;; ivy-hydra
-
-   vertico
-   consult
-   orderless
-   marginalia
-   embark-consult
-   embark
-   corfu
+   switch-window
 
    ;; helm
    ;; helm-swoop
    ;; helm-ls-git
-   ;; all-the-icons
+   ;; required by Helm, separately installed for dev setup
+   async
+
+   vertico
+   consult
+   orderless
+   embark-consult
+   embark
+   corfu
+   marginalia
+
+   ;; counsel
+   ;; hydra
+   ;; ivy-hydra
+   ;; ivy-prescient
 
    company
-
    which-key
    js2-mode
    tern ; js code analysis
@@ -162,6 +163,11 @@
 (recentf-mode)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 (global-set-key (kbd "<f6>") 'revert-buffer)
+
+;; (setq
+;;  bs-maximal-buffer-name-column 10
+;;  )
+(global-set-key (kbd "C-x b") 'bs-show)
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
@@ -315,8 +321,7 @@
   (setq
    lsp-headerline-breadcrumb-icons-enable nil
    lsp-headerline-breadcrumb-enable-diagnostics nil
-   )
-  )
+   ))
 
 ;;; sass|scss
 (conf ssass-mode
@@ -449,14 +454,9 @@
 
 (conf ggtags)
 
-(conf ace-window
-  (global-set-key (kbd "M-o") #'ace-window)
-  (global-set-key (kbd "C-c s") #'ace-swap-window)
-  )
-
 (conf switch-window
-  (global-set-key (kbd "C-x o") #'switch-window)
-  )
+  (global-set-key (kbd "M-o") #'switch-window)
+  (global-set-key (kbd "C-c s") #'switch-window-then-swap-buffer))
 
 (conf glsl-mode
   (add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode)))
@@ -473,43 +473,38 @@
   (doom-modeline-mode 1))
 
 ;;----------------------------------------------------
-;; counsel, ivy, swiper
+;; helm
 
-;; (conf counsel
-;;   (ivy-mode)
+;; ;; dev
+;; (add-to-list 'load-path (expand-file-name "~/helm"))
+;; (add-to-list 'load-path (expand-file-name "~/helm_addons/helm-swoop-20240104.2356"))
+;; (require 'helm)
+;; (require 'helm-autoloads)
+;; (require 'helm-buffers)
+;; (require 'helm-swoop)
 
-;;   ;; (global-set-key (kbd "C-x b") 'ibuffer)
-;;   ;; (require 'ibuffer)
-;;   ;; (define-key ibuffer-mode-map (kbd "M-o") nil) ; for 'ace-window
-
-;;   (global-set-key (kbd "C-x b") 'bs-show)
+;; (progn ;;conf helm
+;;   (helm-mode)
+;;   (global-set-key (kbd "M-x") 'helm-M-x)
+;;   (global-set-key (kbd "C-c j") 'helm-mini)
+;;   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
+;;   (global-set-key (kbd "C-x C-f") #'helm-find-files)
+;;   (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
+;;   (global-set-key (kbd "M-l") #'helm-swoop)
+;;   (global-set-key (kbd "C-c i") #'helm-imenu)
+;;   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
 
 ;;   (setq
-;;    ivy-use-virtual-buffers nil
-;;    enable-recursive-minibuffers t
-;;    ivy-wrap t
-;;    )
-;;   (global-set-key (kbd "C-s") 'swiper)
+;;    helm-echo-input-in-header-line t
+;;    helm-M-x-fuzzy-match nil
+;;    helm-always-two-windows nil
+;;    helm-split-window-default-side 'other
+;;    ;; for toggling on/off Helm full frame
+;;    helm-split-window-other-side-when-one-window 'right
+   
+;;    helm-update-edebug t ; dev
+;;    ))
 
-;;   ;;(global-set-key (kbd "C-c j") 'counsel-ibuffer)
-;;   (global-set-key (kbd "C-c j") 'counsel-switch-buffer)
-
-;;   (global-set-key (kbd "C-c C-r") 'ivy-resume)
-;;   (global-set-key (kbd "M-x") 'counsel-M-x)
-;;   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-;;   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-;;   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-;;   (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
-;;   (global-set-key (kbd "<f1> l") 'counsel-find-library)
-;;   (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-;;   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-;;   (global-set-key (kbd "C-c i") 'counsel-imenu)
-;;   (global-set-key (kbd "C-c f") 'counsel-recentf)
-;;   (global-set-key (kbd "C-c g") 'counsel-git)
-;;   (global-set-key (kbd "C-x j") 'counsel-git-grep)
-;;   (global-set-key (kbd "C-c k") 'counsel-ag)
-;;   (global-set-key (kbd "C-x l") 'counsel-locate)
-;;   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
 
 ;;----------------------------------------------------
 ;; vertico consult orderless embark marginalia corfu
@@ -518,30 +513,38 @@
   (vertico-mode)
   (vertico-buffer-mode)
   (define-key vertico-map (kbd "C-o") #'vertico-next-group)
-  (setq
-   vertico-cycle nil
-   vertico-buffer-display-action '(display-buffer-at-bottom (window-height . 32))
-   ))
+  (setq vertico-cycle nil
+        ))
 
 (conf consult
   (global-set-key (kbd "C-c j") 'consult-buffer)
   (global-set-key (kbd "C-c C-j") 'consult-buffer)
-  ;;(global-set-key (kbd "C-x C-f") 'consult-find-file)
   (global-set-key (kbd "C-c i") 'consult-imenu)
-  (global-set-key (kbd "C-s") 'consult-line) ; similar to swiper
+  (global-set-key (kbd "M-l") 'consult-line) ; similar to swiper
 
   (require 'consult)
 
+  (setq consult-buffer-sources
+        '(consult--source-hidden-buffer
+          consult--source-modified-buffer
+          consult--source-buffer
+          ;;consult--source-recent-file ; breaking colimn width computation
+          consult--source-file-register
+          consult--source-bookmark
+          consult--source-project-buffer-hidden
+          consult--source-project-recent-file-hidden
+          ))
+  
   ;; remove Dired buffers from common completions, they are grouped separately
   (consult-customize
    consult--source-buffer
    :items (lambda ()
             (consult--buffer-query
-             :sort nil :as #'buffer-name
+             :sort 'visibility :as #'buffer-name
              ;; Buffers excluding Dired
              :predicate
              (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
-                                    'dired-mode))))))
+                                   'dired-mode))))))
 
   ;; Dired buffers group
   (add-to-list
@@ -558,7 +561,8 @@
          :state #'consult--buffer-preview
          :action #'consult--buffer-action
          )
-   'append))
+   'append)
+  )
 
 (conf orderless
   (setq completion-styles '(orderless basic)
@@ -587,42 +591,6 @@
 (conf corfu
   (global-corfu-mode))
 
-
-;;----------------------------------------------------
-;; helm
-
-;; ;; dev
-;; (add-to-list 'load-path (expand-file-name "~/helm"))
-;; (require 'helm)
-;; (require 'helm-autoloads)
-;; (require 'helm-buffers)
-
-;; (progn
-;;   ;;conf helm
-
-;;   (helm-mode)
-;;   (global-set-key (kbd "M-x") 'helm-M-x)
-;;   (global-set-key (kbd "C-c j") 'helm-mini)
-;;   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
-;;   (global-set-key (kbd "C-x C-f") #'helm-find-files)
-;;   (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
-;;   (global-set-key (kbd "C-c s") #'helm-swap-windows)
-
-;;   (define-key helm-command-map (kbd "s") #'helm-swoop) ; disables Helm 'surfraw
-;;   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
-
-;;   (setq
-;;    helm-ff-search-library-in-sexp t ; search for library in `require' and `declare-function' sexp.
-;;    helm-echo-input-in-header-line t
-;;    helm-M-x-fuzzy-match t
-;;    helm-buffers-show-icons t
-
-;;    helm-split-window-default-side 'same
-;;    ;;helm-split-window-default-side 'below
-
-;;    ;; dev
-;;    ;;helm-update-edebug t
-;;    ))
 
 ;;----------------------------------------------------
 ;;; dart
@@ -724,24 +692,25 @@
 ;;----------------------------------------------------
 ;;; Scheme mode
 
-(add-hook 'scheme-mode-hook
-          (lambda ()
-            (enable-paredit-mode)
-            (abbrev-mode 1)
-            (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
-            (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")
+(add-hook
+ 'scheme-mode-hook
+ (lambda ()
+   (enable-paredit-mode)
+   (abbrev-mode 1)
+   (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
+   (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")
 
-            ;; added `define*' to scheme mode
-            ;; added `define-syntax-rule' for macros
-            (setq scheme-imenu-generic-expression
-                  '((nil
-                     "^(define\\(\\|\\*\\|-\\(generic\\(\\|-procedure\\)\\|method\\)\\)*\\s-+(?\\(\\sw+\\)" 4)
-                    ("Types"
-                     "^(define-class\\s-+(?\\(\\sw+\\)" 1)
-                    ("Macros"
-                     "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
+   ;; added `define*' to scheme mode
+   ;; added `define-syntax-rule' for macros
+   (setq scheme-imenu-generic-expression
+         '((nil
+            "^(define\\(\\|\\*\\|-\\(generic\\(\\|-procedure\\)\\|method\\)\\)*\\s-+(?\\(\\sw+\\)" 4)
+           ("Types"
+            "^(define-class\\s-+(?\\(\\sw+\\)" 1)
+           ("Macros"
+            "^(\\(defmacro\\|define-macro\\|define-syntax\\|define-syntax-rule\\)\\s-+(?\\(\\sw+\\)" 2)))
 
-            (macrostep-geiser-setup)))
+   (macrostep-geiser-setup)))
 
 ;;----------------------------------------------------
 ;;; c mode
@@ -823,3 +792,49 @@
               ;; (setq slime-lisp-implementations
               ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
               )))
+
+
+;;----------------------------------------------------
+;; counsel, ivy, swiper, prescient
+
+;; (add-to-list 'load-path (expand-file-name "~/swiper"))
+;; (require 'counsel)
+
+;; (progn ;;conf counsel
+;;   (ivy-mode)
+;;   (ivy-prescient-mode)
+;;   (counsel-mode)
+  
+;;   (setq
+;;    ivy-use-virtual-buffers t
+;;    enable-recursive-minibuffers t
+;;    ivy-use-selectable-prompt nil
+;;    ivy-wrap t
+;;    ivy-re-builders-alist '((t . ivy--regex-ignore-order))
+;;    ivy-fixed-height-minibuffer t
+;;    ivy-height 28
+;;    ;;ibuffer-always-show-last-buffer 
+;;    counsel-find-file-at-point t)
+
+;;   (global-set-key (kbd "M-l") 'swiper)
+;;   (global-set-key (kbd "C-c C-r") 'ivy-resume)
+;;   (global-set-key (kbd "M-x") 'counsel-M-x)
+;;   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+;;   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+;;   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+;;   (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+;;   (global-set-key (kbd "<f1> l") 'counsel-find-library)
+;;   (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+;;   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+;;   (global-set-key (kbd "C-c i") 'counsel-imenu)
+;;   (global-set-key (kbd "C-c f") 'counsel-recentf)
+;;   (global-set-key (kbd "C-c g") 'counsel-git)
+;;   (global-set-key (kbd "C-x j") 'counsel-git-grep)
+;;   (global-set-key (kbd "C-c k") 'counsel-ag)
+;;   (global-set-key (kbd "C-x l") 'counsel-locate)
+;;   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+
+;;   (global-set-key (kbd "C-c j") 'counsel-switch-buffer)
+;;   (global-set-key (kbd "C-c C-j") 'counsel-ibuffer)
+;;   ;;(global-set-key (kbd "C-c j") 'switch-ibuffer)
+;;   )
