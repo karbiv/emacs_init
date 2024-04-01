@@ -1,5 +1,5 @@
 ;;;;;----------------------------------------------------
-;;; Selected packages
+;;; selected packages
 ;;;;;----------------------------------------------------
 
 ;;; LSP optimization start
@@ -27,18 +27,16 @@
    switch-window
 
    ;; helm
-   ;; helm-swoop
-   ;; helm-ls-git
-   ;; required by Helm, separately installed for dev setup
-   async
+   helm-ls-git
+   async ; required by Helm, separately installed for dev setup
 
-   vertico
-   consult
-   orderless
-   embark-consult
-   embark
-   corfu
-   marginalia
+   ;; vertico
+   ;; consult
+   ;; orderless
+   ;; embark-consult
+   ;; embark
+   ;; corfu
+   ;; marginalia
 
    ;; counsel
    ;; hydra
@@ -475,35 +473,33 @@
 ;;----------------------------------------------------
 ;; helm
 
-;; ;; dev
-;; (add-to-list 'load-path (expand-file-name "~/helm"))
-;; (add-to-list 'load-path (expand-file-name "~/helm_addons/helm-swoop-20240104.2356"))
-;; (require 'helm)
-;; (require 'helm-autoloads)
-;; (require 'helm-buffers)
-;; (require 'helm-swoop)
+;; dev
+(add-to-list 'load-path (expand-file-name "~/helm"))
+(require 'helm)
+(require 'helm-autoloads)
+(require 'helm-buffers)
 
-;; (progn ;;conf helm
-;;   (helm-mode)
-;;   (global-set-key (kbd "M-x") 'helm-M-x)
-;;   (global-set-key (kbd "C-c j") 'helm-mini)
-;;   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
-;;   (global-set-key (kbd "C-x C-f") #'helm-find-files)
-;;   (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
-;;   (global-set-key (kbd "M-l") #'helm-swoop)
-;;   (global-set-key (kbd "C-c i") #'helm-imenu)
-;;   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
+(progn ;;conf helm
+  (helm-mode)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-c j") 'helm-mini)
+  (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
+  (global-set-key (kbd "C-x C-f") #'helm-find-files)
+  (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
+  (global-set-key (kbd "M-l") #'helm-occur)
+  (global-set-key (kbd "C-c i") #'helm-imenu)
+  (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
 
-;;   (setq
-;;    helm-echo-input-in-header-line t
-;;    helm-M-x-fuzzy-match nil
-;;    helm-always-two-windows nil
-;;    helm-split-window-default-side 'other
-;;    ;; for toggling on/off Helm full frame
-;;    helm-split-window-other-side-when-one-window 'right
+  (setq
+   helm-echo-input-in-header-line t
+   helm-M-x-fuzzy-match nil
+   helm-always-two-windows nil
+   helm-split-window-default-side 'other
+   ;; for toggling on/off Helm full frame
+   helm-split-window-other-side-when-one-window 'right
    
-;;    helm-update-edebug t ; dev
-;;    ))
+   helm-update-edebug t ; dev
+   ))
 
 
 ;;----------------------------------------------------
@@ -528,7 +524,7 @@
         '(consult--source-hidden-buffer
           consult--source-modified-buffer
           consult--source-buffer
-          ;;consult--source-recent-file ; breaking colimn width computation
+          ;;consult--source-recent-file ; expands common column width on long paths
           consult--source-file-register
           consult--source-bookmark
           consult--source-project-buffer-hidden
@@ -590,6 +586,52 @@
 
 (conf corfu
   (global-corfu-mode))
+
+
+;;----------------------------------------------------
+;; counsel, ivy, swiper, prescient
+
+;; (add-to-list 'load-path (expand-file-name "~/swiper"))
+;; (require 'counsel)
+
+;; (progn ;;conf counsel
+;;   (ivy-mode)
+;;   (ivy-prescient-mode)
+;;   (counsel-mode)
+  
+;;   (setq
+;;    ivy-use-virtual-buffers nil
+;;    enable-recursive-minibuffers t
+;;    ivy-use-selectable-prompt nil
+;;    ivy-wrap t
+;;    ivy-re-builders-alist '((t . ivy--regex-ignore-order))
+;;    ivy-fixed-height-minibuffer t
+;;    ivy-height 28
+;;    ;;ibuffer-always-show-last-buffer 
+;;    counsel-find-file-at-point t)
+
+;;   (global-set-key (kbd "M-l") 'swiper)
+;;   (global-set-key (kbd "C-c C-r") 'ivy-resume)
+;;   (global-set-key (kbd "M-x") 'counsel-M-x)
+;;   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+;;   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+;;   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+;;   (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+;;   (global-set-key (kbd "<f1> l") 'counsel-find-library)
+;;   (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+;;   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+;;   (global-set-key (kbd "C-c i") 'counsel-imenu)
+;;   (global-set-key (kbd "C-c f") 'counsel-recentf)
+;;   (global-set-key (kbd "C-c g") 'counsel-git)
+;;   (global-set-key (kbd "C-x j") 'counsel-git-grep)
+;;   (global-set-key (kbd "C-c k") 'counsel-ag)
+;;   (global-set-key (kbd "C-x l") 'counsel-locate)
+;;   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+
+;;   (global-set-key (kbd "C-c j") 'counsel-switch-buffer)
+;;   (global-set-key (kbd "C-c C-j") 'counsel-ibuffer)
+;;   ;;(global-set-key (kbd "C-c j") 'switch-ibuffer)
+;;   )
 
 
 ;;----------------------------------------------------
@@ -792,49 +834,3 @@
               ;; (setq slime-lisp-implementations
               ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
               )))
-
-
-;;----------------------------------------------------
-;; counsel, ivy, swiper, prescient
-
-;; (add-to-list 'load-path (expand-file-name "~/swiper"))
-;; (require 'counsel)
-
-;; (progn ;;conf counsel
-;;   (ivy-mode)
-;;   (ivy-prescient-mode)
-;;   (counsel-mode)
-  
-;;   (setq
-;;    ivy-use-virtual-buffers t
-;;    enable-recursive-minibuffers t
-;;    ivy-use-selectable-prompt nil
-;;    ivy-wrap t
-;;    ivy-re-builders-alist '((t . ivy--regex-ignore-order))
-;;    ivy-fixed-height-minibuffer t
-;;    ivy-height 28
-;;    ;;ibuffer-always-show-last-buffer 
-;;    counsel-find-file-at-point t)
-
-;;   (global-set-key (kbd "M-l") 'swiper)
-;;   (global-set-key (kbd "C-c C-r") 'ivy-resume)
-;;   (global-set-key (kbd "M-x") 'counsel-M-x)
-;;   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-;;   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-;;   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-;;   (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
-;;   (global-set-key (kbd "<f1> l") 'counsel-find-library)
-;;   (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-;;   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-;;   (global-set-key (kbd "C-c i") 'counsel-imenu)
-;;   (global-set-key (kbd "C-c f") 'counsel-recentf)
-;;   (global-set-key (kbd "C-c g") 'counsel-git)
-;;   (global-set-key (kbd "C-x j") 'counsel-git-grep)
-;;   (global-set-key (kbd "C-c k") 'counsel-ag)
-;;   (global-set-key (kbd "C-x l") 'counsel-locate)
-;;   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
-
-;;   (global-set-key (kbd "C-c j") 'counsel-switch-buffer)
-;;   (global-set-key (kbd "C-c C-j") 'counsel-ibuffer)
-;;   ;;(global-set-key (kbd "C-c j") 'switch-ibuffer)
-;;   )
