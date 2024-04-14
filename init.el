@@ -24,10 +24,10 @@
    desktop-registry
    tramp
    undo-tree
-   switch-window
+   evil ; for windows movement
 
    ;; helm
-   helm-ls-git
+   ;; helm-ls-git
    async ; required by Helm, separately installed for dev setup
 
    ;; vertico
@@ -42,6 +42,7 @@
    ;; hydra
    ;; ivy-hydra
    ;; ivy-prescient
+   ;; ivy-rich
 
    company
    which-key
@@ -111,7 +112,9 @@
 
    ;; avk-emacs-themes
    ;; moe-theme
-   ;; dakrone-light-theme
+   dakrone-light-theme
+   pastelmac-theme
+
    ))
 
 (package-initialize)
@@ -162,9 +165,6 @@
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 (global-set-key (kbd "<f6>") 'revert-buffer)
 
-;; (setq
-;;  bs-maximal-buffer-name-column 10
-;;  )
 (global-set-key (kbd "C-x b") 'bs-show)
 
 (defmacro conf (name &rest init-code)
@@ -180,9 +180,38 @@
 (conf which-key
   (which-key-mode))
 
+
+(conf evil
+  (evil-mode 1)
+  (setq evil-undo-system 'undo-tree
+        evil-want-c-w-delete nil)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-backward-char)
+  (define-key evil-insert-state-map (kbd "C-l") 'evil-forward-char)
+  (define-key evil-insert-state-map (kbd "C-k") 'evil-previous-line)
+  (define-key evil-insert-state-map (kbd "C-j") 'evil-next-line)
+  (define-key evil-insert-state-map (kbd "C-f") 'indent-for-tab-command)
+ 
+  (define-key evil-command-line-map (kbd "C-h") 'evil-backward-char)
+  (define-key evil-command-line-map (kbd "C-l") 'evil-forward-char)
+  (define-key evil-normal-state-map (kbd ";") 'evil-ex)
+  (define-key evil-command-line-map (kbd ";") 'evil-ex)
+  )
+
+
+(conf undo-tree
+  (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history nil)
+  ;; (global-set-key (kbd "C-/") 'undo)
+  ;; (global-set-key (kbd "C-M-/") 'undo-tree-redo)
+  (define-key evil-normal-state-map (kbd "u") 'undo)
+  (define-key evil-normal-state-map (kbd "C-r") 'undo-tree-redo)
+  )
+
+
 (conf desktop-registry
   (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop))
+
 
 (conf yasnippet
   (yas-global-mode))
@@ -213,7 +242,7 @@
               (abbrev-mode 1)
 
               (eglot-ensure)
-              (define-key go-mode-map (kbd "M-.") #'xref-find-definitions)
+              ;;(define-key go-mode-map (kbd "M-.") #'xref-find-definitions)
               ;;(define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
 
               ;; (lsp-deferred)
@@ -258,11 +287,6 @@
                  '((tramp-parse-sconfig "/etc/ssh/ssh_config")
                    (tramp-parse-sconfig "~/.ssh/config")))))))
 
-(conf undo-tree
-  (global-undo-tree-mode)
-  (setq undo-tree-auto-save-history nil)
-  (global-set-key (kbd "C-/") 'undo)
-  (global-set-key (kbd "C-M-/") 'undo-tree-redo))
 
 (conf js2-mode
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
@@ -377,7 +401,7 @@
               (define-mode-abbrev "cnl" "console.log();")
               (define-mode-abbrev "vdb" "var_dump( debug_backtrace() );die();")
               (ggtags-mode 1)
-              (define-key web-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
+              ;;(define-key web-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               (define-key web-mode-map (kbd "M-,") #'ggtags-prev-mark)
               ;;(set-face-attribute 'web-mode-html-tag-face nil :foreground "#0000CD")
               ;;(set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#007700")
@@ -418,15 +442,15 @@
                     c-basic-offset 4)
               (define-key php-mode-map (kbd "C-c i") 'imenu)
               (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
-              (define-key php-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
+              ;;(define-key php-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               ))
   (add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
   ;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
   (global-set-key (kbd "<f11>") 'php-mode)
   (global-set-key (kbd "<f12>") 'web-mode))
 
-(conf paredit
-  (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
+;; (conf paredit
+;;   (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
 
 (conf magit
   (global-set-key (kbd "C-c m") 'magit-status))
@@ -451,10 +475,6 @@
   )
 
 (conf ggtags)
-
-(conf switch-window
-  (global-set-key (kbd "M-o") #'switch-window)
-  (global-set-key (kbd "C-c s") #'switch-window-then-swap-buffer))
 
 (conf glsl-mode
   (add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode)))
@@ -489,15 +509,15 @@
   (global-set-key (kbd "M-l") #'helm-occur)
   (global-set-key (kbd "C-c i") #'helm-imenu)
   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
-
   (setq
    helm-echo-input-in-header-line t
    helm-M-x-fuzzy-match nil
+
    helm-always-two-windows nil
    helm-split-window-default-side 'other
    ;; for toggling on/off Helm full frame
    helm-split-window-other-side-when-one-window 'right
-   
+
    helm-update-edebug t ; dev
    ))
 
@@ -509,7 +529,7 @@
   (vertico-mode)
   (vertico-buffer-mode)
   (define-key vertico-map (kbd "C-o") #'vertico-next-group)
-  (setq vertico-cycle nil
+  (setq vertico-cycle t
         ))
 
 (conf consult
@@ -524,13 +544,13 @@
         '(consult--source-hidden-buffer
           consult--source-modified-buffer
           consult--source-buffer
-          ;;consult--source-recent-file ; expands common column width on long paths
+          consult--source-recent-file ; expands common column width on long paths
           consult--source-file-register
           consult--source-bookmark
           consult--source-project-buffer-hidden
           consult--source-project-recent-file-hidden
           ))
-  
+
   ;; remove Dired buffers from common completions, they are grouped separately
   (consult-customize
    consult--source-buffer
@@ -591,47 +611,45 @@
 ;;----------------------------------------------------
 ;; counsel, ivy, swiper, prescient
 
-;; (add-to-list 'load-path (expand-file-name "~/swiper"))
-;; (require 'counsel)
+(conf counsel
+  (ivy-mode)
+  (ivy-prescient-mode)
+  (counsel-mode)
+  ;;(ivy-rich-mode)
 
-;; (progn ;;conf counsel
-;;   (ivy-mode)
-;;   (ivy-prescient-mode)
-;;   (counsel-mode)
-  
-;;   (setq
-;;    ivy-use-virtual-buffers nil
-;;    enable-recursive-minibuffers t
-;;    ivy-use-selectable-prompt nil
-;;    ivy-wrap t
-;;    ivy-re-builders-alist '((t . ivy--regex-ignore-order))
-;;    ivy-fixed-height-minibuffer t
-;;    ivy-height 28
-;;    ;;ibuffer-always-show-last-buffer 
-;;    counsel-find-file-at-point t)
+  (setq
+   ;; ivy-use-virtual-buffers t
+   enable-recursive-minibuffers t
+   ivy-use-selectable-prompt t
+   ivy-wrap t
+   ivy-re-builders-alist '((t . ivy--regex-ignore-order))
+   ivy-fixed-height-minibuffer t
+   ivy-height 21
+   ;;ibuffer-always-show-last-buffer
+   counsel-find-file-at-point t)
 
-;;   (global-set-key (kbd "M-l") 'swiper)
-;;   (global-set-key (kbd "C-c C-r") 'ivy-resume)
-;;   (global-set-key (kbd "M-x") 'counsel-M-x)
-;;   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-;;   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-;;   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-;;   (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
-;;   (global-set-key (kbd "<f1> l") 'counsel-find-library)
-;;   (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-;;   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-;;   (global-set-key (kbd "C-c i") 'counsel-imenu)
-;;   (global-set-key (kbd "C-c f") 'counsel-recentf)
-;;   (global-set-key (kbd "C-c g") 'counsel-git)
-;;   (global-set-key (kbd "C-x j") 'counsel-git-grep)
-;;   (global-set-key (kbd "C-c k") 'counsel-ag)
-;;   (global-set-key (kbd "C-x l") 'counsel-locate)
-;;   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+  (global-set-key (kbd "M-l") 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+  (global-set-key (kbd "<f1> l") 'counsel-find-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c i") 'counsel-imenu)
+  (global-set-key (kbd "C-c f") 'counsel-recentf)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-x j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
 
-;;   (global-set-key (kbd "C-c j") 'counsel-switch-buffer)
-;;   (global-set-key (kbd "C-c C-j") 'counsel-ibuffer)
-;;   ;;(global-set-key (kbd "C-c j") 'switch-ibuffer)
-;;   )
+  (global-set-key (kbd "C-c j") 'counsel-switch-buffer)
+  (global-set-key (kbd "C-c C-j") 'counsel-switch-buffer)
+  ;;(global-set-key (kbd "C-c C-j") 'ivy-ibuffer)
+  )
 
 
 ;;----------------------------------------------------
@@ -649,7 +667,7 @@
               (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
               (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
               (lsp-deferred)
-              (define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
+              ;;(define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
               ;;(setq lsp-ui-doc-show-with-mouse nil)
               (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
 
@@ -709,9 +727,9 @@
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
   (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
   (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
-  (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
-                                          (xref-push-marker-stack)
-                                          (jedi:goto-definition)))
+  ;; (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
+  ;;                                         (xref-push-marker-stack)
+  ;;                                         (jedi:goto-definition)))
   ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
   (define-key python-mode-map (kbd "C-c i") 'imenu)
 
@@ -768,7 +786,7 @@
             (hs-minor-mode 1) ; hide/show blocks
             (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
             (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-            (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
+            ;; (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
             (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
 
             (semantic-mode 1)
