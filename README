@@ -1,10 +1,16 @@
 Emacs configuration to load in ~/.emacs
 
 Uses default Emacs' mnenomic mappings.
-Left ALT is remapped to CTRL.
-CAPSLOCK is remmaped to ALT.
+
+Main keys remapped by https://github.com/rvaiya/keyd
+Left ALT to CTRL.
+CAPSLOCK to ALT.
 
 So CTRL is under X key for left thumb finger.
 
 "C-," other-window
 "C-=" expand-region
+
+Packages installed automatically from MEPLA,
+using builtin "package-selected-packages" list
+and simple four line macro "conf".
