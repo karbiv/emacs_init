@@ -29,6 +29,8 @@
    desktop-registry
    tramp
    undo-tree
+   expand-region
+   paredit
    ;;evil
    ;;evil-cleverparens
 
@@ -49,8 +51,7 @@
    ;; ivy-hydra
    ;; ivy-prescient
    ;; ivy-rich
-
-   expand-region
+   
    company
    which-key
    js2-mode
@@ -88,7 +89,6 @@
    web-mode-edit-element
    yaml-mode
    php-mode
-   paredit
    magit
    macrostep
    ini-mode
@@ -115,6 +115,7 @@
 
    ;; themes
 
+   doom-themes
    ;; avk-emacs-themes
    ;; moe-theme
    dakrone-light-theme
@@ -171,6 +172,7 @@
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 (global-set-key (kbd "<f6>") 'revert-buffer)
 (global-set-key (kbd "C-x b") 'bs-show)
+(global-set-key (kbd "C-,") 'other-window)
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
@@ -495,7 +497,7 @@
 
 (progn ;;conf helm
   (helm-mode)
-  (global-set-key (kbd "C-,") 'helm-M-x)
+  (global-set-key (kbd "M-x") 'helm-M-x)
   (global-set-key (kbd "C-c j") 'helm-mini)
   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
