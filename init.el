@@ -1,4 +1,4 @@
-;;;;;----------------------------------------------------
+;;----------------------------------------------------
 ;;; selected packages
 ;;;;;----------------------------------------------------
 
@@ -18,17 +18,23 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
+;; remap left ALT below X key to CTRL
+;;(setq x-meta-keysym 'ctrl)
+;;(setq x-ctrl-keysym 'meta)
+;; better in https://github.com/rvaiya/keyd
+
 (setq
  package-selected-packages
  '(
    desktop-registry
    tramp
    undo-tree
-   evil ; for windows movement
+   ;;evil
+   ;;evil-cleverparens
 
    ;; helm
    ;; helm-ls-git
-   async ; required by Helm, separately installed for dev setup
+   async ;; required by Helm, separately installed for dev setup
 
    ;; vertico
    ;; consult
@@ -44,10 +50,11 @@
    ;; ivy-prescient
    ;; ivy-rich
 
+   expand-region
    company
    which-key
    js2-mode
-   tern ; js code analysis
+   tern ;; js code analysis
    json-mode
    web-beautify
    imenu
@@ -83,10 +90,8 @@
    php-mode
    paredit
    magit
-   ghub
    macrostep
    ini-mode
-   symbol-overlay
    ggtags
    dired-toggle-sudo
    bash-completion
@@ -114,6 +119,7 @@
    ;; moe-theme
    dakrone-light-theme
    pastelmac-theme
+   color-theme-sanityinc-tomorrow
 
    ))
 
@@ -145,7 +151,7 @@
   (unless package-archive-contents
     (package-refresh-contents))
 
-  (require 'compile) ; for M-x recompile
+  (require 'compile) ; for 'recompile'
 
   (mapcar ;; install selected packages
    (lambda (pkg)
@@ -164,7 +170,6 @@
 (recentf-mode)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
 (global-set-key (kbd "<f6>") 'revert-buffer)
-
 (global-set-key (kbd "C-x b") 'bs-show)
 
 (defmacro conf (name &rest init-code)
@@ -180,9 +185,12 @@
 (conf which-key
   (which-key-mode))
 
-
 (conf evil
   (evil-mode 1)
+  (evil-set-leader '(normal insert visual replace operator)
+                   (kbd "<space>"))
+  ;;(evil-define-key 'normal 'global (kbd "<leader>fs") 'save-buffer)
+  
   (setq evil-undo-system 'undo-tree
         evil-want-c-w-delete nil)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-backward-char)
@@ -190,28 +198,20 @@
   (define-key evil-insert-state-map (kbd "C-k") 'evil-previous-line)
   (define-key evil-insert-state-map (kbd "C-j") 'evil-next-line)
   (define-key evil-insert-state-map (kbd "C-f") 'indent-for-tab-command)
- 
   (define-key evil-command-line-map (kbd "C-h") 'evil-backward-char)
   (define-key evil-command-line-map (kbd "C-l") 'evil-forward-char)
-  (define-key evil-normal-state-map (kbd ";") 'evil-ex)
   (define-key evil-command-line-map (kbd ";") 'evil-ex)
-  )
+  (setq evil-undo-function 'undo-tree-undo
+        evil-redo-function 'undo-tree-redo))
 
 
 (conf undo-tree
   (global-undo-tree-mode)
-  (setq undo-tree-auto-save-history nil)
-  ;; (global-set-key (kbd "C-/") 'undo)
-  ;; (global-set-key (kbd "C-M-/") 'undo-tree-redo)
-  (define-key evil-normal-state-map (kbd "u") 'undo)
-  (define-key evil-normal-state-map (kbd "C-r") 'undo-tree-redo)
-  )
-
+  (setq undo-tree-auto-save-history nil))
 
 (conf desktop-registry
   (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop))
-
 
 (conf yasnippet
   (yas-global-mode))
@@ -242,12 +242,10 @@
               (abbrev-mode 1)
 
               (eglot-ensure)
-              ;;(define-key go-mode-map (kbd "M-.") #'xref-find-definitions)
               ;;(define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
 
               ;; (lsp-deferred)
               ;; ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
-              ;; (define-key go-mode-map (kbd "M-.") #'lsp-find-definition)
               ;; (setq lsp-ui-doc-show-with-mouse nil)
 
               ;; Bindings in  go-goto-map
@@ -373,8 +371,8 @@
 
   (eval-after-load 'web-mode
     '(progn
-       (define-key web-mode-map (kbd "C-M-n") 'web-mode-element-next)
-       (define-key web-mode-map (kbd "C-M-p") 'web-mode-element-previous)
+       (define-key web-mode-map (kbd "C-c-n") 'web-mode-element-next)
+       (define-key web-mode-map (kbd "C-c-p") 'web-mode-element-previous)
        ))
 
   (setq web-mode-engines-alist
@@ -401,8 +399,6 @@
               (define-mode-abbrev "cnl" "console.log();")
               (define-mode-abbrev "vdb" "var_dump( debug_backtrace() );die();")
               (ggtags-mode 1)
-              ;;(define-key web-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
-              (define-key web-mode-map (kbd "M-,") #'ggtags-prev-mark)
               ;;(set-face-attribute 'web-mode-html-tag-face nil :foreground "#0000CD")
               ;;(set-face-attribute 'web-mode-html-attr-name-face nil :foreground "#007700")
               ;;(setq web-mode-enable-block-face t)
@@ -442,7 +438,6 @@
                     c-basic-offset 4)
               (define-key php-mode-map (kbd "C-c i") 'imenu)
               (define-key php-mode-map (kbd "C-c C-r") 'revert-buffer)
-              ;;(define-key php-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
               ))
   (add-to-list 'auto-mode-alist '("\\.php$"  . php-mode))
   ;;(add-to-list 'auto-mode-alist '("\\.php$"  . web-mode))
@@ -480,7 +475,6 @@
   (add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode)))
 
 ;; (conf company
-;;   (global-set-key (kbd "M-n") #'company-complete)
 ;;   (company-mode))
 
 (conf git-timemachine)
@@ -501,17 +495,18 @@
 
 (progn ;;conf helm
   (helm-mode)
-  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-,") 'helm-M-x)
   (global-set-key (kbd "C-c j") 'helm-mini)
   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
   (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
-  (global-set-key (kbd "M-l") #'helm-occur)
+  (global-set-key (kbd "C-c l") #'helm-occur)
   (global-set-key (kbd "C-c i") #'helm-imenu)
   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
   (setq
    helm-echo-input-in-header-line t
    helm-M-x-fuzzy-match nil
+   helm-move-to-line-cycle-in-source nil 
 
    helm-always-two-windows nil
    helm-split-window-default-side 'other
@@ -521,6 +516,10 @@
    helm-update-edebug t ; dev
    ))
 
+
+(conf expand-region
+  (global-set-key (kbd "C-=") 'er/expand-region)
+  )
 
 ;;----------------------------------------------------
 ;; vertico consult orderless embark marginalia corfu
@@ -536,7 +535,7 @@
   (global-set-key (kbd "C-c j") 'consult-buffer)
   (global-set-key (kbd "C-c C-j") 'consult-buffer)
   (global-set-key (kbd "C-c i") 'consult-imenu)
-  (global-set-key (kbd "M-l") 'consult-line) ; similar to swiper
+  (global-set-key (kbd "C-c l") 'consult-line) ; similar to swiper
 
   (require 'consult)
 
@@ -628,9 +627,9 @@
    ;;ibuffer-always-show-last-buffer
    counsel-find-file-at-point t)
 
-  (global-set-key (kbd "M-l") 'swiper)
+  (global-set-key (kbd "C-c l") 'swiper)
   (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-,") 'counsel-M-x)
   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
@@ -667,13 +666,9 @@
               (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
               (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
               (lsp-deferred)
-              ;;(define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
               ;;(setq lsp-ui-doc-show-with-mouse nil)
               (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
-
               (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
-
-              (define-key dart-mode-map (kbd "C-M-x") #'flutter-run-or-hot-reload)
               (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
               )))
 
@@ -727,9 +722,6 @@
   (local-unset-key (kbd "C-c !")) ; unhide flycheck
   (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
   (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
-  ;; (define-key jedi-mode-map (kbd "M-.") (lambda () (interactive)
-  ;;                                         (xref-push-marker-stack)
-  ;;                                         (jedi:goto-definition)))
   ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
   (define-key python-mode-map (kbd "C-c i") 'imenu)
 
@@ -786,8 +778,6 @@
             (hs-minor-mode 1) ; hide/show blocks
             (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
             (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
-            ;; (define-key c-mode-map (kbd "M-.") #'ggtags-find-tag-dwim)
-            (define-key c-mode-map (kbd "M-,") #'ggtags-prev-mark)
 
             (semantic-mode 1)
             ;;(lsp-deferred)
@@ -844,7 +834,7 @@
 
 (conf slime
   (add-hook 'lisp-mode-hook
-            (lambda ()
+           (lambda ()
               (enable-paredit-mode)
               (setq inferior-lisp-program "sbcl --noinform")
               ;;(setq slime-contribs '(slime-scratch slime-editing-commands))
@@ -852,3 +842,8 @@
               ;; (setq slime-lisp-implementations
               ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
               )))
+
+
+;; remappings
+
+
