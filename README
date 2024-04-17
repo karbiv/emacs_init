@@ -11,6 +11,8 @@ So CTRL is under X key for left thumb finger.
 "C-," other-window
 "C-=" expand-region
 
-Packages installed automatically from MEPLA,
+Packages installed automatically from MELPA,
 using builtin "package-selected-packages" list
 and simple four line macro "conf".
+
+Named Emacs sessions for different projects by "desktop-registry".
