@@ -8,8 +8,9 @@ CAPSLOCK to ALT.
 
 So CTRL is under X key for left thumb finger.
 
-"C-," other-window
 "C-=" expand-region
+"C-," other-window
+"C-`" kill-buffer (current-buffer)
 
 Packages installed automatically from MELPA,
 using builtin "package-selected-packages" list

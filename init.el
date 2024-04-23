@@ -31,6 +31,8 @@
    undo-tree
    expand-region
    paredit
+   smartparens
+   highlight-symbol
    ;;evil
    ;;evil-cleverparens
 
@@ -62,7 +64,6 @@
    multiple-cursors
    cmake-mode
    ssass-mode
-   smartparens
    flycheck
    projectile
    yasnippet
@@ -173,6 +174,15 @@
 (global-set-key (kbd "<f6>") 'revert-buffer)
 (global-set-key (kbd "C-x b") 'bs-show)
 (global-set-key (kbd "C-,") 'other-window)
+(global-set-key (kbd "C-`")
+                (lambda ()
+                  (interactive)
+                  (kill-buffer (current-buffer)))) 
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (paredit-mode)
+            ))
 
 (defmacro conf (name &rest init-code)
   (declare (indent defun))
@@ -206,10 +216,11 @@
   (setq evil-undo-function 'undo-tree-undo
         evil-redo-function 'undo-tree-redo))
 
-
 (conf undo-tree
   (global-undo-tree-mode)
-  (setq undo-tree-auto-save-history nil))
+  (setq undo-tree-auto-save-history nil)
+  (global-set-key (kbd "C-M-/") 'undo-tree-redo)
+  )
 
 (conf desktop-registry
   (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
@@ -360,7 +371,12 @@
 
 (conf projectile)
 
-(conf highlight-indentation)
+(conf highlight-symbol
+  (global-set-key (kbd "C-<f3>") 'highlight-symbol)
+  (global-set-key (kbd  "<f3>") 'highlight-symbol-next)
+  (global-set-key (kbd "S-<f3>") 'highlight-symbol-prev)
+  (global-set-key (kbd "M-<f3>") 'highlight-symbol-query-replace)
+  )
 
 (conf flycheck-irony)
 
@@ -446,8 +462,6 @@
   (global-set-key (kbd "<f11>") 'php-mode)
   (global-set-key (kbd "<f12>") 'web-mode))
 
-;; (conf paredit
-;;   (add-hook 'emacs-lisp-mode-hook #'enable-paredit-mode))
 
 (conf magit
   (global-set-key (kbd "C-c m") 'magit-status))
@@ -508,7 +522,7 @@
   (setq
    helm-echo-input-in-header-line t
    helm-M-x-fuzzy-match nil
-   helm-move-to-line-cycle-in-source nil 
+   helm-move-to-line-cycle-in-source t
 
    helm-always-two-windows nil
    helm-split-window-default-side 'other
@@ -749,7 +763,7 @@
 (add-hook
  'scheme-mode-hook
  (lambda ()
-   (enable-paredit-mode)
+   (paredit-mode)
    (abbrev-mode 1)
    (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
    (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")
@@ -836,8 +850,8 @@
 
 (conf slime
   (add-hook 'lisp-mode-hook
-           (lambda ()
-              (enable-paredit-mode)
+            (lambda ()
+              (paredit-mode)
               (setq inferior-lisp-program "sbcl --noinform")
               ;;(setq slime-contribs '(slime-scratch slime-editing-commands))
 
