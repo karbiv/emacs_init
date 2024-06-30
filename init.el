@@ -26,6 +26,7 @@
 (setq
  package-selected-packages
  '(
+   ace-window ;; for ace-swap-window
    desktop-registry
    tramp
    undo-tree
@@ -98,6 +99,7 @@
    bash-completion
 
    slime
+   ;;sly
 
    ;;rust-mode
    ;; or
@@ -174,6 +176,7 @@
 (global-set-key (kbd "<f6>") 'revert-buffer)
 (global-set-key (kbd "C-x b") 'bs-show)
 (global-set-key (kbd "C-,") 'other-window)
+(global-set-key (kbd "M-o") 'ace-swap-window)
 (global-set-key (kbd "C-`")
                 (lambda ()
                   (interactive)
@@ -847,19 +850,33 @@
 
 ;;----------------------------------------------------
 ;; slime
+;; building SBCL's ./doc/manual requires 'texinfo-plaingeneric' OS package
 
 (conf slime
-  (add-hook 'lisp-mode-hook
-            (lambda ()
-              (paredit-mode)
-              (setq inferior-lisp-program "sbcl --noinform")
-              ;;(setq slime-contribs '(slime-scratch slime-editing-commands))
+;;; quicklisp, misc config is in ~/.sbclrc
+  (slime-setup)
+  (add-hook
+   'lisp-mode-hook
+   (lambda ()
+     (paredit-mode)
+     (setq inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
+           browse-url-browser-function 'eww-browse-url
+           common-lisp-hyperspec-root
+           "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
+           )
+     (setq slime-lisp-implementations
+           '((sbcl ("sbcl") :coding-system utf-8-unix)))
+     )))
 
-              ;; (setq slime-lisp-implementations
-              ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
-              )))
 
+;;----------------------------------------------------
+;; sly
 
-;; remappings
-
-
+;; (conf sly
+;;   (paredit-mode)
+;;   (setq inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
+;;         browse-url-browser-function 'eww-browse-url
+;;         common-lisp-hyperspec-root
+;;         "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
+;;         )
+;;   )
