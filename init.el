@@ -151,7 +151,8 @@
   (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
-  (set-face-attribute 'default nil :font "Consolas" :height 118)
+  (set-face-attribute 'default nil :font "Hack" :height 108)
+  ;;(set-face-attribute 'default nil :font "Consolas" :height 118)
   ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
   ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
 
