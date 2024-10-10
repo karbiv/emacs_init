@@ -26,16 +26,14 @@
 (setq
  package-selected-packages
  '(
-   ace-window ;; for ace-swap-window
+   ;;desktop+
    desktop-registry
+   ace-window ;; for ace-swap-window
    tramp
    undo-tree
    expand-region
    paredit
-   smartparens
    highlight-symbol
-   ;;evil
-   ;;evil-cleverparens
 
    ;; helm
    ;; helm-ls-git
@@ -79,13 +77,27 @@
    string-inflection
 
    jedi
+   direnv
+   envrc
+
+   ;;irony ;; c completion
+   ;;company-irony
+
+   ;; Swift
+   ;;swift-mode
+
+   ;; Ocaml
+   ;; tuareg ; ocaml mode
+   ;; merlin ; assistant
+   ;; dune ; build system
 
    go-mode
    ;;company-go
    ccls
-   flycheck-irony
 
    lua-mode
+   nim-mode
+   clang-format
 
    web-mode
    web-mode-edit-element
@@ -99,28 +111,34 @@
    bash-completion
 
    slime
+   helm-slime
    ;;sly
 
-   ;;rust-mode
-   ;; or
-   ;; rustic
-   ;; cargo
+   chapel-mode
+
+   rust-mode
+;;; or
+   ;;rustic
+   ;;cargo
+
+   zig-mode
 
    geiser
    geiser-guile
+   geiser-chez
    macrostep-geiser
 
-   doom-modeline
+   ;;doom-modeline
    git-timemachine
 
    ;;dirvish
    ;;treemacs
 
-   ;; themes
+;;; themes
 
-   doom-themes
    ;; avk-emacs-themes
    ;; moe-theme
+   spacemacs-theme
    dakrone-light-theme
    pastelmac-theme
    color-theme-sanityinc-tomorrow
@@ -133,7 +151,7 @@
   (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
-  (set-face-attribute 'default nil :font "Consolas" :height 113)
+  (set-face-attribute 'default nil :font "Consolas" :height 118)
   ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
   ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
 
@@ -169,7 +187,15 @@
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
 
-(show-paren-mode)
+(custom-set-variables
+ '(show-paren-when-point-in-periphery t)
+ '(show-paren-when-point-inside-paren t)
+ '(show-paren-style 'mixed))
+(add-hook 'prog-mode-hook
+          (lambda ()
+            (show-paren-mode)
+            ))
+
 (column-number-mode)
 (recentf-mode)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
@@ -180,7 +206,7 @@
 (global-set-key (kbd "C-`")
                 (lambda ()
                   (interactive)
-                  (kill-buffer (current-buffer)))) 
+                  (kill-buffer (current-buffer))))
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -196,6 +222,11 @@
 
 
 ;;;;; Configure packages
+
+(conf desktop+
+  ;; (global-set-key (kbd "C-c d s") 'desktop+-create)
+  ;; (global-set-key (kbd "C-c d r") 'desktop+-load)
+  )
 
 (conf which-key
   (which-key-mode))
@@ -226,6 +257,24 @@
   )
 
 (conf desktop-registry
+  ;; some chunks from desktop+ to handle *shell* buf 
+  
+  (defun desktop-restore-shell (file-name buffer-name misc)
+    (let* ((dir (plist-get misc :dir))
+           (default-directory (if (file-directory-p dir) dir "/")))
+      (with-current-buffer (shell)
+        (rename-buffer buffer-name))))
+
+  ;; restore *shell* buffer
+  (add-hook 'shell-mode-hook
+            (lambda ()
+              (setq desktop-save-buffer
+                    (lambda (dirname)
+                      (list :dir default-directory)))))
+  (add-to-list
+   'desktop-buffer-mode-handlers
+   '(shell-mode . desktop-restore-shell))
+  
   (global-set-key (kbd "C-c d s") 'desktop-save-in-desktop-dir)
   (global-set-key (kbd "C-c d r") 'desktop-registry-change-desktop))
 
@@ -235,6 +284,47 @@
 (conf electric-case)
 
 (conf string-inflection)
+
+
+(conf nim-mode
+  ;; (eglot-ensure)
+  ;; (push '(nim-mode "nimlangserver") eglot-server-programs)
+  (add-hook 'nim-mode-hook
+            (lambda ()
+              ;; (setq
+              ;;  indent-tabs-mode nil
+              ;;  lsp-ui-sideline-enable nil
+              ;;  )
+
+              ;;(indent-guide-mode)
+              (lsp-deferred)
+              
+
+              )))
+
+;;----------------------------------------------------
+;; rust
+
+;; rustup component add rls rust-analysis rust-src
+;; or
+;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
+
+(conf rust-mode
+  (add-hook 'rust-mode-hook
+            (lambda ()
+              (abbrev-mode 1)
+              (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
+              (setq
+               indent-tabs-mode nil
+               rust-format-on-save t
+               lsp-ui-sideline-enable nil
+               )
+              (lsp-deferred)
+              
+              )))
+
+
+;;----------------------------------------------------
 
 (conf go-mode
 
@@ -257,12 +347,12 @@
               (subword-mode)
               (abbrev-mode 1)
 
-              (eglot-ensure)
+              ;;(eglot-ensure)
               ;;(define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
 
-              ;; (lsp-deferred)
-              ;; ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
-              ;; (setq lsp-ui-doc-show-with-mouse nil)
+              (lsp-deferred)
+              ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
+              (setq lsp-ui-doc-show-with-mouse nil)
 
               ;; Bindings in  go-goto-map
               ;; (define-key m "a" #'go-goto-arguments)
@@ -282,11 +372,17 @@
     (go-goto-imports))
 
 
-  ;;; go assembly
+;;; go assembly
 
   (defun ak-go-asm-comment-char ()
     (interactive)
     (setq-local comment-start "// ")))
+
+(conf lua-mode
+  (add-hook 'lua-mode-hook
+            (lambda ()
+              (lsp-deferred)
+              )))
 
 (conf tramp
   (add-hook 'tramp--startup-hook
@@ -370,8 +466,6 @@
               (rainbow-mode t)
               )))
 
-(conf smartparens)
-
 (conf projectile)
 
 (conf highlight-symbol
@@ -380,10 +474,6 @@
   (global-set-key (kbd "S-<f3>") 'highlight-symbol-prev)
   (global-set-key (kbd "M-<f3>") 'highlight-symbol-query-replace)
   )
-
-(conf flycheck-irony)
-
-(conf lua-mode)
 
 (conf web-mode
   (add-to-list 'auto-mode-alist '("\\.qtpl$" . web-mode))
@@ -449,7 +539,6 @@
        ))
   (add-hook 'php-mode-hook
             (lambda ()
-              (semantic-mode 1)
               (hs-minor-mode 1)
               (local-unset-key "C-M-\\")
               (local-unset-key "C")
@@ -678,12 +767,12 @@
             (lambda ()
               (require 'electric-case)
               (electric-case-mode)
-              (smartparens-strict-mode)
               (subword-mode)
+              (paredit-mode)
 
-              (projectile-mode +1)
-              (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
-              (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
+              ;;(projectile-mode +1)
+              ;;(add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+              ;;(add-to-list 'projectile-project-root-files-bottom-up "BUILD")
               (lsp-deferred)
               ;;(setq lsp-ui-doc-show-with-mouse nil)
               (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
@@ -708,9 +797,12 @@
 (add-to-list 'auto-mode-alist '("\\.mm$" . markdown-mode))
 
 ;;----------------------------------------------------
+;; Python
 
 (autoload 'python-mode "python" "Python Mode." t) ; built-in
 ;;(autoload 'python-mode "python-mode" "Python Mode." t)
+
+(envrc-global-mode) ;; buffer local direnv
 
 (defun python-mode-abbrev-debug-handler ()
   (forward-line -1)
@@ -718,33 +810,12 @@
   (move-end-of-line 1)
   (save-buffer 0))
 
-(conf cython-mode)
-
 (defun python-mode-func ()
   (setq tab-width 4)
   (hs-minor-mode)
   (abbrev-mode 1)
-  (semantic-mode 1)
-  (define-abbrev python-mode-abbrev-table  "pd" "import os; 'ak'; import pdb;pdb.set_trace()"
-    #'python-mode-abbrev-debug-handler)
-  (define-abbrev python-mode-abbrev-table  "tr" "import os; from trepan.api import debug;debug()"
-    #'python-mode-abbrev-debug-handler)
-  (define-abbrev python-mode-abbrev-table  "ipd" "import os; import ipdb;ipdb.set_trace()"
-    #'python-mode-abbrev-debug-handler)
-  (define-abbrev python-mode-abbrev-table  "pp" "import pprint; pp=pprint.PrettyPrinter(); pp.pprint()")
-  (define-key python-mode-map (kbd "C-c C-r") 'revert-buffer) ; orig is send region to python shell
-
-  (conf jedi)
-  (jedi:setup)
-  (define-key python-mode-map (kbd "C-c x") 'jedi-direx:pop-to-buffer)
-  ;;(setq python-shell-interpreter "ipython" python-shell-interpreter-args "-i")
-  (local-unset-key (kbd "C-c !")) ; unhide flycheck
-  (define-key jedi-mode-map (kbd "C-c p") #'jedi:goto-definition-pop-marker)
-  (define-key jedi-mode-map (kbd "C-c ,") nil) ; unhide `semantic-force-refresh'
-  ;;(define-key jedi-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-  (define-key python-mode-map (kbd "C-c i") 'imenu)
-
-  (auto-complete-mode -1))
+  (lsp-deferred)
+  )
 (add-hook 'python-mode-hook 'python-mode-func)
 
 ;;----------------------------------------------------
@@ -788,29 +859,33 @@
 
 (add-hook 'c-mode-hook
           (lambda ()
+            
             ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
-            (c-set-style "gnu")
-            (ggtags-mode)
-            (setq c-macro-preprocessor "cpp -CC")
+            (c-set-style "python")
+            (setq tab-width 4)
+            (c-add-style "python-new"
+                         '("python"
+                           (c-basic-offset . 2))
+                         t)
+            ;;(setq c-macro-preprocessor "cpp -CC")
             ;;(conf preproc-font-lock-mode)
             ;;(preproc-font-lock-mode 1)
-            (hs-minor-mode 1) ; hide/show blocks
+            (hs-minor-mode 1) ;; hide/show blocks
             (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
             (define-key c++-mode-map "\C-c\C-f" 'ff-find-other-file)
 
-            (semantic-mode 1)
             ;;(lsp-deferred)
+            ;; (define-key c-mode-map (kbd "M-.") 'lsp-find-definition)
+            (ggtags-mode)
 
-            ;; (flycheck-mode 1)
-            ;; (flycheck-clang-analyzer-setup)
-
-            (semantic-idle-breadcrumbs-mode 1)
-            (c-add-style "python-new"
-                         '("python"
-                           (c-basic-offset . 4))
-                         t)
+            (company-mode)
+            (paredit-mode)
+            (c-toggle-electric-state -1)
+            (c-toggle-auto-newline -1)
+            (c-toggle-comment-style -1) ;; line comments
+            
             ;; disable auto-align of endline backslashes in multiline macros
-            (setq c-auto-align-backslashes nil)
+            ;;(setq c-auto-align-backslashes nil)
             (abbrev-mode 1)
             (define-abbrev c-mode-abbrev-table "err" "#error \"stop here\"")
             ))
@@ -833,22 +908,6 @@
             ))
 
 ;;----------------------------------------------------
-;; rustic-mode
-
-;; rustup component add rls rust-analysis rust-src
-;; or
-;; rustup component add --toolchain "1.42.0-x86_64-unknown-linux-gnu" rls rust-analysis rust-src
-
-;; (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
-
-;; ;;(setq rust-format-on-save t)
-;; (add-hook 'rustic-mode-hook
-;;           (lambda ()
-;;             (abbrev-mode 1)
-;;             (define-mode-abbrev "pnl" "println!(\"{:?}\",  );")
-;;             ))
-
-;;----------------------------------------------------
 ;; slime
 ;; building SBCL's ./doc/manual requires 'texinfo-plaingeneric' OS package
 
@@ -859,24 +918,30 @@
    'lisp-mode-hook
    (lambda ()
      (paredit-mode)
-     (setq inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
-           browse-url-browser-function 'eww-browse-url
-           common-lisp-hyperspec-root
-           "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
-           )
-     (setq slime-lisp-implementations
-           '((sbcl ("sbcl") :coding-system utf-8-unix)))
+     (setq
+      inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
+      ;;inferior-lisp-program "ccl"
+      browse-url-browser-function 'eww-browse-url
+      common-lisp-hyperspec-root
+      "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
+      )
+     ;; (setq slime-lisp-implementations
+     ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
      )))
 
 
 ;;----------------------------------------------------
 ;; sly
 
-;; (conf sly
-;;   (paredit-mode)
-;;   (setq inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
-;;         browse-url-browser-function 'eww-browse-url
-;;         common-lisp-hyperspec-root
-;;         "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
-;;         )
-;;   )
+(conf sly
+  (setq inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
+        browse-url-browser-function 'eww-browse-url
+        common-lisp-hyperspec-root
+        "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
+        )
+  (add-hook 'sly-mode-hook
+            (lambda ()
+              (paredit-mode)
+              (define-key sly-mode-map (kbd "C-c i") 'imenu)
+              ))
+  )
