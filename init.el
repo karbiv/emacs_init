@@ -26,13 +26,13 @@
 (setq
  package-selected-packages
  '(
-   ;;desktop+
    desktop-registry
    ace-window ;; for ace-swap-window
    tramp
    undo-tree
    expand-region
-   paredit
+   smartparens
+   paredit ;; lisp modes
    highlight-symbol
 
    ;; helm
@@ -79,9 +79,11 @@
    jedi
    direnv
    envrc
+   meson-mode
+   ninja-mode
 
-   ;;irony ;; c completion
-   ;;company-irony
+   ;; irony ;; c completion
+   ;; company-irony
 
    ;; Swift
    ;;swift-mode
@@ -107,8 +109,10 @@
    macrostep
    ini-mode
    ggtags
-   dired-toggle-sudo
    bash-completion
+
+   dired-toggle-sudo
+   casual-suite
 
    slime
    helm-slime
@@ -117,7 +121,7 @@
    chapel-mode
 
    rust-mode
-;;; or
+   ;;; or
    ;;rustic
    ;;cargo
 
@@ -151,7 +155,7 @@
   (toggle-frame-maximized) ; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
-  (set-face-attribute 'default nil :font "Hack" :height 108)
+  (set-face-attribute 'default nil :font "Hack" :height 116)
   ;;(set-face-attribute 'default nil :font "Consolas" :height 118)
   ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
   ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
@@ -224,9 +228,22 @@
 
 ;;;;; Configure packages
 
-(conf desktop+
-  ;; (global-set-key (kbd "C-c d s") 'desktop+-create)
-  ;; (global-set-key (kbd "C-c d r") 'desktop+-load)
+(conf casual-suite
+  (require 'casual-suite)
+  (keymap-set dired-mode-map "C-o" #'casual-dired-tmenu)
+  (keymap-set Info-mode-map "C-o" #'casual-info-tmenu)
+  ;;(keymap-set calc-mode-map "C-o" #'casual-calc-tmenu)
+  ;; (keymap-set isearch-mode-map "C-o" #'casual-isearch-tmenu)
+  ;; (keymap-set ibuffer-mode-map "C-o" #'casual-ibuffer-tmenu)
+  ;; (keymap-set ibuffer-mode-map "F" #'casual-ibuffer-filter-tmenu)
+  ;; (keymap-set ibuffer-mode-map "s" #'casual-ibuffer-sortby-tmenu)
+  ;; (keymap-set reb-mode-map "C-o" #'casual-re-builder-tmenu)
+  ;; (keymap-set reb-lisp-mode-map "C-o" #'casual-re-builder-tmenu)
+  ;; (keymap-set bookmark-bmenu-mode-map "C-o" #'casual-bookmarks-tmenu)
+  ;; (keymap-set org-agenda-mode-map "C-o" #'casual-agenda-tmenu)
+  ;; (keymap-global-set "M-g" #'casual-avy-tmenu)
+  ;; (keymap-set symbol-overlay-map "C-o" #'casual-symbol-overlay-tmenu)
+  ;; (keymap-global-set "C-o" #'casual-editkit-main-tmenu)
   )
 
 (conf which-key
@@ -769,7 +786,7 @@
               (require 'electric-case)
               (electric-case-mode)
               (subword-mode)
-              (paredit-mode)
+              (smartparens-strict-mode)
 
               ;;(projectile-mode +1)
               ;;(add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
@@ -879,11 +896,10 @@
             ;; (define-key c-mode-map (kbd "M-.") 'lsp-find-definition)
             (ggtags-mode)
 
+            (smartparens-strict-mode)
             (company-mode)
-            (paredit-mode)
-            (c-toggle-electric-state -1)
-            (c-toggle-auto-newline -1)
-            (c-toggle-comment-style -1) ;; line comments
+            (electric-indent-mode)
+            (c-toggle-comment-style -1) ;; line comments not blocks
             
             ;; disable auto-align of endline backslashes in multiline macros
             ;;(setq c-auto-align-backslashes nil)
