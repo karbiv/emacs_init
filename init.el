@@ -1,27 +1,14 @@
 ;;----------------------------------------------------
 ;;; selected packages
-;;;;;----------------------------------------------------
-
-;;; LSP optimization start
-;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
-(setenv "LSP_USE_PLISTS" "true")
-;; Set it to big number(100mb) like most of the popular kits like Spacemacs/Doom/Prelude do:
-(setq gc-cons-threshold 100000000)
-;; Again the emacs default is too low 4k considering that the some of the
-;; language server responses are in 800k - 3M range.
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
-;;; LSP optimization end
-;;; doom-modeline recommendation
-;; Don’t compact font caches during GC.
-(setq inhibit-compacting-font-caches t)
-
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;;----------------------------------------------------
 
 ;; remap left ALT below X key to CTRL
 ;;(setq x-meta-keysym 'ctrl)
 ;;(setq x-ctrl-keysym 'meta)
 ;; better in https://github.com/rvaiya/keyd
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
 (setq
  package-selected-packages
@@ -35,7 +22,7 @@
    paredit ;; lisp modes
    highlight-symbol
 
-   ;; helm
+   ;; helm ;; dev
    ;; helm-ls-git
    async ;; required by Helm, separately installed for dev setup
 
@@ -56,7 +43,6 @@
    company
    which-key
    js2-mode
-   tern ;; js code analysis
    json-mode
    web-beautify
    imenu
@@ -82,19 +68,7 @@
    meson-mode
    ninja-mode
 
-   ;; irony ;; c completion
-   ;; company-irony
-
-   ;; Swift
-   ;;swift-mode
-
-   ;; Ocaml
-   ;; tuareg ; ocaml mode
-   ;; merlin ; assistant
-   ;; dune ; build system
-
    go-mode
-   ;;company-go
    ccls
 
    lua-mode
@@ -118,41 +92,63 @@
    helm-slime
    ;;sly
 
-   chapel-mode
-
    rust-mode
    ;;; or
    ;;rustic
    ;;cargo
-
-   zig-mode
 
    geiser
    geiser-guile
    geiser-chez
    macrostep-geiser
 
-   ;;doom-modeline
    git-timemachine
 
    ;;dirvish
-   ;;treemacs
 
 ;;; themes
 
-   ;; avk-emacs-themes
-   ;; moe-theme
    spacemacs-theme
    dakrone-light-theme
    pastelmac-theme
    color-theme-sanityinc-tomorrow
-
    ))
 
 (package-initialize)
 
-(when (display-graphic-p)
-  (toggle-frame-maximized) ; maximize Emacs
+;;-------------------------------------------------------
+;;-------------------------------------------------------
+;;-------------------------------------------------------
+;; exchange C-h and C-b
+(define-key key-translation-map (kbd "C-b") (kbd "C-h"))
+(define-key key-translation-map (kbd "C-h") (kbd "C-b"))
+
+(define-key key-translation-map (kbd "C-q") (kbd "C-g"))
+
+(global-set-key (kbd "C-c c") 'comment-region)
+(global-set-key (kbd "C-c C-h") 'hl-line-mode)
+(global-set-key (kbd "<f6>") 'revert-buffer)
+(global-set-key (kbd "C-x b") 'bs-show)
+(global-set-key (kbd "C-,") 'other-window)
+(global-set-key (kbd "M-o") 'ace-swap-window)
+(global-set-key (kbd "M-p") 'scroll-up-line)
+(global-set-key (kbd "M-n") 'scroll-down-line)
+;;-------------------------------------------------------
+;;-------------------------------------------------------
+;;-------------------------------------------------------
+
+
+(when (display-graphic-p)  
+  ;; required for LSP
+  ;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
+  (setq lsp-use-plists t)
+  ;; Emacs default is too low 4k considering that the some of the
+  ;; language server responses are in 800k - 3M range.
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  ;; Set it to big number(100mb) like most of the popular kits like Spacemacs/Doom/Prelude do:
+  ;;(setq gc-cons-threshold 100000000)
+  
+  (toggle-frame-maximized)  ;; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
   (set-face-attribute 'default nil :font "Hack" :height 116)
@@ -160,16 +156,13 @@
   ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
   ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
 
-  ;; test vary width font
-  ;;(set-face-attribute 'default nil :font "DejaVu Sans" :height 110)
-
-  (tool-bar-mode -1)   ; disable toolbar
-  (line-number-mode)   ; show line numbers in modeline
-  (menu-bar-mode -1)   ; disable menu
-  (scroll-bar-mode -1) ; disable scrollbars
-  (setq-default indent-tabs-mode nil) ; use spaces
+  (tool-bar-mode -1)                   ; disable toolbar
+  (line-number-mode)                   ; show line numbers in modeline
+  (menu-bar-mode -1)                   ; disable menu
+  (scroll-bar-mode -1)                 ; disable scrollbars
+  (setq-default indent-tabs-mode nil)  ; use spaces
   (setq make-backup-files nil)
-  (setq inhibit-startup-screen t) ; no startup screen
+  (setq inhibit-startup-screen t)       ; no startup screen
 
   ;; Path to Emacs C source, for functions help system
   ;;(setq find-function-C-source-directory "~/path/to/emacs/src")
@@ -178,16 +171,20 @@
   (unless package-archive-contents
     (package-refresh-contents))
 
-  (require 'compile) ; for 'recompile'
+  (require 'compile)  ; for 'recompile'
 
-  (mapcar ;; install selected packages
+  (mapcar ; install selected packages
    (lambda (pkg)
      (when (not (package-installed-p pkg))
        (package-install pkg)))
    package-selected-packages))
 
 (setq create-lockfiles nil)
-(global-set-key (kbd "C-c c") 'comment-region)
+
+(defun ak-killbuf ()
+  (interactive)
+  (kill-buffer (current-buffer)))
+(global-set-key (kbd "C-`") 'ak-killbuf)
 
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
@@ -203,15 +200,6 @@
 
 (column-number-mode)
 (recentf-mode)
-(global-set-key (kbd "C-c C-h") 'hl-line-mode)
-(global-set-key (kbd "<f6>") 'revert-buffer)
-(global-set-key (kbd "C-x b") 'bs-show)
-(global-set-key (kbd "C-,") 'other-window)
-(global-set-key (kbd "M-o") 'ace-swap-window)
-(global-set-key (kbd "C-`")
-                (lambda ()
-                  (interactive)
-                  (kill-buffer (current-buffer))))
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -249,25 +237,6 @@
 (conf which-key
   (which-key-mode))
 
-(conf evil
-  (evil-mode 1)
-  (evil-set-leader '(normal insert visual replace operator)
-                   (kbd "<space>"))
-  ;;(evil-define-key 'normal 'global (kbd "<leader>fs") 'save-buffer)
-  
-  (setq evil-undo-system 'undo-tree
-        evil-want-c-w-delete nil)
-  (define-key evil-insert-state-map (kbd "C-h") 'evil-backward-char)
-  (define-key evil-insert-state-map (kbd "C-l") 'evil-forward-char)
-  (define-key evil-insert-state-map (kbd "C-k") 'evil-previous-line)
-  (define-key evil-insert-state-map (kbd "C-j") 'evil-next-line)
-  (define-key evil-insert-state-map (kbd "C-f") 'indent-for-tab-command)
-  (define-key evil-command-line-map (kbd "C-h") 'evil-backward-char)
-  (define-key evil-command-line-map (kbd "C-l") 'evil-forward-char)
-  (define-key evil-command-line-map (kbd ";") 'evil-ex)
-  (setq evil-undo-function 'undo-tree-undo
-        evil-redo-function 'undo-tree-redo))
-
 (conf undo-tree
   (global-undo-tree-mode)
   (setq undo-tree-auto-save-history nil)
@@ -299,25 +268,12 @@
 (conf yasnippet
   (yas-global-mode))
 
-(conf electric-case)
-
-(conf string-inflection)
-
-
 (conf nim-mode
   ;; (eglot-ensure)
   ;; (push '(nim-mode "nimlangserver") eglot-server-programs)
   (add-hook 'nim-mode-hook
             (lambda ()
-              ;; (setq
-              ;;  indent-tabs-mode nil
-              ;;  lsp-ui-sideline-enable nil
-              ;;  )
-
-              ;;(indent-guide-mode)
               (lsp-deferred)
-              
-
               )))
 
 ;;----------------------------------------------------
@@ -389,7 +345,6 @@
     (xref-push-marker-stack)
     (go-goto-imports))
 
-
 ;;; go assembly
 
   (defun ak-go-asm-comment-char ()
@@ -415,12 +370,8 @@
                  '((tramp-parse-sconfig "/etc/ssh/ssh_config")
                    (tramp-parse-sconfig "~/.ssh/config")))))))
 
-
 (conf js2-mode
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-  (conf tern)
-  ;; npm install tern
-  (setq tern-command (list (expand-file-name "~/node_modules/tern/bin/tern")))
 
   (defun abbrev-console-log ()
     (backward-char 2) t)
@@ -431,18 +382,12 @@
               (setq tab-width 4)
               (abbrev-mode 1)
               (rainbow-mode 1)
-              (tern-mode 1)
-              ;;(company-mode 1)
-              ;;(add-to-list 'company-backends 'company-tern)
               (js2-imenu-extras-mode)
               (define-key js-mode-map (kbd "C-c b") 'web-beautify-js)
               (define-abbrev js-mode-abbrev-table  "cnl" "console.log();"
                 'abbrev-console-log)
               (setq js-indent-level 2)
-              ))
-
-  ;;; JSON
-  (add-to-list 'auto-mode-alist '("\\.tern-project$" . json-mode)))
+              )))
 
 (conf web-beautify
   ;; requires "beautifier" through npm
@@ -458,14 +403,8 @@
         (setq web-beautify-js-program "~/.npm/bin/js-beautify")))
   )
 
-(conf json-mode)
-
-(conf imenu)
-
 (conf multiple-cursors
   (global-set-key (kbd "C-;") 'mc/mark-all-dwim))
-
-(conf cmake-mode)
 
 (conf lsp-ui
   (setq
@@ -483,8 +422,6 @@
             (lambda ()
               (rainbow-mode t)
               )))
-
-(conf projectile)
 
 (conf highlight-symbol
   (global-set-key (kbd "C-<f3>") 'highlight-symbol)
@@ -576,9 +513,6 @@
 (conf magit
   (global-set-key (kbd "C-c m") 'magit-status))
 
-(conf ghub
-  )
-
 (conf macrostep
   (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand))
 
@@ -595,15 +529,8 @@
   (global-set-key [(meta f9)] 'symbol-overlay-query-replace)
   )
 
-(conf ggtags)
-
 (conf glsl-mode
   (add-to-list 'auto-mode-alist '("\\.comp$" . glsl-mode)))
-
-;; (conf company
-;;   (company-mode))
-
-(conf git-timemachine)
 
 (conf doom-modeline
   ;; leftmost part:
@@ -633,13 +560,14 @@
    helm-echo-input-in-header-line t
    helm-M-x-fuzzy-match nil
    helm-move-to-line-cycle-in-source t
+   helm-truncate-lines t
 
    helm-always-two-windows nil
    helm-split-window-default-side 'other
    ;; for toggling on/off Helm full frame
    helm-split-window-other-side-when-one-window 'right
 
-   helm-update-edebug t ; dev
+   helm-update-edebug t ;; dev
    ))
 
 
@@ -755,7 +683,6 @@
 
   (global-set-key (kbd "C-c l") 'swiper)
   (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (global-set-key (kbd "C-,") 'counsel-M-x)
   (global-set-key (kbd "C-x C-f") 'counsel-find-file)
   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
@@ -775,7 +702,6 @@
   (global-set-key (kbd "C-c C-j") 'counsel-switch-buffer)
   ;;(global-set-key (kbd "C-c C-j") 'ivy-ibuffer)
   )
-
 
 ;;----------------------------------------------------
 ;;; dart
@@ -803,15 +729,7 @@
 (add-hook 'shell-mode-hook #'bash-completion-setup)
 
 ;;----------------------------------------------------
-;;; makefile-mode
-
-(add-hook 'makefile-mode-hook
-          (lambda ()
-            (setq tab-width 4)))
-
-;;----------------------------------------------------
 ;;; markdown-mode
-
 (add-to-list 'auto-mode-alist '("\\.mm$" . markdown-mode))
 
 ;;----------------------------------------------------
@@ -886,7 +804,6 @@
                            (c-basic-offset . 2))
                          t)
             ;;(setq c-macro-preprocessor "cpp -CC")
-            ;;(conf preproc-font-lock-mode)
             ;;(preproc-font-lock-mode 1)
             (hs-minor-mode 1) ;; hide/show blocks
             (define-key c-mode-map "\C-c\C-f" 'ff-find-other-file)
@@ -909,9 +826,6 @@
 
 ;;----------------------------------------------------
 ;;; c++ mode
-
-;; C++ language server
-(conf ccls)
 
 (add-hook 'c++-mode-hook
           (lambda ()
