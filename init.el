@@ -1,4 +1,5 @@
 ;;----------------------------------------------------
+
 ;;; selected packages
 ;;----------------------------------------------------
 
@@ -54,10 +55,10 @@
    yasnippet
    realgud
 
-   lsp-ui
+   ;;lsp-ui
    ;; Dart
    dart-mode
-   lsp-dart
+   ;;lsp-dart
    flutter
    electric-case
    string-inflection
@@ -106,6 +107,8 @@
 
    ;;dirvish
 
+   d-mode
+
 ;;; themes
 
    spacemacs-theme
@@ -119,10 +122,6 @@
 ;;-------------------------------------------------------
 ;;-------------------------------------------------------
 ;;-------------------------------------------------------
-;; exchange C-h and C-b
-(define-key key-translation-map (kbd "C-b") (kbd "C-h"))
-(define-key key-translation-map (kbd "C-h") (kbd "C-b"))
-
 (define-key key-translation-map (kbd "C-q") (kbd "C-g"))
 
 (global-set-key (kbd "C-c c") 'comment-region)
@@ -160,9 +159,11 @@
   (line-number-mode)                   ; show line numbers in modeline
   (menu-bar-mode -1)                   ; disable menu
   (scroll-bar-mode -1)                 ; disable scrollbars
+  (column-number-mode)
+  (recentf-mode)
   (setq-default indent-tabs-mode nil)  ; use spaces
   (setq make-backup-files nil)
-  (setq inhibit-startup-screen t)       ; no startup screen
+  (setq inhibit-startup-screen t)      ; no startup screen
 
   ;; Path to Emacs C source, for functions help system
   ;;(setq find-function-C-source-directory "~/path/to/emacs/src")
@@ -190,16 +191,14 @@
 (add-to-list 'completion-styles 'initials t)
 
 (custom-set-variables
- '(show-paren-when-point-in-periphery t)
+ '(show-paren-when-point-in-periphery nil)
  '(show-paren-when-point-inside-paren t)
- '(show-paren-style 'mixed))
+ ;;'(show-paren-style 'mixed)
+ )
 (add-hook 'prog-mode-hook
           (lambda ()
             (show-paren-mode)
             ))
-
-(column-number-mode)
-(recentf-mode)
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
@@ -214,7 +213,27 @@
        (message "EMACS PACKAGES, %s not installed" ',name))))
 
 
+;;----------------------------------------------------
+;;; eglot
+
+(with-eval-after-load 'eglot
+  ;; (add-to-list 'eglot-server-programs
+  ;;              '((dart-mode dart-ts-mode) .
+  ;;                ("/mnt/sx900/worksp/dart_sdk/sdk/out/ReleaseX64/dart"
+  ;;                 "language-server" "--client-id" "emacs.eglot-dart")))
+  (add-to-list 'eglot-server-programs
+               '(d-mode . ("serve-d"))))
+
+
 ;;;;; Configure packages
+
+(conf d-mode
+  (add-hook
+   'd-mode-hook
+   (lambda ()
+     (eglot-ensure)
+     ))
+  )
 
 (conf casual-suite
   (require 'casual-suite)
@@ -703,6 +722,7 @@
   ;;(global-set-key (kbd "C-c C-j") 'ivy-ibuffer)
   )
 
+
 ;;----------------------------------------------------
 ;;; dart
 
@@ -714,13 +734,26 @@
               (subword-mode)
               (smartparens-strict-mode)
 
-              ;;(projectile-mode +1)
-              ;;(add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
-              ;;(add-to-list 'projectile-project-root-files-bottom-up "BUILD")
-              (lsp-deferred)
-              ;;(setq lsp-ui-doc-show-with-mouse nil)
-              (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
-              (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
+              ;; (projectile-mode +1)
+              ;; (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+              ;; (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
+
+              ;;(message (buffer-file-name))
+              
+              (add-hook 'eglot-managed-mode-hook
+                        (lambda ()
+                          (eglot-inlay-hints-mode -1)) nil
+                        t ;; local
+                        )
+              (eglot-ensure)
+              
+              ;; (lsp-deferred)
+              ;; (setq lsp-ui-doc-show-with-mouse nil)
+              ;; (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
+              ;; (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
+              ;; (define-key python-mode-map (kbd "M-.") #'lsp-find-definition)
+              ;; ;;(define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-pop-marker)
+
               (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
               )))
 
@@ -751,6 +784,8 @@
   (hs-minor-mode)
   (abbrev-mode 1)
   (lsp-deferred)
+  (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
+  (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-pop-marker)
   )
 (add-hook 'python-mode-hook 'python-mode-func)
 
