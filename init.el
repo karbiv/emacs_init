@@ -8,6 +8,13 @@
 ;;(setq x-ctrl-keysym 'meta)
 ;; better in https://github.com/rvaiya/keyd
 
+(setenv "LSP_USE_PLISTS" "true")
+;; Emacs default is too low 4k considering that the some of the
+;; language server responses are in 800k - 3M range.
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+;; Set it to big number(100mb) like most of the popular kits like Spacemacs/Doom/Prelude do:
+(setq gc-cons-threshold (* 100 1024 1024))
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
@@ -20,11 +27,13 @@
    undo-tree
    expand-region
    smartparens
-   paredit ;; lisp modes
    highlight-symbol
+   wrap-region
+   ;;exec-path-from-shell
 
-   ;; helm ;; dev
-   ;; helm-ls-git
+   ;;helm
+   ;;helm-lsp
+   ;;helm-ls-git
    async ;; required by Helm, separately installed for dev setup
 
    ;; vertico
@@ -40,6 +49,12 @@
    ;; ivy-hydra
    ;; ivy-prescient
    ;; ivy-rich
+
+   ;;lsp-ui
+   ;; Dart
+   dart-mode
+   lsp-dart
+   ;;flutter
    
    company
    which-key
@@ -54,16 +69,13 @@
    projectile
    yasnippet
    realgud
-
-   ;;lsp-ui
-   ;; Dart
-   dart-mode
-   ;;lsp-dart
-   flutter
+   
    electric-case
    string-inflection
+   gn-mode
 
-   jedi
+   elpy
+   ;;jedi
    direnv
    envrc
    meson-mode
@@ -73,11 +85,10 @@
    ccls
 
    lua-mode
-   nim-mode
    clang-format
 
-   web-mode
-   web-mode-edit-element
+   ;; web-mode
+   ;; web-mode-edit-element
    yaml-mode
    php-mode
    magit
@@ -89,8 +100,8 @@
    dired-toggle-sudo
    casual-suite
 
-   slime
-   helm-slime
+   ;; slime
+   ;; helm-slime
    ;;sly
 
    rust-mode
@@ -115,6 +126,7 @@
    dakrone-light-theme
    pastelmac-theme
    color-theme-sanityinc-tomorrow
+   
    ))
 
 (package-initialize)
@@ -132,28 +144,20 @@
 (global-set-key (kbd "M-o") 'ace-swap-window)
 (global-set-key (kbd "M-p") 'scroll-up-line)
 (global-set-key (kbd "M-n") 'scroll-down-line)
+(global-set-key (kbd "C-c r") 'rgrep)
 ;;-------------------------------------------------------
 ;;-------------------------------------------------------
 ;;-------------------------------------------------------
-
 
 (when (display-graphic-p)  
-  ;; required for LSP
-  ;; https://emacs-lsp.github.io/lsp-mode/page/performance/#use-plists-for-deserialization
-  (setq lsp-use-plists t)
-  ;; Emacs default is too low 4k considering that the some of the
-  ;; language server responses are in 800k - 3M range.
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  ;; Set it to big number(100mb) like most of the popular kits like Spacemacs/Doom/Prelude do:
-  ;;(setq gc-cons-threshold 100000000)
   
-  (toggle-frame-maximized)  ;; maximize Emacs
+  (toggle-frame-maximized) ;; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
-  (set-face-attribute 'default nil :font "Hack" :height 116)
-  ;;(set-face-attribute 'default nil :font "Consolas" :height 118)
-  ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
-  ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
+  ;;(set-face-attribute 'default nil :font "Hack" :height 115)
+  (set-face-attribute 'default nil :font "Consolas" :height 125)
+  ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 125)
+  ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 115)
 
   (tool-bar-mode -1)                   ; disable toolbar
   (line-number-mode)                   ; show line numbers in modeline
@@ -161,10 +165,14 @@
   (scroll-bar-mode -1)                 ; disable scrollbars
   (column-number-mode)
   (recentf-mode)
-  (setq-default indent-tabs-mode nil)  ; use spaces
-  (setq make-backup-files nil)
-  (setq inhibit-startup-screen t)      ; no startup screen
-
+  (electric-pair-mode)
+  (setq-default indent-tabs-mode nil)   ; use spaces
+  (setq
+   make-backup-files nil
+   inhibit-startup-screen t ; no startup screen
+   ;;mode-line-compact t
+   ) 
+  
   ;; Path to Emacs C source, for functions help system
   ;;(setq find-function-C-source-directory "~/path/to/emacs/src")
 
@@ -172,9 +180,9 @@
   (unless package-archive-contents
     (package-refresh-contents))
 
-  (require 'compile)  ; for 'recompile'
+  (require 'compile)                    ; for 'recompile'
 
-  (mapcar ; install selected packages
+  (mapcar                               ; install selected packages
    (lambda (pkg)
      (when (not (package-installed-p pkg))
        (package-install pkg)))
@@ -202,7 +210,7 @@
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
-            (paredit-mode)
+            (smartparens-mode)
             ))
 
 (defmacro conf (name &rest init-code)
@@ -214,25 +222,192 @@
 
 
 ;;----------------------------------------------------
+;; (conf exec-path-from-shell
+;;   (when (memq window-system '(mac ns x))
+;;     (exec-path-from-shell-initialize)
+;;     (exec-path-from-shell-copy-env "LSP_USE_PLISTS")
+;;     ))
+
+
+;;----------------------------------------------------
+(conf dart-mode
+  (add-hook 'dart-mode-hook
+            (lambda ()
+              (require 'electric-case)
+              (electric-case-mode)
+              (subword-mode)
+              (smartparens-strict-mode)
+              
+              ;; important, dart server hangs w/o it
+              ;; (projectile-mode +1)
+              ;; (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
+
+              ;; (add-hook 'eglot-managed-mode-hook
+              ;;           (lambda ()
+              ;;             (eglot-inlay-hints-mode -1)) nil
+              ;;           t ;; local
+              ;;           )
+              ;; (eglot-ensure)
+
+              (lsp-deferred)
+              (setq lsp-ui-doc-show-with-mouse nil)
+              (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
+              (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
+              (define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
+              (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
+              
+              ))
+  )
+
+
+;;----------------------------------------------------
+(conf go-mode
+
+  (add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
+
+  (defun abbrev-iferr ()
+    (indent-for-tab-command)
+    (forward-line -1)
+    (delete-trailing-whitespace))
+
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (setq tab-width 4)
+              (setq go-packages-function 'go-packages-go-list)
+
+              ;; for CGO
+              ;; (ggtags-mode 1)
+              ;; (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
+              ;; (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
+              (subword-mode)
+              (abbrev-mode 1)
+
+              ;; (eglot-ensure)
+              ;; (define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
+
+              (lsp-deferred)
+              ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
+              (setq lsp-ui-doc-show-with-mouse nil)
+
+              ;; Bindings in  go-goto-map
+              ;; (define-key m "a" #'go-goto-arguments)
+              ;; (define-key m "d" #'go-goto-docstring)
+              ;; (define-key m "f" #'go-goto-function)
+              ;; (define-key m "i" #'go-goto-imports)
+              ;; (define-key go-goto-map "i" #'ak-go-goto-imports)
+              ;; (define-key m "m" #'go-goto-method-receiver)
+              ;; (define-key m "n" #'go-goto-function-name)
+              ;; (define-key m "r" #'go-goto-return-values)
+              ))
+
+  (defun ak-go-goto-imports ()
+    "Uses xref mark ring to return back from imports section, when quick (un)comment of import is done."
+    (interactive)
+    (xref-push-marker-stack)
+    (go-goto-imports))
+
+;;; go assembly
+
+  (defun ak-go-asm-comment-char ()
+    (interactive)
+    (setq-local comment-start "// ")))
+
+
+;;----------------------------------------------------
+;; Python
+
+(autoload 'python-mode "python" "Python Mode." t) ; built-in
+;;(autoload 'python-mode "python-mode" "Python Mode." t)
+
+(envrc-global-mode) ;; buffer local direnv
+(with-eval-after-load 'python
+  (elpy-enable))
+
+(defun python-mode-abbrev-debug-handler ()
+  (forward-line -1)
+  (funcall indent-line-function)
+  (move-end-of-line 1)
+  (save-buffer 0))
+
+(defun python-mode-func ()
+  (setq tab-width 4)
+  (hs-minor-mode)
+  (abbrev-mode 1)
+  (wrap-region-mode 1)
+  ;; for python block comments
+  (wrap-region-add-wrapper "\"\"\"" "\"\"\"" "\\")
+  
+  ;; (jedi:setup)
+  ;; (setq jedi:complete-on-dot t) ; optional
+  ;; (lsp-deferred)
+  ;; (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
+  ;; (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-pop-marker)
+  )
+(add-hook 'python-mode-hook 'python-mode-func)
+
+;;----------------------------------------------------
 ;;; eglot
 
-(with-eval-after-load 'eglot
-  ;; (add-to-list 'eglot-server-programs
-  ;;              '((dart-mode dart-ts-mode) .
-  ;;                ("/mnt/sx900/worksp/dart_sdk/sdk/out/ReleaseX64/dart"
-  ;;                 "language-server" "--client-id" "emacs.eglot-dart")))
-  (add-to-list 'eglot-server-programs
-               '(d-mode . ("serve-d"))))
+;; (with-eval-after-load 'eglot
+;;   (add-to-list 'eglot-server-programs
+;;                `((dart-mode dart-ts-mode) .
+;;                  ("/opt/dart-sdk/bin/dart"
+;;                   "language-server" "--client-id" "emacs.eglot-dart"
+;;                   ;; "--packages"
+;;                   ;; ;; set in .emacs
+;;                   ;; ,dart-project-package-config-path
+;;                   )))
+;;   (add-to-list 'eglot-server-programs
+;;                '(d-mode . ("serve-d"))
+;;                ;;'(python-mode . ("pyright-langserver"))
+;;                ))
 
 
 ;;;;; Configure packages
 
+(conf smartparens
+  (add-hook 'smartparens-mode-hook
+            (lambda ()
+              ;; ("C-M-f" . sp-forward-sexp)
+              ;; ("C-M-b" . sp-backward-sexp)
+              ;; ("C-M-d" . sp-down-sexp)
+              ;; ("C-M-a" . sp-backward-down-sexp)
+              ;; ("C-S-d" . sp-beginning-of-sexp)
+              ;; ("C-S-a" . sp-end-of-sexp)
+              ;; ("C-M-e" . sp-up-sexp)
+              ;; ("C-M-u" . sp-backward-up-sexp)
+              ;; ("C-M-n" . sp-next-sexp)
+              ;; ("C-M-p" . sp-previous-sexp)
+              ;; ("C-M-k" . sp-kill-sexp)
+              ;; ("C-M-w" . sp-copy-sexp)
+              ;; ("M-<delete>" . sp-unwrap-sexp)
+              ;; ("M-<backspace>" . sp-backward-unwrap-sexp)
+              ;; ("C-<right>" . sp-forward-slurp-sexp)
+              ;; ("C-<left>" . sp-forward-barf-sexp)
+              ;; ("C-M-<left>" . sp-backward-slurp-sexp)
+              ;; ("C-M-<right>" . sp-backward-barf-sexp)
+              ;; ("M-D" . sp-splice-sexp)
+              ;; ("C-M-<delete>" . sp-splice-sexp-killing-forward)
+              ;; ("C-M-<backspace>" . sp-splice-sexp-killing-backward)
+              ;; ("C-S-<backspace>" . sp-splice-sexp-killing-around)
+              ;; ("C-]" . sp-select-next-thing-exchange)
+              ;; ("C-M-]" . sp-select-next-thing)
+              ;; ("C-M-SPC" . sp-mark-sexp)
+              ;; ("M-F" . sp-forward-symbol)
+              ;; ("M-B" . sp-backward-symbol)
+              (sp-use-smartparens-bindings)
+              (define-key smartparens-mode-map (kbd "M-<backspace>") #'sp-backward-delete-word)
+              (define-key smartparens-mode-map (kbd "C-{") #'sp-select-previous-thing)
+              (global-set-key (kbd "C-k") 'sp-kill-hybrid-sexp)
+              (setq sp-autoinsert-pair nil) ; use electric-pair-local-mode
+              ))
+  )
+
 (conf d-mode
-  (add-hook
-   'd-mode-hook
-   (lambda ()
-     (eglot-ensure)
-     ))
+  (add-hook 'd-mode-hook
+            (lambda ()
+              ;;(eglot-ensure)
+              ))
   )
 
 (conf casual-suite
@@ -287,13 +462,6 @@
 (conf yasnippet
   (yas-global-mode))
 
-(conf nim-mode
-  ;; (eglot-ensure)
-  ;; (push '(nim-mode "nimlangserver") eglot-server-programs)
-  (add-hook 'nim-mode-hook
-            (lambda ()
-              (lsp-deferred)
-              )))
 
 ;;----------------------------------------------------
 ;; rust
@@ -310,65 +478,11 @@
               (setq
                indent-tabs-mode nil
                rust-format-on-save t
-               lsp-ui-sideline-enable nil
+               ;;lsp-ui-sideline-enable nil
                )
-              (lsp-deferred)
+              ;;(lsp-deferred)
               
               )))
-
-
-;;----------------------------------------------------
-
-(conf go-mode
-
-  (add-to-list 'auto-mode-alist '("\\.mod$" . go-mode)) ; go.mod files
-
-  (defun abbrev-iferr ()
-    (indent-for-tab-command)
-    (forward-line -1)
-    (delete-trailing-whitespace))
-
-  (add-hook 'go-mode-hook
-            (lambda ()
-              (setq tab-width 4)
-              (setq go-packages-function 'go-packages-go-list)
-
-              ;; for CGO
-              ;; (ggtags-mode 1)
-              ;; (define-key go-mode-map (kbd "C-.") #'ggtags-find-tag-dwim)
-              ;; (define-key go-mode-map (kbd "C-,") #'ggtags-prev-mark)
-              (subword-mode)
-              (abbrev-mode 1)
-
-              ;;(eglot-ensure)
-              ;;(define-key go-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
-
-              (lsp-deferred)
-              ;; requires GO111MODULE=on go get golang.org/x/tools/gopls@latest
-              (setq lsp-ui-doc-show-with-mouse nil)
-
-              ;; Bindings in  go-goto-map
-              ;; (define-key m "a" #'go-goto-arguments)
-              ;; (define-key m "d" #'go-goto-docstring)
-              ;; (define-key m "f" #'go-goto-function)
-              ;; (define-key m "i" #'go-goto-imports)
-              ;; (define-key go-goto-map "i" #'ak-go-goto-imports)
-              ;; (define-key m "m" #'go-goto-method-receiver)
-              ;; (define-key m "n" #'go-goto-function-name)
-              ;; (define-key m "r" #'go-goto-return-values)
-              ))
-
-  (defun ak-go-goto-imports ()
-    "Uses xref mark ring to return back from imports section, when quick (un)comment of import is done."
-    (interactive)
-    (xref-push-marker-stack)
-    (go-goto-imports))
-
-;;; go assembly
-
-  (defun ak-go-asm-comment-char ()
-    (interactive)
-    (setq-local comment-start "// ")))
 
 (conf lua-mode
   (add-hook 'lua-mode-hook
@@ -383,7 +497,7 @@
                 ;;(setq auth-source-debug t)
                 (setq-default password-cache-expiry 604800) ; seconds
                 (setq tramp-default-method "ssh")
-                (setenv "SHELL" "/bin/bash")
+                ;;(setenv "SHELL" "/bin/bash")
                 (tramp-set-completion-function
                  "ssh"
                  '((tramp-parse-sconfig "/etc/ssh/ssh_config")
@@ -447,6 +561,9 @@
   (global-set-key (kbd  "<f3>") 'highlight-symbol-next)
   (global-set-key (kbd "S-<f3>") 'highlight-symbol-prev)
   (global-set-key (kbd "M-<f3>") 'highlight-symbol-query-replace)
+  )
+
+(conf wrap-region
   )
 
 (conf web-mode
@@ -565,7 +682,9 @@
 (require 'helm-autoloads)
 (require 'helm-buffers)
 
-(progn ;;conf helm
+(
+ ;;conf helm
+ progn
   (helm-mode)
   (global-set-key (kbd "M-x") 'helm-M-x)
   (global-set-key (kbd "C-c j") 'helm-mini)
@@ -578,8 +697,9 @@
   (setq
    helm-echo-input-in-header-line t
    helm-M-x-fuzzy-match nil
-   helm-move-to-line-cycle-in-source t
+   helm-move-to-line-cycle-in-source nil
    helm-truncate-lines t
+   ;;helm-candidate-number-limit 1000
 
    helm-always-two-windows nil
    helm-split-window-default-side 'other
@@ -624,32 +744,32 @@
           ))
 
   ;; remove Dired buffers from common completions, they are grouped separately
-  (consult-customize
-   consult--source-buffer
-   :items (lambda ()
-            (consult--buffer-query
-             :sort 'visibility :as #'buffer-name
-             ;; Buffers excluding Dired
-             :predicate
-             (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
-                                   'dired-mode))))))
+  ;; (consult-customize
+  ;;  consult--source-buffer
+  ;;  :items (lambda ()
+  ;;           (consult--buffer-query
+  ;;            :sort 'visibility :as #'buffer-name
+  ;;            ;; Buffers excluding Dired
+  ;;            :predicate
+  ;;            (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
+  ;;                                  'dired-mode))))))
 
   ;; Dired buffers group
-  (add-to-list
-   'consult-buffer-sources
-   (list :name "Dired"
-         :category 'buffer
-         :narrow ?d
-         :face 'consult-buffer
-         :items (lambda () (consult--buffer-query
-                            :sort 'visibility :as #'buffer-name
-                            :predicate
-                            (lambda (buf) (eq (buffer-local-value 'major-mode buf)
-                                              'dired-mode))))
-         :state #'consult--buffer-preview
-         :action #'consult--buffer-action
-         )
-   'append)
+  ;; (add-to-list
+  ;;  'consult-buffer-sources
+  ;;  (list :name "Dired"
+  ;;        :category 'buffer
+  ;;        :narrow ?d
+  ;;        :face 'consult-buffer
+  ;;        :items (lambda () (consult--buffer-query
+  ;;                           :sort 'visibility :as #'buffer-name
+  ;;                           :predicate
+  ;;                           (lambda (buf) (eq (buffer-local-value 'major-mode buf)
+  ;;                                             'dired-mode))))
+  ;;        :state #'consult--buffer-preview
+  ;;        :action #'consult--buffer-action
+  ;;        )
+  ;;  'append)
   )
 
 (conf orderless
@@ -722,40 +842,12 @@
   ;;(global-set-key (kbd "C-c C-j") 'ivy-ibuffer)
   )
 
-
 ;;----------------------------------------------------
-;;; dart
+;;; ninja, *.gn and *.gni
 
-(conf dart-mode
-  (add-hook 'dart-mode-hook
-            (lambda ()
-              (require 'electric-case)
-              (electric-case-mode)
-              (subword-mode)
-              (smartparens-strict-mode)
-
-              ;; (projectile-mode +1)
-              ;; (add-to-list 'projectile-project-root-files-bottom-up "pubspec.yaml")
-              ;; (add-to-list 'projectile-project-root-files-bottom-up "BUILD")
-
-              ;;(message (buffer-file-name))
-              
-              (add-hook 'eglot-managed-mode-hook
-                        (lambda ()
-                          (eglot-inlay-hints-mode -1)) nil
-                        t ;; local
-                        )
-              (eglot-ensure)
-              
-              ;; (lsp-deferred)
-              ;; (setq lsp-ui-doc-show-with-mouse nil)
-              ;; (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
-              ;; (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
-              ;; (define-key python-mode-map (kbd "M-.") #'lsp-find-definition)
-              ;; ;;(define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-pop-marker)
-
-              (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
-              )))
+(conf gn-mode
+  (add-to-list 'auto-mode-alist '("\\.\\(gn\\|gni\\)$" . gn-mode))
+  )
 
 ;;----------------------------------------------------
 ;;; shell mode
@@ -765,29 +857,6 @@
 ;;; markdown-mode
 (add-to-list 'auto-mode-alist '("\\.mm$" . markdown-mode))
 
-;;----------------------------------------------------
-;; Python
-
-(autoload 'python-mode "python" "Python Mode." t) ; built-in
-;;(autoload 'python-mode "python-mode" "Python Mode." t)
-
-(envrc-global-mode) ;; buffer local direnv
-
-(defun python-mode-abbrev-debug-handler ()
-  (forward-line -1)
-  (funcall indent-line-function)
-  (move-end-of-line 1)
-  (save-buffer 0))
-
-(defun python-mode-func ()
-  (setq tab-width 4)
-  (hs-minor-mode)
-  (abbrev-mode 1)
-  (lsp-deferred)
-  (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
-  (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-pop-marker)
-  )
-(add-hook 'python-mode-hook 'python-mode-func)
 
 ;;----------------------------------------------------
 ;;; xml
@@ -808,7 +877,7 @@
 (add-hook
  'scheme-mode-hook
  (lambda ()
-   (paredit-mode)
+   (smartparens-mode)
    (abbrev-mode 1)
    (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
    (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")
@@ -883,7 +952,7 @@
   (add-hook
    'lisp-mode-hook
    (lambda ()
-     (paredit-mode)
+     (smartparens-mode)
      (setq
       inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
       ;;inferior-lisp-program "ccl"
@@ -907,7 +976,7 @@
         )
   (add-hook 'sly-mode-hook
             (lambda ()
-              (paredit-mode)
+              (smartparens-mode)
               (define-key sly-mode-map (kbd "C-c i") 'imenu)
               ))
   )
