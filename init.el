@@ -1,3 +1,4 @@
+
 ;;----------------------------------------------------
 
 ;;; selected packages
@@ -30,25 +31,22 @@
    highlight-symbol
    wrap-region
    ;;exec-path-from-shell
+   lsp-mode
 
    ;;helm
-   ;;helm-lsp
+   helm-lsp
    ;;helm-ls-git
    async ;; required by Helm, separately installed for dev setup
-
-   ;; vertico
-   ;; consult
-   ;; orderless
-   ;; embark-consult
-   ;; embark
-   ;; corfu
-   ;; marginalia
-
-   ;; counsel
-   ;; hydra
-   ;; ivy-hydra
-   ;; ivy-prescient
-   ;; ivy-rich
+   
+   vertico
+   consult
+   consult-lsp
+   embark-consult
+   embark
+   marginalia
+   orderless
+   
+   ;;corfu
 
    ;;lsp-ui
    ;; Dart
@@ -98,9 +96,10 @@
    bash-completion
 
    dired-toggle-sudo
+   dired-filter
    casual-suite
 
-   ;; slime
+   ;;slime
    ;; helm-slime
    ;;sly
 
@@ -121,11 +120,12 @@
    d-mode
 
 ;;; themes
-
+   dracula-theme
+   standard-themes
    spacemacs-theme
-   dakrone-light-theme
+   humanoid-themes
+   doom-themes
    pastelmac-theme
-   color-theme-sanityinc-tomorrow
    
    ))
 
@@ -134,7 +134,6 @@
 ;;-------------------------------------------------------
 ;;-------------------------------------------------------
 ;;-------------------------------------------------------
-(define-key key-translation-map (kbd "C-q") (kbd "C-g"))
 
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c C-h") 'hl-line-mode)
@@ -154,24 +153,16 @@
   (toggle-frame-maximized) ;; maximize Emacs
   (setq-default frame-title-format "%b (%f)")
 
-  ;;(set-face-attribute 'default nil :font "Hack" :height 115)
-  (set-face-attribute 'default nil :font "Consolas" :height 125)
-  ;;(set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 125)
-  ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 115)
+  ;;(set-face-attribute 'default nil :font "Hack" :height 105)
+  (set-face-attribute 'default nil :font "UbuntuMono Nerd Font Mono" :height 120)
+  ;;(set-face-attribute 'default nil :font "Liberation Mono" :height 105)
 
   (tool-bar-mode -1)                   ; disable toolbar
   (line-number-mode)                   ; show line numbers in modeline
   (menu-bar-mode -1)                   ; disable menu
   (scroll-bar-mode -1)                 ; disable scrollbars
   (column-number-mode)
-  (recentf-mode)
-  (electric-pair-mode)
-  (setq-default indent-tabs-mode nil)   ; use spaces
-  (setq
-   make-backup-files nil
-   inhibit-startup-screen t ; no startup screen
-   ;;mode-line-compact t
-   ) 
+  (setq ring-bell-function 'ignore)
   
   ;; Path to Emacs C source, for functions help system
   ;;(setq find-function-C-source-directory "~/path/to/emacs/src")
@@ -188,7 +179,18 @@
        (package-install pkg)))
    package-selected-packages))
 
-(setq create-lockfiles nil)
+(setq
+ create-lockfiles nil
+ completion-ignore-case t
+ make-backup-files nil
+ inhibit-startup-screen t ; no startup screen
+ resize-mini-windows t
+ ;;mode-line-compact t
+ )
+(setq-default indent-tabs-mode nil)   ; use spaces
+
+(recentf-mode)
+(electric-pair-mode)
 
 (defun ak-killbuf ()
   (interactive)
@@ -196,7 +198,6 @@
 (global-set-key (kbd "C-`") 'ak-killbuf)
 
 (setq tab-always-indent 'complete)
-(add-to-list 'completion-styles 'initials t)
 
 (custom-set-variables
  '(show-paren-when-point-in-periphery nil)
@@ -250,12 +251,26 @@
               ;; (eglot-ensure)
 
               (lsp-deferred)
-              (setq lsp-ui-doc-show-with-mouse nil)
+              (setq
+               lsp-ui-doc-show-with-mouse nil
+               )
               (define-key dart-mode-map (kbd "s-l d d") #'lsp-ui-doc-show)
               (define-key dart-mode-map (kbd "s-l d f") #'lsp-ui-doc-focus-frame)
               (define-key dart-mode-map (kbd "M-.") #'lsp-find-definition)
               (define-key dart-mode-map (kbd "C-c C-u") #'string-inflection-java-style-cycle)
-              
+
+              ))
+  )
+
+
+(conf lsp-mode
+  (add-hook 'lsp-mode-hook
+            (lambda ()
+              (company-mode -1)
+              ;;(corfu-mode)
+              ;; (setq
+              ;;  corfu-auto-prefix 2
+              ;;  )
               ))
   )
 
@@ -339,9 +354,9 @@
   
   ;; (jedi:setup)
   ;; (setq jedi:complete-on-dot t) ; optional
-  ;; (lsp-deferred)
   ;; (define-key python-mode-map (kbd "M-.") 'jedi:goto-definition)
   ;; (define-key python-mode-map (kbd "M-,") 'jedi:goto-definition-pop-marker)
+  (lsp-deferred)
   )
 (add-hook 'python-mode-hook 'python-mode-func)
 
@@ -399,7 +414,7 @@
               (define-key smartparens-mode-map (kbd "M-<backspace>") #'sp-backward-delete-word)
               (define-key smartparens-mode-map (kbd "C-{") #'sp-select-previous-thing)
               (global-set-key (kbd "C-k") 'sp-kill-hybrid-sexp)
-              (setq sp-autoinsert-pair nil) ; use electric-pair-local-mode
+              (sp-local-pair '(emacs-lisp-mode) "'" nil :actions nil)
               ))
   )
 
@@ -478,9 +493,9 @@
               (setq
                indent-tabs-mode nil
                rust-format-on-save t
-               ;;lsp-ui-sideline-enable nil
+               lsp-ui-sideline-enable nil
                )
-              ;;(lsp-deferred)
+              (lsp-deferred)
               
               )))
 
@@ -537,7 +552,8 @@
   )
 
 (conf multiple-cursors
-  (global-set-key (kbd "C-;") 'mc/mark-all-dwim))
+  (global-set-key (kbd "C-;") 'mc/mark-all-dwim)
+  )
 
 (conf lsp-ui
   (setq
@@ -676,105 +692,127 @@
 ;;----------------------------------------------------
 ;; helm
 
-;; dev
-(add-to-list 'load-path (expand-file-name "~/helm"))
-(require 'helm)
-(require 'helm-autoloads)
-(require 'helm-buffers)
+;; ;; dev
+;; (add-to-list 'load-path (expand-file-name "~/helm"))
+;; (require 'helm)
+;; (require 'helm-autoloads)
+;; (require 'helm-buffers)
 
-(
- ;;conf helm
- progn
-  (helm-mode)
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-c j") 'helm-mini)
-  (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
-  (global-set-key (kbd "C-x C-f") #'helm-find-files)
-  (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
-  (global-set-key (kbd "C-c l") #'helm-occur)
-  (global-set-key (kbd "C-c i") #'helm-imenu)
-  (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
-  (setq
-   helm-echo-input-in-header-line t
-   helm-M-x-fuzzy-match nil
-   helm-move-to-line-cycle-in-source nil
-   helm-truncate-lines t
-   ;;helm-candidate-number-limit 1000
+;; (
+;;  ;;conf helm
+;;  progn
+;;   (helm-mode)
+  
+;;   (global-set-key (kbd "M-x") 'helm-M-x)
+;;   (global-set-key (kbd "C-c j") 'helm-mini)
+;;   (global-set-key (kbd "C-c C-j") #'helm-command-prefix)
+;;   (global-set-key (kbd "C-x C-f") #'helm-find-files)
+;;   (global-set-key (kbd "C-c C-s") #'helm-toggle-full-frame)
+;;   (global-set-key (kbd "C-c l") #'helm-occur)
+;;   (global-set-key (kbd "C-c i") #'helm-imenu)
+;;   (define-key helm-command-map (kbd "g") #'helm-browse-project) ; uses 'helm-ls-git
+;;   (setq
+;;    helm-echo-input-in-header-line t
+;;    helm-M-x-fuzzy-match nil
+;;    helm-imenu-fuzzy-match t
+;;    helm-move-to-line-cycle-in-source nil
+;;    helm-truncate-lines t
 
-   helm-always-two-windows nil
-   helm-split-window-default-side 'other
-   ;; for toggling on/off Helm full frame
-   helm-split-window-other-side-when-one-window 'right
+;;    ;;completion-styles '(orderless basic)
+;;    ;;helm-completion-style 'emacs
+;;    ;; helm-completion-style-alist
+;;    ;; '((default . orderless)
+;;    ;;   (file . orderless)
+;;    ;;   (buffer . orderless)
+;;    ;;   (symbol . orderless))
+   
+;;    helm-always-two-windows nil
+;;    helm-split-window-default-side 'other
+;;    ;; for toggling on/off Helm full frame
+;;    helm-split-window-other-side-when-one-window 'right
 
-   helm-update-edebug t ;; dev
-   ))
+;;    helm-update-edebug t ;; dev
+;;    ))
 
 
 (conf expand-region
   (global-set-key (kbd "C-=") 'er/expand-region)
+  (global-set-key (kbd "C--") 'er/contract-region)
   )
 
 ;;----------------------------------------------------
 ;; vertico consult orderless embark marginalia corfu
 
 (conf vertico
-  (vertico-mode)
+  ;;(vertico-mode)
+  ;;(vertico-multiform-mode)
   (vertico-buffer-mode)
   (define-key vertico-map (kbd "C-o") #'vertico-next-group)
-  (setq vertico-cycle t
-        ))
+  (setq
+   vertico-count 16
+   vertico-cycle nil
+   )
+  ;; show code completion candidates in vertico
+  (setq completion-in-region-function #'consult-completion-in-region)
+  )
 
 (conf consult
+  
   (global-set-key (kbd "C-c j") 'consult-buffer)
   (global-set-key (kbd "C-c C-j") 'consult-buffer)
   (global-set-key (kbd "C-c i") 'consult-imenu)
   (global-set-key (kbd "C-c l") 'consult-line) ; similar to swiper
 
-  (require 'consult)
-
   (setq consult-buffer-sources
         '(consult--source-hidden-buffer
           consult--source-modified-buffer
           consult--source-buffer
-          consult--source-recent-file ; expands common column width on long paths
+          ;;consult--source-recent-file
           consult--source-file-register
-          consult--source-bookmark
+          ;;consult--source-bookmark
           consult--source-project-buffer-hidden
           consult--source-project-recent-file-hidden
           ))
 
-  ;; remove Dired buffers from common completions, they are grouped separately
-  ;; (consult-customize
-  ;;  consult--source-buffer
-  ;;  :items (lambda ()
-  ;;           (consult--buffer-query
-  ;;            :sort 'visibility :as #'buffer-name
-  ;;            ;; Buffers excluding Dired
-  ;;            :predicate
-  ;;            (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
-  ;;                                  'dired-mode))))))
+  ;; for 'consult-customize' which is not autoloaded
+  (require 'consult)
+  
+  ;;;; remove Dired buffers from common completions, they are grouped separately
+  (consult-customize
+   consult--source-buffer
+   :items (lambda ()
+            (consult--buffer-query
+             :sort 'visibility :as #'buffer-name
+             ;; Buffers excluding Dired
+             :predicate
+             (lambda (buf) (not (eq (buffer-local-value 'major-mode buf)
+                                    'dired-mode))))))
 
-  ;; Dired buffers group
-  ;; (add-to-list
-  ;;  'consult-buffer-sources
-  ;;  (list :name "Dired"
-  ;;        :category 'buffer
-  ;;        :narrow ?d
-  ;;        :face 'consult-buffer
-  ;;        :items (lambda () (consult--buffer-query
-  ;;                           :sort 'visibility :as #'buffer-name
-  ;;                           :predicate
-  ;;                           (lambda (buf) (eq (buffer-local-value 'major-mode buf)
-  ;;                                             'dired-mode))))
-  ;;        :state #'consult--buffer-preview
-  ;;        :action #'consult--buffer-action
-  ;;        )
-  ;;  'append)
+  ;;;; Dired buffers group
+  (add-to-list
+   'consult-buffer-sources
+   (list :name "Dired"
+         :category 'buffer
+         :narrow ?d
+         :face 'consult-buffer
+         :items (lambda () (consult--buffer-query
+                            :sort 'visibility :as #'buffer-name
+                            :predicate
+                            (lambda (buf) (eq (buffer-local-value 'major-mode buf)
+                                              'dired-mode))))
+         :state #'consult--buffer-preview
+         :action #'consult--buffer-action
+         )
+   'append)
   )
 
 (conf orderless
-  (setq completion-styles '(orderless basic)
-        completion-category-overrides '((file (styles basic partial-completion)))))
+  (setq
+   completion-styles '(orderless basic)
+   ;;completion-styles '(basic hotfuzz)
+   ;;completion-styles '(hotfuzz orderless)
+   completion-category-overrides '((file (styles basic partial-completion)))
+   ))
 
 (conf embark
   (global-set-key (kbd "C-.") 'embark-act)
@@ -788,10 +826,11 @@
   ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
   ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+  ;; (add-to-list 'display-buffer-alist
+  ;;              '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+  ;;                nil
+  ;;                (window-parameters (mode-line-format . none))))
+  )
 
 (conf marginalia
   (marginalia-mode))
@@ -918,7 +957,7 @@
             (ggtags-mode)
 
             (smartparens-strict-mode)
-            (company-mode)
+            ;;(company-mode)
             (electric-indent-mode)
             (c-toggle-comment-style -1) ;; line comments not blocks
             
@@ -954,8 +993,7 @@
    (lambda ()
      (smartparens-mode)
      (setq
-      inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
-      ;;inferior-lisp-program "ccl"
+      inferior-lisp-program (expand-file-name "/usr/bin/sbcl")
       browse-url-browser-function 'eww-browse-url
       common-lisp-hyperspec-root
       "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
