@@ -99,19 +99,19 @@
    dired-filter
    casual-suite
 
-   ;;slime
-   ;; helm-slime
+   slime
+   ;;helm-slime
    ;;sly
+   ;;sly-asdf
 
    rust-mode
    ;;; or
    ;;rustic
    ;;cargo
 
-   geiser
-   geiser-guile
-   geiser-chez
-   macrostep-geiser
+   ;; geiser
+   ;; geiser-guile
+   ;; macrostep-geiser
 
    git-timemachine
 
@@ -190,7 +190,7 @@
 (setq-default indent-tabs-mode nil)   ; use spaces
 
 (recentf-mode)
-(electric-pair-mode)
+;;(electric-pair-mode)
 
 (defun ak-killbuf ()
   (interactive)
@@ -211,7 +211,7 @@
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
-            (smartparens-mode)
+            (smartparens-strict-mode)
             ))
 
 (defmacro conf (name &rest init-code)
@@ -916,7 +916,7 @@
 (add-hook
  'scheme-mode-hook
  (lambda ()
-   (smartparens-mode)
+   (smartparens-strict-mode)
    (abbrev-mode 1)
    (define-abbrev scheme-mode-abbrev-table  "nl" "(newline)")
    (define-abbrev scheme-mode-abbrev-table  "dl" "(display )")
@@ -938,14 +938,14 @@
 
 (add-hook 'c-mode-hook
           (lambda ()
-            
             ;; gnu, k&r, bsd, stroustrup, whitesmith, ellemtel, linux, python, java, awk
-            (c-set-style "python")
-            (setq tab-width 4)
-            (c-add-style "python-new"
-                         '("python"
-                           (c-basic-offset . 2))
-                         t)
+            ;;(c-set-style "python")
+            (setq-default indent-tabs-mode nil)
+            (setq
+             tab-width 4
+             c-default-style "bsd"
+             c-basic-offset 2
+             )
             ;;(setq c-macro-preprocessor "cpp -CC")
             ;;(preproc-font-lock-mode 1)
             (hs-minor-mode 1) ;; hide/show blocks
@@ -958,7 +958,7 @@
 
             (smartparens-strict-mode)
             ;;(company-mode)
-            (electric-indent-mode)
+            (electric-indent-local-mode 1)
             (c-toggle-comment-style -1) ;; line comments not blocks
             
             ;; disable auto-align of endline backslashes in multiline macros
@@ -987,19 +987,20 @@
 
 (conf slime
 ;;; quicklisp, misc config is in ~/.sbclrc
-  (slime-setup)
+  (add-to-list 'slime-contribs 'slime-asdf)
+  ;;(slime-setup)
   (add-hook
    'lisp-mode-hook
    (lambda ()
-     (smartparens-mode)
+     (smartparens-strict-mode)
      (setq
       inferior-lisp-program (expand-file-name "/usr/bin/sbcl")
       browse-url-browser-function 'eww-browse-url
       common-lisp-hyperspec-root
       "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
       )
-     ;; (setq slime-lisp-implementations
-     ;;       '((sbcl ("sbcl") :coding-system utf-8-unix)))
+     (setq slime-lisp-implementations
+           '((sbcl ("sbcl") :coding-system utf-8-unix)))
      )))
 
 
@@ -1007,14 +1008,16 @@
 ;; sly
 
 (conf sly
-  (setq inferior-lisp-program (expand-file-name "~/sbcl/bin/sbcl --noinform")
-        browse-url-browser-function 'eww-browse-url
-        common-lisp-hyperspec-root
+  (setq
+   ;;inferior-lisp-program (expand-file-name "/usr/bin/sbcl")
+   sly-lisp-implementations '((sbcl ("/usr/bin/sbcl") :coding-system utf-8-unix))
+   browse-url-browser-function 'eww-browse-url
+   common-lisp-hyperspec-root
         "file:///usr/share/doc/common-lisp-hyperspec/HyperSpec/"
         )
   (add-hook 'sly-mode-hook
             (lambda ()
-              (smartparens-mode)
+              (smartparens-strict-mode)
               (define-key sly-mode-map (kbd "C-c i") 'imenu)
               ))
   )
